@@ -31,56 +31,173 @@
 
   /* ======================================================================
      1. Video URL parsing
-     Paste any normal YouTube / Vimeo / .mp4 link into projects.json and
-     this works out how to embed it.
+     Paste any normal video or cloud-drive link into projects.json and this
+     works out how to embed it. Supported:
+
+       YouTube · Vimeo · Instagram · Facebook · Dailymotion · Loom ·
+       Streamable · Wistia · Google Drive · Dropbox · OneDrive / SharePoint ·
+       Box · MEGA · pCloud · direct .mp4/.webm/.mov links · still images
+
+     Anything unrecognised is still *tried* as a video file before falling
+     back to a plain "open in a new tab" link, so most direct download URLs
+     from other drives will just play.
      ====================================================================== */
+
+  // Whatever a share link looks like, the share URL itself is worth keeping
+  // so the fallback link can point at something a human can open.
+  function video(kind, src, original) {
+    return { kind: kind, src: src, original: original || src };
+  }
+
+  // OneDrive / 1drv.ms share links can be turned into a direct content URL
+  // by base64url-encoding the share link itself. No API key needed.
+  function onedriveDirect(url) {
+    let b64;
+    try {
+      b64 = btoa(unescape(encodeURIComponent(url)));
+    } catch (err) {
+      return null;
+    }
+    return 'https://api.onedrive.com/v1.0/shares/u!' +
+      b64.replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_') +
+      '/root/content';
+  }
+
+  function addParam(url, param) {
+    if (new RegExp('[?&]' + param.split('=')[0] + '=').test(url)) return url;
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + param;
+  }
 
   function parseVideo(url) {
     if (!url) return null;
+    url = String(url).trim();
+    if (!url) return null;
 
-    // youtube.com/watch?v=ID · youtu.be/ID · /embed/ID · /shorts/ID
+    /* ---- Video platforms ------------------------------------------------ */
+
+    // youtube.com/watch?v=ID · youtu.be/ID · /embed/ID · /shorts/ID · /live/ID
     const yt = url.match(
-      /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/
+      /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/
     );
     if (yt) {
-      return {
-        kind: 'iframe',
-        src: 'https://www.youtube-nocookie.com/embed/' + yt[1] +
-             '?autoplay=1&rel=0&modestbranding=1&playsinline=1'
-      };
+      return video('iframe',
+        'https://www.youtube-nocookie.com/embed/' + yt[1] +
+        '?autoplay=1&rel=0&modestbranding=1&playsinline=1', url);
     }
 
     // vimeo.com/ID · vimeo.com/channels/x/ID · player.vimeo.com/video/ID
     const vm = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/);
     if (vm) {
-      return {
-        kind: 'iframe',
-        src: 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1&title=0&byline=0&portrait=0'
-      };
+      return video('iframe',
+        'https://player.vimeo.com/video/' + vm[1] +
+        '?autoplay=1&title=0&byline=0&portrait=0', url);
     }
+
+    // instagram.com/p/ID · /reel/ID · /reels/ID · /tv/ID
+    const ig = url.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|reels|tv)\/([\w-]+)/);
+    if (ig) {
+      const type = ig[1] === 'reels' ? 'reel' : ig[1];
+      return video('iframe',
+        'https://www.instagram.com/' + type + '/' + ig[2] + '/embed/captioned/', url);
+    }
+
+    // facebook.com/watch/?v=ID · /videos/ID · fb.watch/ID
+    if (/(?:facebook\.com\/(?:watch\/?\?|.*\/videos\/)|fb\.watch\/)/.test(url)) {
+      return video('iframe',
+        'https://www.facebook.com/plugins/video.php?href=' +
+        encodeURIComponent(url) + '&autoplay=true&show_text=false', url);
+    }
+
+    // dailymotion.com/video/ID · dai.ly/ID
+    const dm = url.match(/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/);
+    if (dm) {
+      return video('iframe',
+        'https://www.dailymotion.com/embed/video/' + dm[1] + '?autoplay=1', url);
+    }
+
+    // loom.com/share/ID
+    const lo = url.match(/loom\.com\/(?:share|embed)\/([\w-]+)/);
+    if (lo) {
+      return video('iframe', 'https://www.loom.com/embed/' + lo[1] + '?autoplay=1', url);
+    }
+
+    // streamable.com/ID
+    const st = url.match(/streamable\.com\/(?:e\/)?([\w-]+)/);
+    if (st) {
+      return video('iframe', 'https://streamable.com/e/' + st[1] + '?autoplay=1', url);
+    }
+
+    // wistia: /medias/ID · wi.st/medias/ID
+    const wi = url.match(/(?:wistia\.com|wi\.st)\/(?:medias|embed\/medias)\/([\w-]+)/);
+    if (wi) {
+      return video('iframe',
+        'https://fast.wistia.net/embed/iframe/' + wi[1] + '?autoPlay=true', url);
+    }
+
+    /* ---- Cloud drives --------------------------------------------------- */
 
     // Google Drive — /file/d/ID/view · open?id=ID · uc?id=ID
     // The share link isn't embeddable, so swap it for the /preview form.
-    const gd = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:.*&)?id=)([\w-]{20,})/);
+    const gd = url.match(
+      /drive\.google\.com\/(?:file\/d\/|open\?(?:.*&)?id=|uc\?(?:.*&)?id=)([\w-]{20,})/
+    );
     if (gd) {
-      return {
-        kind: 'iframe',
-        src: 'https://drive.google.com/file/d/' + gd[1] + '/preview'
-      };
+      return video('iframe', 'https://drive.google.com/file/d/' + gd[1] + '/preview', url);
     }
 
+    // Dropbox — dropbox.com/s/… · /scl/fi/… — raw=1 streams the file itself,
+    // so it plays in a real <video> element with your own controls.
+    if (/dropbox\.com\/(?:s|scl)\//.test(url)) {
+      const raw = addParam(url.replace(/[?&]dl=[01]/g, ''), 'raw=1')
+        .replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+      return video('file', raw, url);
+    }
+
+    // OneDrive personal — 1drv.ms/… · onedrive.live.com/…
+    if (/(?:1drv\.ms\/|onedrive\.live\.com\/)/.test(url)) {
+      const direct = onedriveDirect(url);
+      if (direct) return video('file', direct, url);
+      return video('iframe', url.replace('/redir?', '/embed?'), url);
+    }
+
+    // OneDrive for Business / SharePoint — …/:v:/g/personal/…
+    if (/sharepoint\.com\/|-my\.sharepoint\.com\//.test(url)) {
+      return video('iframe', addParam(url, 'action=embedview'), url);
+    }
+
+    // Box — app.box.com/s/ID
+    const bx = url.match(/app\.box\.com\/(?:s|shared)\/([\w!.-]+)/);
+    if (bx) {
+      return video('iframe', 'https://app.box.com/embed/s/' + bx[1] + '?showParentPath=false', url);
+    }
+
+    // MEGA — mega.nz/file/ID#KEY
+    const mg = url.match(/mega\.nz\/(?:file|embed)\/([\w-]+#[\w-]+)/);
+    if (mg) {
+      return video('iframe', 'https://mega.nz/embed/' + mg[1] + '!1!0', url);
+    }
+
+    // pCloud — publink/show?code=CODE
+    const pc = url.match(/pcloud\.(?:com|link)\/publink\/show\?code=([\w]+)/);
+    if (pc) {
+      return video('iframe', 'https://e.pcloud.link/publink/show?code=' + pc[1], url);
+    }
+
+    /* ---- Plain files ---------------------------------------------------- */
+
     // a self-hosted file, e.g. assets/video/my-film.mp4
-    if (/\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(url)) {
-      return { kind: 'file', src: url };
+    if (/\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i.test(url)) {
+      return video('file', url, url);
     }
 
     // a still image, e.g. assets/photos/shot-01.jpg
-    if (/\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(url)) {
-      return { kind: 'image', src: url };
+    if (/\.(jpe?g|png|webp|avif|gif|svg)(\?.*)?$/i.test(url)) {
+      return video('image', url, url);
     }
 
-    // anything else — open it in a new tab rather than guessing
-    return { kind: 'external', src: url };
+    // Unknown host: most drives hand out a direct download URL with no file
+    // extension. Try it as a video — mountPlayer swaps in a link if it fails.
+    return video('file', url, url);
   }
 
   /* ======================================================================
@@ -144,7 +261,8 @@
   function escapeHtml(str) {
     return String(str == null ? '' : str)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function buildCard(project, index) {
@@ -175,7 +293,7 @@
       '<div class="card-frame">',
         '<img src="', escapeHtml(project.thumbnail || CONFIG.fallbackThumb), '" ',
              'alt="', escapeHtml(project.title || ''), '" loading="lazy" decoding="async" ',
-             'onerror="this.onerror=null;this.src=\'', CONFIG.fallbackThumb, '\'">',
+             'data-fallback="', escapeHtml(CONFIG.fallbackThumb), '">',
         '<div class="card-veil"></div>',
         badge ? '<span class="card-duration">' + escapeHtml(badge) + '</span>' : '',
         '<span class="card-play" aria-hidden="true">', icon, '</span>',
@@ -188,6 +306,13 @@
         '</div>',
       '</div>'
     ].join('');
+
+    // Swap in the fallback thumbnail without an inline onerror attribute.
+    const img = $('img', card);
+    img.addEventListener('error', function onThumbError() {
+      img.removeEventListener('error', onThumbError);
+      img.src = img.dataset.fallback;
+    });
 
     card.addEventListener('click', () => openModal(index));
     return card;
@@ -214,6 +339,9 @@
     const categories = [['All', projects.length]].concat(
       Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]))
     );
+
+    // If the previously active category no longer exists, fall back to All.
+    if (activeFilter !== 'All' && !counts.has(activeFilter)) activeFilter = 'All';
 
     filterBar.innerHTML = '';
     categories.forEach(([name, count]) => {
@@ -256,12 +384,26 @@
   const modalDesc  = $('#modalDesc');
   let lastFocused  = null;
 
+  // A link the visitor can open if an embed can't play in the page.
+  function externalLink(href, label) {
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = label || 'Open this video in a new tab';
+    link.style.cssText =
+      'display:grid;place-items:center;height:100%;padding:2rem;text-align:center;' +
+      'color:#4DB6C4;font-size:15px;text-decoration:underline';
+    return link;
+  }
+
   function mountPlayer(video, isPortrait, emptyHint) {
     stage.innerHTML = '';
     stage.classList.toggle('is-portrait', !!isPortrait);
+    stage.classList.remove('is-gallery');   // in case a photo set was shown last
 
     const hint = emptyHint ||
-      'Add this project’s YouTube, Vimeo or Instagram link to the ' +
+      'Add this project’s YouTube, Vimeo, Instagram or drive link to the ' +
       '<span style="color:#4DB6C4">videoUrl</span> field in projects.json.';
 
     // No link yet — show the project details rather than an empty black box.
@@ -283,6 +425,7 @@
       frame.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
       frame.allowFullscreen = true;
       frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer-when-downgrade';
       stage.appendChild(frame);
 
     } else if (video.kind === 'file') {
@@ -291,6 +434,17 @@
       el.controls = true;
       el.autoplay = true;
       el.playsInline = true;
+      el.preload = 'metadata';
+      el.crossOrigin = 'anonymous';
+
+      // A drive link that refuses to stream (private file, login wall,
+      // unsupported codec) falls back to opening the original share link.
+      el.addEventListener('error', () => {
+        if (!stage.contains(el)) return;
+        stage.innerHTML = '';
+        stage.appendChild(externalLink(video.original, 'This file can’t play here — open it in a new tab'));
+      });
+
       stage.appendChild(el);
 
     } else if (video.kind === 'image') {
@@ -301,15 +455,22 @@
       stage.appendChild(img);
 
     } else {
-      const link = document.createElement('a');
-      link.href = video.src;
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.textContent = 'Open this video in a new tab';
-      link.style.cssText =
-        'display:grid;place-items:center;height:100%;color:#4DB6C4;font-size:15px;text-decoration:underline';
-      stage.appendChild(link);
+      stage.appendChild(externalLink(video.original));
     }
+  }
+
+  // Shared by project cards and the showreel button.
+  function openStage(title, sub, desc, mount) {
+    modalTitle.textContent = title;
+    modalSub.textContent = sub;
+    modalDesc.textContent = desc;
+
+    mount();
+
+    modal.hidden = false;
+    document.body.classList.add('is-locked');
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    $('#modalClose').focus();
   }
 
   function openModal(index) {
@@ -318,21 +479,18 @@
 
     lastFocused = document.activeElement;
 
-    modalTitle.textContent = project.title || 'Untitled';
-    modalSub.textContent = [project.category, project.role, project.client, project.year]
-      .filter(Boolean).join('  ·  ');
-    modalDesc.textContent = project.description || '';
-
-    if (Array.isArray(project.photos) && project.photos.length) {
-      mountGallery(project.photos, project.title);
-    } else {
-      mountPlayer(parseVideo(project.videoUrl), project.orientation === 'portrait');
-    }
-
-    modal.hidden = false;
-    document.body.classList.add('is-locked');
-    requestAnimationFrame(() => modal.classList.add('is-open'));
-    $('#modalClose').focus();
+    openStage(
+      project.title || 'Untitled',
+      [project.category, project.role, project.client, project.year].filter(Boolean).join('  ·  '),
+      project.description || '',
+      () => {
+        if (Array.isArray(project.photos) && project.photos.length) {
+          mountGallery(project.photos, project.title);
+        } else {
+          mountPlayer(parseVideo(project.videoUrl), project.orientation === 'portrait');
+        }
+      }
+    );
   }
 
   function closeModal() {
@@ -344,9 +502,23 @@
       stage.innerHTML = '';          // stops playback and unloads the iframe
       stage.classList.remove('is-portrait', 'is-gallery');
       gallery = { photos: [], index: 0, title: '' };
-    }, 300);
 
-    if (lastFocused) lastFocused.focus();
+      // Restore focus only once the dialog is out of the flow, otherwise
+      // some browsers jump the page while it's still on screen.
+      if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+      lastFocused = null;
+    }, 300);
+  }
+
+  // Visible, focusable elements inside the dialog. offsetParent is null for
+  // anything inside a position:fixed panel, so measure boxes instead.
+  function focusableInModal() {
+    return $$(
+      'a[href], button:not([disabled]), iframe, video[controls], ' +
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), ' +
+      '[tabindex]:not([tabindex="-1"])',
+      modal
+    ).filter(el => el.getClientRects().length > 0);
   }
 
   modal.addEventListener('click', e => {
@@ -354,24 +526,33 @@
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !modal.hidden) closeModal();
+    if (modal.hidden) return;
+
+    if (e.key === 'Escape') { closeModal(); return; }
 
     // arrow keys step through a photo gallery
-    if (!modal.hidden && gallery.photos.length > 1) {
+    if (gallery.photos.length > 1) {
       if (e.key === 'ArrowRight') { e.preventDefault(); stepGallery(1); }
       if (e.key === 'ArrowLeft')  { e.preventDefault(); stepGallery(-1); }
     }
 
     // keep tabbing inside the dialog while it's open
-    if (e.key === 'Tab' && !modal.hidden) {
-      const focusables = $$('a[href], button, iframe, video, [tabindex]:not([tabindex="-1"])', modal)
-        .filter(el => el.offsetParent !== null);
-      if (!focusables.length) return;
+    if (e.key === 'Tab') {
+      const focusables = focusableInModal();
+      if (!focusables.length) { e.preventDefault(); return; }
+
       const first = focusables[0];
       const last  = focusables[focusables.length - 1];
 
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      // focus escaped the dialog (or never entered it) — pull it back
+      if (!modal.contains(document.activeElement)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
     }
   });
 
@@ -379,15 +560,13 @@
   $$('[data-reel]').forEach(btn => {
     btn.addEventListener('click', () => {
       lastFocused = btn;
-      modalTitle.textContent = 'Showreel';
-      modalSub.textContent = 'Anandu R Krishnan  ·  Editor, cinematographer, colourist';
-      modalDesc.textContent = 'A short cut of recent work.';
-      mountPlayer(parseVideo(CONFIG.showreelUrl), false,
-        'Set <span style="color:#4DB6C4">CONFIG.showreelUrl</span> at the top of js/script.js to your showreel link.');
-      modal.hidden = false;
-      document.body.classList.add('is-locked');
-      requestAnimationFrame(() => modal.classList.add('is-open'));
-      $('#modalClose').focus();
+      openStage(
+        'Showreel',
+        'Anandu R Krishnan  ·  Editor, cinematographer, colourist',
+        'A short cut of recent work.',
+        () => mountPlayer(parseVideo(CONFIG.showreelUrl), false,
+          'Set <span style="color:#4DB6C4">CONFIG.showreelUrl</span> at the top of js/script.js to your showreel link.')
+      );
     });
   });
 
@@ -467,15 +646,16 @@
         if (!entry.isIntersecting) return;
         const el = entry.target;
         const target = parseInt(el.dataset.count, 10) || 0;
-        const start = performance.now();
         const dur = 1400;
+        let start = null;
 
-        (function step(now) {
+        requestAnimationFrame(function step(now) {
+          if (start === null) start = now;
           const t = Math.min((now - start) / dur, 1);
           const eased = 1 - Math.pow(1 - t, 3);
           el.textContent = Math.round(target * eased).toLocaleString('en-IN') + (t === 1 ? '+' : '');
           if (t < 1) requestAnimationFrame(step);
-        })(start);
+        });
 
         obs.unobserve(el);
       });
@@ -492,7 +672,13 @@
   const heroVideo = $('#heroVideo');
   if (heroVideo) {
     heroVideo.addEventListener('playing', () => heroVideo.classList.add('is-playing'), { once: true });
-    heroVideo.addEventListener('error', () => heroVideo.remove());
+
+    // <source> children fire error on themselves, not on the <video>, so
+    // listen during the capture phase to catch both.
+    heroVideo.addEventListener('error', () => {
+      if (heroVideo.parentNode) heroVideo.remove();
+    }, true);
+
     if (reduceMotion) heroVideo.pause();
   }
 
