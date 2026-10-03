@@ -33,7 +33,16 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 .ex-b{background:#188038;color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-right:4px}tr.exd td:first-child{box-shadow:inset 3px 0 0 #188038}tr.exd.er td:first-child{box-shadow:inset 3px 0 0 #d93025}
 .b[data-rf]{cursor:pointer;user-select:none}.b[data-rf]:hover{outline:1px solid var(--ac)}.b.on{background:var(--ac);color:#fff}
 .pn{border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin:10px 0}.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}.ph .mu{text-transform:none;font-weight:400;letter-spacing:0;font-size:13px}.ph .sp{flex:1}.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 10px}.fg .w2{grid-column:span 2}.fc{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}.fa{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.fa select,.fa input:not([type=checkbox]){width:auto}.fa .g1{flex:1;min-width:200px}.fa .g1 input{width:100%}.fl .qw{display:block;min-width:0}#sbar{background:var(--bg)}
-#tb select[data-t]{width:auto;min-width:96px}
+#tb select[data-t]{width:auto;min-width:92px}
+/* compact table so the delete button stays in view without horizontal scrolling */
+#pv th,#pv td{padding:5px 6px}
+#tb td input{min-width:110px}
+#tb td input[type=checkbox]{min-width:0;width:16px}
+#tb td input[data-i]{min-width:140px}
+#tb td input[type=date]{min-width:0;width:128px}
+#tb td input[type=number]{min-width:92px}
+#tb td:nth-child(2) .ex-b{display:block;width:max-content;margin:0 0 3px}
+#tb td.n{min-width:200px}#tb td.n textarea{min-width:200px}
 </style></head><body><nav id="nv"><b>Bank → Tally</b><button data-n="up">1 · Upload</button><button data-n="setup">2 · Settings</button><button data-n="pv">3 · Preview &amp; Export</button><button data-n="cs">4 · Create ledgers<span id="nvb" hidden></span></button><small>© 2026 Ajai R Krishnan<br>All rights reserved</small></nav><main>
 <h1>Bank Statement → Tally Import</h1>
 <div class="card" id="up"><label>1. Upload statement (PDF / CSV / XLS / XLSX)</label><input type="file" id="f" accept=".pdf,.csv,.xls,.xlsx"><div id="pww" hidden style="margin-top:8px"><label>🔒 This PDF is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="PDF password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
