@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bank Statement to Tally</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#667085;--bd:#dfe3e8;--ac:#1a56db;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1d2026;--tx:#e8eaed;--mu:#9aa3af;--bd:#2f343c;--ac:#6ea0ff}}
+:root[data-theme="dark"]{--bg:#14161a;--card:#1d2026;--tx:#e8eaed;--mu:#9aa3af;--bd:#2f343c;--ac:#6ea0ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:16px}h1{font-size:20px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:2px}
+input,select,textarea{width:100%;padding:7px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+button{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:9px 14px;font:inherit;cursor:pointer}
+button.s{background:var(--bd);color:var(--tx)}.w{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:5px 7px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+td.n{white-space:normal;min-width:200px}td input{min-width:150px}.r{text-align:right}
+.bad{border-color:#c0392b}small{color:var(--mu)}input.bad,select.bad,input.need:placeholder-shown{border-color:#d93025;background:rgba(217,48,37,.08)}.b{background:var(--bd);border-radius:9px;padding:0 6px;font-size:11px}.fb{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.fb>*{width:auto;min-width:90px}.ck{display:flex;align-items:center;gap:5px;font-size:13px}.ck input{width:auto}th{position:sticky;top:0;background:var(--card)}.qw{position:relative;display:inline-block;min-width:160px}.qw input{padding-right:26px}.qx{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:transparent;color:var(--mu);padding:0 7px;font-size:18px;line-height:1.2}.qx[hidden]{display:none}.dx{background:transparent;color:#d93025;border:1px solid #d93025;border-radius:6px;padding:2px 7px;line-height:1;display:inline-flex;align-items:center}.dx.un{color:var(--ac);border-color:var(--ac);padding:2px 8px}tr.gone td:not(:last-child){opacity:.45;text-decoration:line-through}td input[type=checkbox]{width:auto;min-width:0}td input[type=number]{min-width:110px}button:disabled{opacity:.5;cursor:not-allowed}.wb{margin:6px 0;padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);color:var(--tx)}.mu{color:var(--mu)}.dr{color:#c0392b}.cr{color:#1e8e3e}
+body{padding-left:190px}main{max-width:1150px}.off{display:none!important}
+#nv{position:fixed;left:0;top:0;bottom:0;width:190px;background:var(--card);border-right:1px solid var(--bd);padding:14px 10px;display:flex;flex-direction:column;gap:6px;z-index:5}
+#nv b{font-size:15px;margin-bottom:8px}#nv button{background:none;color:var(--tx);text-align:left;padding:9px 10px}#nv button.on{background:var(--ac);color:#fff}#nv button:disabled{opacity:.4;cursor:default}#nv small{margin-top:auto;line-height:1.4}#nvb{background:#d93025;color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px}
+@media(max-width:760px){body{padding-left:0}#nv{position:static;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center}#nv small{margin:0}}
+input[data-cb]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+#cbm{position:fixed;display:none;z-index:50;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:13px}#cbm div{padding:6px 10px;cursor:pointer}#cbm div:hover{background:var(--bd)}#cbm .nw{color:var(--ac);font-weight:600;border-top:1px solid var(--bd)}
+.sc{width:16px;height:16px;min-width:0;padding:0}
+#xclr{position:fixed;display:none;z-index:60;width:20px;height:20px;padding:0;line-height:18px;border-radius:50%;background:var(--bd);color:var(--tx);font-size:15px;text-align:center;cursor:pointer}
+td.n textarea{width:100%;min-width:230px;min-height:30px;resize:vertical;line-height:1.35}
+</style></head><body><nav id="nv"><b>Bank → Tally</b><button data-n="up">1 · Upload</button><button data-n="setup">2 · Settings</button><button data-n="pv">3 · Preview &amp; Export</button><button data-n="cs">4 · Create ledgers<span id="nvb" hidden></span></button><small>© 2026 Ajai R Krishnan<br>All rights reserved</small></nav><main>
+<h1>Bank Statement → Tally Import</h1>
+<div class="card" id="up"><label>1. Upload statement (PDF / CSV / XLS / XLSX)</label><input type="file" id="f" accept=".pdf,.csv,.xls,.xlsx"><div style="margin-top:8px"><label>PDF password (only for protected PDFs; never saved)</label><input id="pw" type="password" autocomplete="off" placeholder="Leave blank if not protected"></div>
+<details style="margin-top:8px"><summary>AI fallback settings (optional)</summary><div class="g" style="margin-top:6px"><div><label>Anthropic API key (kept in this tab only, never saved)</label><input id="aik" type="password" autocomplete="off" placeholder="sk-ant-..."></div><div><label>Model</label><input id="aim" value="claude-sonnet-5-5"></div></div><small>Used only if text reading and OCR cannot give a verified result, and only after you read a confidentiality warning and agree. Pages are sent to Anthropic as images. If you decline, you still get the automatic result to view and edit.</small></details>
+<div style="margin-top:8px"><label>Load saved settings (optional, .json exported from this page)</label><input type="file" id="pf" accept=".json"></div><p class="mu" id="msg">Everything runs in your browser; nothing is uploaded unless you approve the optional AI fallback.</p></div>
+
+<div class="card" id="setup" hidden>
+<b>2. Settings</b>
+<div style="margin:8px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--bd)"><b>🔗 Tally link &amp; ledger master</b> <span class="mu">(enables type-ahead and flags unknown names in red)</span>
+<div class="g" style="margin-top:6px;align-items:end"><div><label>Port (Tally default 9000)</label><input id="port" value="9000"></div><div><button class="s" id="tf" type="button">Fetch from running Tally</button></div><div><label>Or load exported ledger list (XML / CSV / XLSX)</label><input type="file" id="lf" accept=".xml,.csv,.xls,.xlsx"></div></div>
+<p class="mu" id="lm" style="margin:6px 0 0">Export in Tally: Display More Reports → List of Accounts → Alt+E.</p><small id="lc"></small><small id="gc"></small><datalist id="ll"></datalist></div>
+<div class="g" style="margin-top:8px">
+<div><label>Bank reference (used in file name)</label><input id="br" class="need" placeholder="HDFC-1234"></div><div><label>Company name (as in Tally)</label><input id="co" placeholder="My Company"></div>
+<div><label>Bank ledger name</label><input id="bank" class="need" data-cb="1" value="" placeholder="-set bank ledger name here-"></div>
+<div><label>Default ledger (Dr entries / payments)</label><select id="dp"><option>Suspense</option></select></div>
+<div><label>Default ledger (Cr entries / receipts)</label><select id="dr"><option>Suspense</option></select></div>
+</div>
+<div class="g" style="margin-top:8px" id="map"></div>
+<div class="w" id="raw" style="margin-top:8px;max-height:200px"></div>
+<b style="display:block;margin-top:10px">Contra entries</b>
+<div class="g">
+<div><label class="ck"><input type="checkbox" id="c1" checked>Cash withdrawals → Contra</label><input id="k1" value="atm,cash wdl,cash withdrawal"></div>
+<div><label class="ck"><input type="checkbox" id="c2" checked>Cash deposits → Contra</label><input id="k2" value="cash dep,cdm,cash deposit"></div>
+<div><label>Cash ledger</label><input id="cash" data-cb="1" value="Cash"></div>
+</div>
+<label class="ck" style="margin-top:8px"><input type="checkbox" id="c3" checked>Interbank / self transfers → Contra (one row per other bank account)</label>
+<div id="ibl"></div><button class="s" id="ibadd" style="margin-top:6px">+ Add bank account</button>
+<datalist id="lg"></datalist>
+<label style="margin-top:8px">Auto-ledger rules — one per line: keyword=Ledger name</label>
+<textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea>
+<div style="margin-top:10px"><button id="go">Apply &amp; preview</button> <button class="s" id="ex">Export settings</button><label class="ck" style="display:inline-flex;margin-left:8px"><input type="checkbox" id="xm" checked>Include ledger master in settings file</label></div></div>
+
+<div class="card" id="pv" hidden>
+<b>3. Preview</b> <span class="mu" id="sum"></span><div id="uw" class="mu"></div><div id="bc" class="mu"></div><div id="rm" class="mu"></div><div id="dw"></div>
+<div class="fb"><span class="qw"><input id="q" placeholder="Search narration"><button type="button" id="qx" class="qx" title="Clear narration search" aria-label="Clear narration search" hidden>&times;</button></span><select id="ft"><option value="">All types</option><option>Payment</option><option>Receipt</option><option>Contra</option></select><input id="mn" type="number" placeholder="Min ₹"><input id="mx" type="number" placeholder="Max ₹"><label class="ck">From <input id="df" type="date"></label><label class="ck">To <input id="dt" type="date"></label><input id="lq" data-cb="u" placeholder="Ledger contains"><datalist id="lp"></datalist><button class="s" id="cf">Clear filters</button><select id="rc"><option value="">Recurring: off</option><option value="n">Same narration</option><option value="a">Same amount</option><option value="e">Either</option></select><label class="ck"><input type="checkbox" id="gs">Group similar</label><label class="ck"><input type="checkbox" id="fu">Ledger not in master</label></div>
+<div class="fb"><span id="shown" class="mu"></span><input id="ob" type="number" step="0.01" placeholder="Opening balance" title="Leave blank to derive from the statement balance column"><input id="bl" data-cb="1" placeholder="Ledger for shown rows"><button class="s" id="ba">Apply ledger to shown</button><button class="s" id="bd" style="color:#d93025" title="Skip every row currently shown in the table (e.g. contra entries already booked from the other bank)">Remove shown rows</button><label class="ck"><input type="checkbox" id="lr" checked>Remember as auto-rule</label><select id="bt"><option value="">Set type…</option><option>Payment</option><option>Receipt</option><option>Contra</option></select></div>
+<div class="fb" id="sbar"><b id="sn">0 selected</b><select id="stt"><option value="">Set type...</option><option>Payment</option><option>Receipt</option><option>Contra</option></select><input id="sl" data-cb="1" placeholder="Ledger for selected rows"><button class="s" id="sap" type="button">Apply to selected</button><button class="s" id="sx" type="button">Clear selection</button></div>
+<div class="w"><table><thead><tr><th><input type="checkbox" id="sa" class="sc" title="Select / unselect all shown rows"></th><th>Date</th><th>Type</th><th>Narration</th><th>Same</th><th class="r">Amount</th><th class="r">Balance</th><th class="r" id="sbh" hidden>Stmt bal</th><th>Ledger</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button id="xs" title="Downloads the Tally XML, then saves your current settings (rules, bank ledger, contra setup, ledger master) to a settings file">Export XML &amp; save settings</button><button class="s" id="xml" title="Downloads the Tally XML only; settings are not saved">Export XML only</button><button class="s" id="csv">Download CSV</button><button class="s" id="cm" type="button">Create missing ledgers</button><button class="s" id="lo" type="button" title="Downloads only the ledger masters ticked to be created (no vouchers); import this first in Tally">Export ledgers only (XML)</button></div>
+<div id="xw"></div><p class="mu">In Tally: Gateway → Import → Data (or Alt+O) → choose the XML. Every ledger used must exist in Tally. Use <b>Create missing ledgers</b> to add any that don\'t; they are written into the same XML, ahead of the vouchers, so one import does both. Also make sure the voucher dates fall inside the company's financial year / books-beginning date.</p></div>
+
+<div class="card" id="cs" hidden>
+<b>4. Create missing ledgers</b> <button class="s" id="csx" type="button" style="float:right">Hide</button>
+<p class="mu" id="cst" style="margin:6px 0"></p>
+<div class="fb"><span class="qw"><input id="cg" list="gl" placeholder="Group for all ticked (blank = Suspense A/c)"><button type="button" id="cgx" class="qx" title="Clear" aria-label="Clear group" hidden>&times;</button></span><button class="s" id="cga" type="button">Apply group to ticked</button><button class="s" id="cka" type="button">Tick all</button><button class="s" id="ckn" type="button">Untick all</button></div>
+<datalist id="gl"></datalist>
+<div class="w"><table><thead><tr><th>Create</th><th>Ledger name</th><th>Under group</th><th class="r">Opening balance</th><th>Dr/Cr</th><th>Bill-by-bill</th><th class="r">Txns</th></tr></thead><tbody id="ctb"></tbody></table></div>
+<div id="css" class="mu" style="margin-top:8px"></div>
+<p class="mu" style="margin-bottom:0">Ticked ledgers are created in the same XML, ahead of the vouchers. The group defaults to Suspense A/c (it exists in every Tally company): pick another from the list, or click × / leave it blank to use the default. Opening balance and bill-by-bill are optional: leave them blank / Default to use Tally's defaults.</p>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button id="cxs" type="button">Export XML &amp; save settings</button><button class="s" id="cxml" type="button">Export XML only</button><button class="s" id="clo" type="button">Export ledgers only (XML)</button><button class="s" id="ccsv" type="button">Download CSV</button></div><div id="cxw"></div></div>
+
+<script>
+const $=id=>document.getElementById(id);let rows=[],hdr=[],data=[],selS=new Set(),OPN=null,goCs=false,cur="up";
+const F=[["date","Date",/date|txn/i],["nar","Narration",/narr|desc|partic|remark/i],["ref","Ref / Cheque no",/ref|chq|cheque|utr/i],["dr","Debit / Withdrawal",/debit|withdraw|dr\b/i],["cr","Credit / Deposit",/credit|deposit|cr\b/i],["amt","Single amount (optional)",/^amount$/i],["bal","Balance (optional, for cross-check)",/balance|bal\b/i]];
+function csv(t){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==','){r.push(c);c=""}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c="";o.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);o.push(r)}return o}
+let pipeNote="";async function rd(f){pipeNote="";if(/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.csv$/i.test(f.name))return csv(await f.text());const wb=XLSX.read(await f.arrayBuffer());return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:""})}
+$("f").onchange=async e=>{const f=e.target.files[0];if(!f)return;let a;
+ try{a=await rd(f)}catch(x){$("msg").textContent="Could not read file: "+x.message;return}
+ a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
+ let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark/i.test(x)));if(h<0)h=0;
+ hdr=a[h].map(x=>String(x).trim());rows=a.slice(h+1);
+ $("map").innerHTML=F.map(([k,l,re])=>{const i=hdr.findIndex(x=>re.test(x));return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==i&&!(k=="amt"&&i<0)?" selected":""}>${x||"Col "+(j+1)}</option>`).join("")}</select></div>`}).join("");
+ $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
+ applyCols();$("msg").textContent=`Loaded ${rows.length} rows. Check column mapping below.`+(pipeNote?" "+pipeNote:"");$("setup").hidden=false;nav("setup")};
+let led=[],grp=[];const inM=v=>led.some(l=>l.toLowerCase()==String(v).trim().toLowerCase()),canon=v=>led.find(l=>l.toLowerCase()==String(v).trim().toLowerCase())||v,bad=v=>led.length>0&&!!String(v).trim()&&!inM(v);
+function chkF(){["bank","dp","dr","cash"].forEach(i=>$(i).classList.toggle("bad",bad($(i).value)));document.querySelectorAll(".il").forEach(e=>e.classList.toggle("bad",bad(e.value)))}
+function lpUpd(){const h=[...new Set(data.map(x=>x.led).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(x=>`<option value="${esc(x)}">`).join(""),e=$("lp");if(e.dataset.h!==h){e.innerHTML=h;e.dataset.h=h}}
+function warn(){lpUpd();cmUpd();if(!led.length){$("uw").textContent="";return}const u=[...new Set(data.filter(x=>!x.del).map(x=>x.led).filter(bad))],c=u.filter(isCl).length;
+ $("uw").innerHTML=u.length?(c==u.length?`✓ ${c} ledger name(s) not in your Tally master will be created in the XML`:`⚠ ${u.length} ledger name(s) not in your Tally master (shown in red): ${esc(u.slice(0,8).join(", "))}${u.length>8?"…":""}${c?` · ${c} set to be created`:""}. Use “Create missing ledgers” below.`):"✓ All ledgers match your Tally master"}
+function setL(a){led=[...new Set(a.map(x=>String(x).trim()).filter(x=>x&&!/^(particulars|name|ledger|ledgers|grand total|total|opening balance|closing balance|debit|credit)$/i.test(x)))];$("lg").innerHTML=led.map(x=>`<option value="${esc(x)}">`).join("");$("lc").textContent=led.length?` ${led.length} ledgers loaded`:"";try{localStorage.setItem("tl",JSON.stringify(led))}catch(e){}fillDD();chkF();if(data.length){data.forEach(x=>x.led=canon(x.led));draw()}}
+try{const t=JSON.parse(localStorage.getItem("tl")||"[]");if(t.length)setL(t)}catch(e){}
+$("lf").onchange=async e=>{const f=e.target.files[0];if(!f)return;let co="";try{
+ if(/\.xml$/i.test(f.name)){const t=await f.text(),o=[];for(const m of t.matchAll(/<LEDGER[^>]*\sNAME="([^"]+)"/g))o.push(m[1].replace(/&amp;/g,"&"));if(!o.length)for(const m of t.matchAll(/<(?:LANGUAGENAME\.LIST>\s*<NAME|NAME)[^>]*>([^<]+)</g))o.push(m[1].replace(/&amp;/g,"&"));setL(o);setG([...t.matchAll(/<GROUP\s[^>]*?\bNAME="([^"]+)"/g)].map(g=>g[1].replace(/&amp;/g,"&")));
+  const m=t.match(/<SVCURRENTCOMPANY>([^<]+)</)||t.match(/<COMPANYNAME[^>]*>([^<]+)</)||t.match(/<REMOTECMPINFO\.LIST[^>]*>[\s\S]*?<NAME[^>]*>([^<]+)</);if(m)co=m[1]}
+ else{const a=(await rd(f)).filter(r=>r.some(c=>String(c).trim())),fc=r=>String(r.find(c=>String(c).trim())||"").trim(),hi=a.findIndex(r=>/^(particulars|name|ledger name|ledgers?)$/i.test(fc(r)));
+  for(const r of a.slice(0,Math.max(hi,0))){const c=fc(r);if(c&&!/list of|chart of|accounts?$|ledgers?$|\d{1,2}[-\/ ][A-Za-z]{3}[-\/ ]\d{2,4}/i.test(c)){co=c;break}}
+  setL(a.slice(hi+1).map(fc));setG([])}
+ co=co.replace(/&amp;/g,"&").trim();if(co)$("co").value=co;$("lc").textContent+=co?"; company: "+co:"; company name not found in file"}catch(x){$("lc").textContent=" Could not read: "+x.message}};
+const num=s=>{s=String(s||"").replace(/[,\s₹]/g,"");const m=s.match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):0};
+const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function pd(s){s=String(s).trim();let m;const p=(d,mo,y)=>{y=+y;d=+d;mo=+mo;if(y<100)y+=2000;if(mo<1||mo>12||d<1||d>new Date(y,mo,0).getDate())return null;return y+String(mo).padStart(2,"0")+String(d).padStart(2,"0")};
+ if(m=s.match(/(?<!\d)(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?!\d)/))return p(m[3],m[2],m[1]);
+ if(m=s.match(/(?<!\d)(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})(?!\d)/))return p(m[1],m[2],m[3]);
+ if(m=s.match(/(?<!\d)(\d{1,2})(?:st|nd|rd|th)?[\s\-\/]([A-Za-z]{3})[a-z]*[\s\-\/,]+(\d{4}|\d{2})(?!\d)/)){const mo=MON[m[2].toLowerCase()];if(mo)return p(m[1],mo,m[3])}
+ return null}
+const esc=s=>String(s).replace(/[<>&"']/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[c]));
+function ibRow(k,l){const d=document.createElement("div");d.className="g ibr";d.style.cssText="margin-top:6px;grid-template-columns:1fr 1fr auto";d.innerHTML=`<input class="ik" placeholder="Keywords in narration, comma separated (e.g. HDFC, a/c 1234)" value="${esc(k||"")}"><input class="il" data-cb="1" placeholder="Bank ledger in Tally" value="${esc(l||"")}"><button class="s" title="Remove">✕</button>`;d.querySelector("button").onclick=()=>{d.remove();svIb()};d.querySelectorAll("input").forEach(i=>i.oninput=svIb);$("ibl").appendChild(d)}
+function svIb(){chkF()}
+function ibMatch(low){for(const r of document.querySelectorAll(".ibr")){const k=r.querySelector(".ik").value,l=r.querySelector(".il").value;if(l&&has(low,k))return l}return null}
+$("ibadd").onclick=()=>ibRow("","");
+[["self transfer,own account,own a/c","Other Bank Account"]].forEach(x=>ibRow(x[0],x[1]));
+const nk=t=>t.toLowerCase().replace(/[0-9]+/g,"").replace(/[^a-z ]+/g," ").replace(/\s+/g," ").trim();
+const has=(t,k)=>k.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean).some(x=>t.includes(x));
+$("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
+ if(obAuto){$("ob").value="";obAuto=false}const kr=keyer(),rk=new Set();data.forEach(x=>{const k=kr(x);if(x.del)rk.add(k)});data=[];OPN=null;selS.clear();let skip=0;const opn=r=>{if(OPN==null&&g("bal")>=0&&/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){const v=sbv(r[g("bal")]);if(v!=null)OPN=v}};
+ for(const r of rows){const d=g("date")>=0?pd(r[g("date")]):null;if(!d){opn(r);skip++;continue}
+  let dr=g("dr")>=0?num(r[g("dr")]):0,cr=g("cr")>=0?num(r[g("cr")]):0;
+  if(!dr&&!cr&&g("amt")>=0){const a=num(r[g("amt")]);if(a<0||/\bdr\b/i.test(String(r[g("amt")])))dr=Math.abs(a);else cr=a}
+  if(!dr&&!cr){opn(r);skip++;continue}
+  const nar=g("nar")>=0?String(r[g("nar")]).replace(/please do not share[\s\S]*$/i,"").trim():"",ref=g("ref")>=0?String(r[g("ref")]).trim():"",out=dr>0,amt=out?dr:cr,low=nar.toLowerCase();
+  let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const hit=rules.find(x=>low.includes(x[0]));if(hit)l=hit[1];
+  if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
+  else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
+  else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
+  data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt})}
+ {const k2=keyer();data.forEach(x=>{if(rk.has(k2(x)))x.del=true})}data.forEach(x=>x.led=canon(x.led));nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
+ calcBal();$("pv").hidden=false;draw(skip)};
+let nc={},ac={},sk=0,vis=[],bdT=null;
+const keyer=()=>{const c={};return x=>{const b=x.d+"|"+x.nar+"|"+x.amt+"|"+x.out;c[b]=(c[b]||0)+1;return b+"#"+c[b]}};
+function rstBd(){const b=$("bd");if(b&&b.dataset.arm){delete b.dataset.arm;b.textContent="Remove shown rows";clearTimeout(bdT)}}
+function dwUpd(){const n=data.filter(x=>x.del).length,e=$("dw");if(!n){e.innerHTML="";return}
+ e.innerHTML=`<div style="margin:6px 0;padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);color:var(--tx)">⚠ <b>${n} transaction${n>1?"s":""} removed</b>: ${n>1?"they":"it"} will <b>not</b> be included in the Tally XML or the CSV. The running balance and balance check still count ${n>1?"them":"it"}. <button type="button" class="s" id="dru" style="padding:3px 10px;margin-left:6px">Restore all</button></div>`;
+ $("dru").onclick=()=>{data.forEach(x=>x.del=false);draw()}}
+$("bd").onclick=()=>{const b=$("bd"),n=vis.filter(([x])=>!x.del).length;if(!n)return;
+ if(!b.dataset.arm){b.dataset.arm=1;b.textContent=`Click again to remove ${n} shown`;bdT=setTimeout(rstBd,4000);return}
+ rstBd();vis.forEach(([x])=>x.del=true);draw()};
+function draw(skip){rstBd();if(skip!=null)sk=skip;const q=$("q").value.toLowerCase(),ft=$("ft").value,mn=parseFloat($("mn").value),mx=parseFloat($("mx").value),rc=$("rc").value,df=$("df").value.replace(/-/g,""),dt=$("dt").value.replace(/-/g,""),lq=$("lq").value.toLowerCase();
+ vis=data.map((x,i)=>[x,i]).filter(([x])=>(!q||x.nar.toLowerCase().includes(q))&&(!df||x.d>=df)&&(!dt||x.d<=dt)&&(!lq||x.led.toLowerCase().includes(lq))&&(!ft||x.t==ft)&&(isNaN(mn)||x.amt>=mn)&&(isNaN(mx)||x.amt<=mx)&&(!$("fu").checked||bad(x.led))&&(!rc||(rc!="a"&&nc[x.nk]>1)||(rc!="n"&&ac[x.ak]>1)));
+ if($("gs").checked)vis.sort((p,q2)=>(p[0].nk>q2[0].nk)-(p[0].nk<q2[0].nk)||p[0].amt-q2[0].amt);
+ $("sbh").hidden=!hs;$("tb").innerHTML=vis.map(([x,i])=>`<tr${x.del?' class="gone"':""}><td><input type="checkbox" class="sc" data-s="${i}"${selS.has(i)?" checked":""}></td><td>${x.d.replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1")}</td><td><select data-t="${i}"${x.del?" disabled":""}>${["Payment","Receipt","Contra"].map(o=>`<option${o==x.t?" selected":""}>${o}</option>`).join("")}</select></td><td class="n"><textarea data-nar="${i}" rows="${Math.min(4,Math.max(1,Math.ceil(x.nar.length/42)))}"${x.del?" disabled":""}>${esc(x.nar)}</textarea></td><td>${nc[x.nk]>1?`<span class="b" title="same narration">N×${nc[x.nk]}</span> `:""}${ac[x.ak]>1?`<span class="b" title="same amount">₹×${ac[x.ak]}</span>`:""}</td><td class="r ${x.out?"dr":"cr"}">${x.amt.toFixed(2)}</td><td class="r">${x.rb==null?"":x.rb.toFixed(2)}</td>${hs?`<td class="r ${mm(x)?"dr":""}">${x.sb==null?"":x.sb.toFixed(2)}${mm(x)?" ✗":""}</td>`:""}<td><input data-cb="1" class="${!x.del&&bad(x.led)?"bad":""}" value="${esc(x.led)}" data-i="${i}"${x.del?" disabled":""}></td><td><button type="button" class="dx${x.del?" un":""}" data-x="${i}" aria-label="${x.del?"Restore transaction":"Remove transaction"}" title="${x.del?"Restore this transaction (it will be imported again)":"Remove this transaction: it will be skipped in the import"}">${x.del?"&#8617;":'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>'}</button></td></tr>`).join("");
+ selBind();document.querySelectorAll("#tb input[data-i]").forEach(e=>{e.oninput=()=>data[e.dataset.i].led=e.value;e.onchange=()=>{const v=canon(e.value);e.value=v;data[e.dataset.i].led=v;e.classList.toggle("bad",bad(v));warn();if(csOpen)csRender()}});
+ document.querySelectorAll("#tb select").forEach(e=>e.onchange=()=>{data[e.dataset.t].t=e.value;sum()});
+ $("qx").hidden=!$("q").value;document.querySelectorAll("#tb .dx").forEach(e=>e.onclick=()=>{const w=e.closest(".w"),st=w.scrollTop,x=data[e.dataset.x];x.del=!x.del;draw();w.scrollTop=st});$("shown").textContent=`Showing ${vis.length} of ${data.length}`;sum();warn();if(csOpen)csRender()}
+function sum(){dwUpd();const A=data.filter(x=>!x.del),c=t=>A.filter(x=>x.t==t),ds=A.map(x=>x.d).sort(),fd=s=>s.replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");$("sum").textContent=`— ${A.length} vouchers${data.length>A.length?` (${data.length-A.length} removed)`:""}: ${c("Payment").length} payments, ${c("Receipt").length} receipts, ${c("Contra").length} contra${sk?`, ${sk} rows skipped`:""}${ds.length?` · dates ${fd(ds[0])} to ${fd(ds[ds.length-1])}`:""}${!data.length?" — no valid rows: check the column mapping against the parsed preview":""}`}
+["q","ft","mn","mx","rc","gs","df","dt","lq","fu"].forEach(id=>$(id).oninput=()=>draw());
+$("qx").onclick=()=>{$("q").value="";draw();$("q").focus()};
+$("cf").onclick=()=>{["q","ft","mn","mx","rc","df","dt","lq"].forEach(id=>$(id).value="");$("gs").checked=false;$("fu").checked=false;draw()};
+$("bt").onchange=()=>{if($("bt").value)vis.forEach(([x])=>{if(!x.del)x.t=$("bt").value});$("bt").value="";draw()};
+function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+function needLed(){const s=new Set();const b=canon($("bank").value.trim());if(b)s.add(b);data.forEach(x=>{if(x.led&&!x.del)s.add(canon(x.led))});return[...s]}
+const GR=["Bank Accounts","Bank OD A/c","Branch / Divisions","Capital Account","Cash-in-Hand","Current Assets","Current Liabilities","Deposits (Asset)","Direct Expenses","Direct Incomes","Duties & Taxes","Fixed Assets","Indirect Expenses","Indirect Incomes","Investments","Loans & Advances (Asset)","Loans (Liability)","Misc. Expenses (ASSET)","Provisions","Purchase Accounts","Reserves & Surplus","Retained Earnings","Sales Accounts","Secured Loans","Stock-in-Hand","Sundry Creditors","Sundry Debtors","Suspense A/c","Unsecured Loans"];
+let cl={},csOpen=false,csList=[];
+const gl=()=>{const a=grp.length?grp:GR;return a.some(g=>g.toLowerCase()=="suspense a/c")?a:[...a,"Suspense A/c"]},gfind=v=>gl().find(g=>g.toLowerCase()==String(v).trim().toLowerCase()),gbad=v=>!gfind(v);
+function gUpd(){$("gl").innerHTML=gl().map(g=>`<option value="${esc(g)}">`).join("")}
+function setG(a){grp=[...new Set((a||[]).map(x=>String(x).trim()).filter(Boolean))];try{localStorage.setItem("tg",JSON.stringify(grp))}catch(e){}gUpd();$("gc").textContent=grp.length?` · ${grp.length} groups`:"";if(csOpen){cl={};csRender()}}
+gUpd();try{const g=JSON.parse(localStorage.getItem("tg")||"[]");if(g.length)setG(g)}catch(e){}
+const isCl=n=>!!(cl[n]&&cl[n].on),clGet=n=>cl[n]||(cl[n]={on:led.length>0,grp:"Suspense A/c",ob:"",dc:"Dr",bw:""}),
+ missL=()=>{const a=needLed();return led.length?a.filter(bad):a};
+function cmUpd(){const b=$("cm");if(!b)return;const n=missL().length;b.textContent="Create missing ledgers"+(led.length&&n?` (${n})`:"");b.disabled=!!led.length&&!n;b.title=b.disabled?"Every ledger used is already in your Tally master":"Choose the group and other details for ledgers that don't exist in Tally yet; they are created in the same XML"}
+function csStat(){const t=csList.filter(isCl).length,r=csList.length-t;$("css").innerHTML=csList.length?`${t} of ${csList.length} ticked to be created`+(r?` · <b style="color:#d93025">${r} not ticked</b>: vouchers using them will be rejected by Tally unless they already exist`:""):""}
+function csRender(){const m=missL();csList=m;const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim());
+ $("cst").innerHTML=m.length?`${m.length} ledger${m.length>1?"s":""} to create.`+(led.length?"":" No Tally master is loaded, so this lists <b>every</b> ledger the import uses and none are ticked: tick only the ones that don't exist in Tally yet (creating an existing ledger gives a duplicate error)."):"✓ No missing ledgers.";$("cst").innerHTML+=` <br>${grp.length?`Groups come from your imported Tally master (${grp.length}).`:"No groups were found in the imported master, so Tally's standard groups are offered. Load an XML master export or fetch from Tally to use your own group list."} Groups in red are not in that list.`;
+ $("ctb").innerHTML=m.map((n,k)=>{const o=clGet(n),c=n==bn?act.length:act.filter(x=>canon(x.led)==n).length;
+  return `<tr><td><input type="checkbox" data-k="${k}" data-f="on"${o.on?" checked":""}></td><td class="n">${esc(n)}</td><td><span class="qw" style="display:block"><input list="gl" class="${o.grp.trim()&&gbad(o.grp)?"bad":""}" data-k="${k}" data-f="grp" value="${esc(o.grp)}" placeholder="Suspense A/c (default)"><button type="button" class="qx gx" data-k="${k}" title="Clear (blank = Suspense A/c)" aria-label="Clear group"${o.grp?"":" hidden"}>&times;</button></span></td><td><input type="number" step="0.01" min="0" data-k="${k}" data-f="ob" value="${esc(o.ob)}" placeholder="optional"></td><td><select data-k="${k}" data-f="dc"><option${o.dc=="Dr"?" selected":""}>Dr</option><option${o.dc=="Cr"?" selected":""}>Cr</option></select></td><td><select data-k="${k}" data-f="bw"><option value=""${o.bw==""?" selected":""}>Default</option><option${o.bw=="Yes"?" selected":""}>Yes</option><option${o.bw=="No"?" selected":""}>No</option></select></td><td class="r">${c}</td></tr>`}).join("");
+ csStat()}
+const csEdit=e=>{const t=e.target,k=t.dataset.k;if(k==null)return;const o=cl[csList[k]];if(!o)return;const f=t.dataset.f;if(f=="grp"&&e.type=="change"){const c=gfind(t.value);if(c)t.value=c}o[f]=f=="on"?t.checked:t.value;if(f=="grp"){t.classList.toggle("bad",!!t.value.trim()&&gbad(t.value));const x=t.parentNode.querySelector(".gx");if(x)x.hidden=!t.value}csStat();warn()};
+$("ctb").addEventListener("click",e=>{const b=e.target.closest(".gx");if(!b)return;const o=cl[csList[b.dataset.k]];if(!o)return;o.grp="";const i=b.parentNode.querySelector("input");i.value="";i.classList.remove("bad");b.hidden=true;i.focus();csStat();warn()});
+$("ctb").addEventListener("input",csEdit);$("ctb").addEventListener("change",csEdit);
+function openCs(){csOpen=true;$("cs").hidden=false;csRender();warn()}
+$("cm").onclick=()=>{openCs();$("cs").scrollIntoView({block:"start",behavior:"smooth"})};
+$("csx").onclick=()=>{$("cs").hidden=true;csOpen=false};
+$("cg").addEventListener("input",()=>{$("cgx").hidden=!$("cg").value;$("cg").classList.remove("bad")});$("cgx").onclick=()=>{$("cg").value="";$("cgx").hidden=true;$("cg").classList.remove("bad");$("cg").focus()};
+$("cga").onclick=()=>{const v=$("cg").value.trim(),g=v?gfind(v):"Suspense A/c";$("cg").classList.toggle("bad",!g);if(!g)return;$("cg").value=v?g:"";$("cgx").hidden=!v;csList.forEach(n=>{if(isCl(n))cl[n].grp=g});csRender()};
+$("cka").onclick=()=>{csList.forEach(n=>clGet(n).on=true);csRender();warn()};
+$("ckn").onclick=()=>{csList.forEach(n=>clGet(n).on=false);csRender();warn()};
+function doXml(){if(!$("bank").value.trim()){$("rm").textContent="Set the bank ledger name (in Settings) before exporting the XML.";$("bank").classList.add("bad");$("bank").scrollIntoView({block:"center"});$("bank").focus();return false}const act=data.filter(x=>!x.del),nd=data.length-act.length,xw=$("xw");$("rm").textContent="";xw.innerHTML="";const wb=a=>`<div class="wb">⚠ ${a.map(esc).join("<br>⚠ ")}</div>`;
+ if(!act.length){xw.innerHTML=wb(["Every transaction has been removed, so there is nothing to export."]);return false}
+ const cr=missL().filter(isCl);
+ {const mk=led.length?needLed().filter(n=>bad(n)&&!isCl(n)):[],w=[];
+  if(mk.length)w.push(`${mk.length} ledger(s) are not in your Tally master and are not set to be created (${mk.slice(0,5).join(", ")}${mk.length>5?"…":""}). Tally will reject the vouchers that use them ("Referenced master is missing"). Click "Create missing ledgers" to add them.`);
+  {const gb=cr.filter(n=>cl[n].grp.trim()&&gbad(cl[n].grp));if(gb.length)w.push(`${gb.length} ledger(s) use a group that is not in your imported group list (${gb.slice(0,4).join(", ")}${gb.length>4?"…":""}). Tally rejects a ledger whose group does not exist.`)}
+  if(nd)w.push(`${nd} removed transaction${nd>1?"s were":" was"} left out of this file.`);
+  if(w.length)xw.innerHTML=wb(w)}
+ const lm=ledXml(cr);
+ const b=esc(canon($("bank").value)),co=esc($("co").value);
+ const v=data.filter(x=>!x.del).map(x=>{const t=x.t,L=esc(canon(x.led)),e=(n,deem,a)=>`<ALLLEDGERENTRIES.LIST><LEDGERNAME>${n}</LEDGERNAME><ISDEEMEDPOSITIVE>${deem}</ISDEEMEDPOSITIVE><AMOUNT>${a}</AMOUNT></ALLLEDGERENTRIES.LIST>`;
+  const a=x.amt.toFixed(2);
+  return `<TALLYMESSAGE xmlns:UDF="TallyUDF"><VOUCHER VCHTYPE="${t}" ACTION="Create"><DATE>${x.d}</DATE><VOUCHERTYPENAME>${t}</VOUCHERTYPENAME>${x.ref?`<VOUCHERNUMBER>${esc(x.ref)}</VOUCHERNUMBER>`:""}<PARTYLEDGERNAME>${L}</PARTYLEDGERNAME><NARRATION>${esc(x.nar)}</NARRATION>${x.out?e(L,"Yes","-"+a)+e(b,"No",a):e(b,"Yes","-"+a)+e(L,"No",a)}</VOUCHER></TALLYMESSAGE>`}).join("\n");
+ dl("tally-import.xml",`<ENVELOPE><HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER><BODY><IMPORTDATA><REQUESTDESC><REPORTNAME>Vouchers</REPORTNAME>${co?`<STATICVARIABLES><SVCURRENTCOMPANY>${co}</SVCURRENTCOMPANY></STATICVARIABLES>`:""}</REQUESTDESC><REQUESTDATA>\n${lm?lm+"\n":""}${v}\n</REQUESTDATA></IMPORTDATA></BODY></ENVELOPE>`,"text/xml");xw.insertAdjacentHTML("beforeend",`<div class="mu">XML exported: ${cr.length?cr.length+" new ledger"+(cr.length>1?"s":"")+" + ":""}${act.length} voucher${act.length>1?"s":""} in one file.</div>`);return true}
+$("xml").onclick=async()=>{if(await expGuard())doXml()};
+$("xs").onclick=async()=>{if(!(await expGuard())||!doXml())return;const r=await saveSet();$("xw").insertAdjacentHTML("beforeend",`<div class="mu">Settings ${esc(r)}.</div>`)};
+$("csv").onclick=()=>dl("tally-preview.csv","Date,Type,Narration,Amount,Ledger\n"+data.filter(x=>!x.del).map(x=>[x.d,x.t,x.nar,x.amt,x.led].map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n"),"text/csv");
+
+let pc=null;const TX=["co","br","bank","dp","dr","cash","k1","k2","port"],CK=["c1","c2","c3","lr","xm"];
+function applyCols(){if(!pc||!hdr.length)return;for(const[k]of F){const el=$("m_"+k);if(!el)continue;const n=pc[k]||"";const o=[...el.options].find(o=>n&&o.text===n);el.value=o?o.value:(n?el.value:"-1")}}
+function buildSet(){const p={v:1,text:{},checks:{},rules:$("rules").value,ib:[...document.querySelectorAll(".ibr")].map(r=>[r.querySelector(".ik").value,r.querySelector(".il").value]),cols:{},ledgers:$("xm").checked?led:[],groups:$("xm").checked?grp:[]};
+ TX.forEach(i=>p.text[i]=$(i).value);CK.forEach(i=>p.checks[i]=$(i).checked);
+ F.forEach(([k])=>{const el=$("m_"+k);p.cols[k]=el&&el.value!="-1"?el.options[el.selectedIndex].text:""});
+ const sf=t=>t.trim().replace(/[^\w\-]+/g,"_").replace(/^_+|_+$/g,"");
+ const n=[sf($("co").value),sf($("br").value)].filter(Boolean).join("_")||"tally";
+ return{n:n+"_settings.json",t:JSON.stringify(p,null,1)}}
+$("ex").onclick=()=>{const s=buildSet();dl(s.n,s.t,"application/json")};
+async function saveSet(){const s=buildSet();
+ if(window.showSaveFilePicker){try{const h=await window.showSaveFilePicker({suggestedName:s.n,types:[{description:"Settings file",accept:{"application/json":[".json"]}}]});const w=await h.createWritable();await w.write(s.t);await w.close();return"saved to "+h.name}catch(e){if(e&&e.name=="AbortError")return"were not saved (cancelled)"}}
+ dl(s.n,s.t,"application/json");return"downloaded as "+s.n}
+$("pf").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());
+ TX.forEach(i=>{if(p.text&&p.text[i]!=null)setV(i,p.text[i])});CK.forEach(i=>{if(p.checks&&p.checks[i]!=null)$(i).checked=p.checks[i]});
+ if(p.rules!=null)$("rules").value=p.rules;
+ if(p.ib){$("ibl").innerHTML="";p.ib.forEach(x=>ibRow(x[0],x[1]));svIb()}
+ if(p.groups&&p.groups.length&&!grp.length)setG(p.groups);let mr="";if(p.ledgers&&p.ledgers.length){if(!led.length){setL(p.ledgers);mr=" · ledger master restored from file"}else mr=" · kept your current ledger master (loading a new master replaces it)"}
+ pc=p.cols||null;applyCols();brT=$("br").value.trim()!==""&&$("br").value!==$("bank").value;if(!brT)$("br").value=$("bank").value;$("setup").hidden=!rows.length&&$("setup").hidden;
+ $("msg").textContent="Settings loaded from "+f.name+(rows.length?"":". Now upload the statement.")+mr}catch(x){$("msg").textContent="Invalid settings file: "+x.message}};
+
+const BP=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
+async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
+ L.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+ const buf=await f.arrayBuffer(),pw=$("pw").value;
+ try{return await L.getDocument(pw?{data:buf.slice(0),password:pw}:{data:buf.slice(0)}).promise}catch(e){if(e.name=="PasswordException")throw new Error(pw?"Incorrect PDF password. Re-enter it above.":"This PDF is password-protected. Enter the password above.");throw e}}
+/* ---- validation: balance chain check with auto-repair ---- */
+function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(hi<0)return Z;
+ const h=R[hi],ix=re=>h.findIndex(c=>re.test(c)),dI=ix(/date/i),dr=ix(/debit|withdraw|dr\b/i),cr=ix(/credit|deposit|cr\b/i),bl=ix(/balance|bal\b/i),am=ix(/^amount$/i);
+ const T=R.slice(hi+1).filter(r=>pd(r[dI]||"")),n=T.length;if(!n)return Z;const nI=ix(/narr|desc|partic|remark/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;
+ const split=dr>=0&&cr>=0,S=r=>num(r[cr])-num(r[dr]),B=r=>bl>=0&&String(r[bl]||"").trim()?sbv(r[bl]):null,f=x=>(Math.round(x*100)/100).toFixed(2),eq=(x,y)=>Math.abs(x-y)<=.011;
+ let bad=0,fx=0;const sim=(x,y)=>x.length==y.length&&[...x].filter((c,i)=>c!=y[i]).length<=2;
+ if(bl<0||!split){T.forEach(r=>{const k=split?[num(r[dr]),num(r[cr])].filter(Boolean).length:(am>=0&&num(r[am])?1:0);if(k!=1)bad++});return{n,bad,fx,nw,ver:false}}
+ let prev=null;
+ T.forEach((r,i)=>{const b=B(r),s=S(r),nx=T[i+1],nb=nx?B(nx):null,ns=nx?S(nx):0;
+  if(b==null){bad++;if(prev!=null)prev+=s;return}
+  if(prev==null||eq(prev+s,b)){prev=b;return}
+  const d=b-prev,set=x=>{if(x>=0){r[cr]=f(x);r[dr]=""}else{r[dr]=f(-x);r[cr]=""}};
+  if(Math.abs(d)>.005&&(eq(prev-s,b)||(nx&&nb!=null&&eq(b+ns,nb)&&sim(f(Math.abs(s)),f(Math.abs(d)))))){set(d);fx++;prev=b;return}
+  if(nx&&nb!=null&&eq(prev+s+ns,nb)){r[bl]=f(prev+s);prev=prev+s;fx++;return}
+  bad++;prev=b});
+ return{n,bad,fx,nw,ver:true}}
+/* ---- OCR fallback ---- */
+async function loadTess(){if(window.Tesseract)return;await new Promise((ok,no)=>{const e=document.createElement("script");e.src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.5/tesseract.min.js";e.onload=ok;e.onerror=()=>no(new Error("OCR library could not be loaded (internet needed)"));document.head.appendChild(e)})}
+async function renderPg(doc,p,sc,enh){const pg=await doc.getPage(p),vp=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;
+ if(enh){const im=x.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=Math.max(0,Math.min(255,(g-128)*1.5+128));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0)}return c}
+const dgFix=t=>/\d/.test(t)&&/^[\d,.\-()OoIl|]+(?:\s?(?:Cr|Dr|CR|DR))?$/.test(t)?t.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1"):t;
+async function ocrPages(doc){await loadTess();const SC=3,w=await Tesseract.createWorker("eng"),out=[];
+ try{for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;
+  const {data}=await w.recognize(await renderPg(doc,p,SC,true));
+  const ws=data.words||(data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(q=>q.lines.flatMap(l=>l.words)));
+  out.push(ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC})))}}
+ finally{await w.terminate()}return out}
+/* ---- AI vision fallback (only after user consent) ---- */
+async function aiRows(doc,key,model){const R=[],pr='This is one page of a bank statement. Extract every transaction row exactly as printed, top to bottom. Return ONLY a JSON array, no other text. Each item: {"date":"as printed","narration":"full text including wrapped lines","ref":"cheque/ref/UTR no or empty","debit":"withdrawal amount or empty","credit":"deposit amount or empty","balance":"running balance after the transaction exactly as printed, including Cr/Dr if shown"}. Copy numbers exactly; never calculate or guess. Skip headers, opening/closing balance lines, totals and footers. If the page has no transactions return [].';
+ for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`AI: reading page ${p} of ${doc.numPages}...`;
+  const b64=(await renderPg(doc,p,1.7,false)).toDataURL("image/jpeg",.85).split(",")[1];
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model,max_tokens:8000,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:pr}]}]})});
+  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||"API error "+r.status);
+  const t=(j.content||[]).map(x=>x.text||"").join(""),a=JSON.parse(t.slice(t.indexOf("["),t.lastIndexOf("]")+1));
+  a.forEach(x=>R.push([x.date||"",x.narration||"",x.ref||"",x.debit||"",x.credit||"",x.balance||""]))}
+ return[["Date","Narration","Ref","Debit","Credit","Balance"],...R]}
+/* ---- pipeline: text -> OCR -> AI (with consent) ---- */
+async function pdfRows(f){const doc=await openPdf(f),C=[],errs=[];let noAI=false;
+ const tryR=(R,src)=>{const v=chk(R);C.push({R,v,src});return v.n>0&&v.bad<=Math.floor(v.n*.02)&&v.nw<=Math.floor(v.n*.1)};
+ const fin=(c,pre)=>{const v=c.v;pipeNote=(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
+ $("msg").textContent="Reading PDF text...";
+ try{if(tryR(await pdfText(doc),"PDF text"))return fin(C[C.length-1])}catch(e){errs.push(e.message)}
+ try{$("msg").textContent="Text layer not reliable, trying OCR...";if(tryR(await pdfText(doc,await ocrPages(doc)),"OCR"))return fin(C[C.length-1],"Used OCR. ")}catch(e){errs.push("OCR: "+e.message)}
+ {const r=await dlg("⚠ Confidentiality warning: AI upload",`<p>Automatic reading could not produce a verified result. The next step sends <b>images of your statement pages</b> to Anthropic's Claude AI over the internet, using your own API key. The pages may show the account holder's name, account number, address and every transaction.</p><p>This tool and its author (Ajai R Krishnan) do not receive or store your data, but are <b>not responsible for how it is handled once sent</b>, or for any confidentiality, client-consent or data-protection duty you owe (for example professional secrecy or privacy laws). Handling is governed by your own agreement with Anthropic.</p><p><b>Don't want to upload?</b> Choose "No". You will still get the best automatic result (PDF text or OCR) in the preview, where you can view and edit narrations, ledgers and types, and check the flagged rows.</p>`,[{t:"Yes, send pages to AI"},{t:"No, don't use AI: show me the automatic result",s:1}],true,"I understand the risk and I have permission to send this statement to an AI service.");
+  if(r.i==0){if(r.key){$("aik").value=r.key;try{if(tryR(await aiRows(doc,r.key,$("aim").value.trim()||"claude-sonnet-5-5"),"AI"))return fin(C[C.length-1],"Used AI. ")}catch(e){errs.push("AI: "+e.message)}}else errs.push("AI skipped: no API key")}else noAI=true}
+ const best=C.filter(c=>c.v.n).sort((x,y)=>(y.v.n-y.v.bad-y.v.nw)-(x.v.n-x.v.bad-x.v.nw))[0],raw=C.filter(c=>c.R&&c.R.length>1).pop();
+ if(!best&&raw){pipeNote="⚠ "+(noAI?"AI not used. ":"")+"The table structure could not be recognised. The raw text lines are shown: check the column mapping and parsed preview below, then edit in the preview.";return raw.R}
+ if(!best)throw new Error("No transactions could be extracted. "+errs.join(" | "));
+ return fin(best,"⚠ "+(noAI?"AI not used. ":"")+"Could not fully verify: please review and edit below. ")}
+async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
+ for(let p=1;p<=doc.numPages;p++){const its=OC?(OC[p-1]||[]):(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],r:i.transform[4]+i.width}));if(its.length)any=true;
+  const lines=[];for(const it of its){const l=lines.find(l=>Math.abs(l.y-it.y)<3);if(l)l.it.push(it);else lines.push({y:it.y,it:[it]})}
+  lines.sort((a,b)=>b.y-a.y);
+  for(const l of lines){l.it.sort((a,b)=>a.x-b.x);const cs=[];
+   for(const it of l.it){const c=cs[cs.length-1];if(c&&it.x-c.r<8){c.s+=(it.x-c.r>1.5?" ":"")+it.s;c.r=it.r}else cs.push({s:it.s,x:it.x,r:it.r})}l.c=cs}
+  for(let i=0;i<lines.length;i++){if(lines[i].c.length>=3&&isH(lines[i].c.map(c=>c.s)))continue;
+   const M=lines[i].c.map(c=>({...c}));let k=i;
+   while(k+1<lines.length&&k-i<2&&lines[k].y-lines[k+1].y<=22){
+    for(const c of lines[k+1].c){const cx=(c.x+c.r)/2,t=M.find(m=>cx>=m.x-6&&cx<=m.r+6);if(t){t.s+=" "+c.s;t.x=Math.min(t.x,c.x);t.r=Math.max(t.r,c.r)}else M.push({...c})}
+    k++;M.sort((a,b)=>a.x-b.x);const mt=M.map(c=>c.s.trim());
+    if(M.length>=3&&isH(mt)&&/debit|withdraw|credit|deposit/i.test(mt.join(" "))){lines.splice(i,k-i+1,{y:lines[i].y,c:M});break}}}
+  for(const l of lines){const cells=l.c;
+   const tx=cells.map(c=>c.s.trim());tx.y=l.y;tx.p=p;allL.push(tx);
+   if(cells.length>=3&&isH(tx)){H=cells;out.push(tx);continue}
+   if(!H){out.push(tx);continue}
+   const row=H.map(()=>"");
+   for(const c of cells){let bi=0,bd=1e9;H.forEach((h,i)=>{const d=Math.min(Math.abs((c.x+c.r)/2-(h.x+h.r)/2),Math.abs(c.r-h.r),Math.abs(c.x-h.x));if(d<bd){bd=d;bi=i}});row[bi]+=(row[bi]?" ":"")+c.s.trim()}
+   row.y=l.y;row.p=p;out.push(row)}}
+ if(!any)throw new Error("No text found in the PDF (it may be a scanned image).");
+ const hi=out.findIndex(isH);let colRes=null,cc=0;
+ if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
+  const body=out.slice(hi+1).filter(r=>!isH(r)),anc=[];body.forEach((r,i)=>{if(pd(r[dI]||""))anc.push(i)});
+  const pc2=anc.map(i=>[{y:body[i].y,t:body[i][nI]||""}]);
+  body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" ")))return;let bj=-1,bd=1e9;
+   anc.forEach((a,j)=>{const q=body[a];if(q.p!=r.p)return;const d=Math.abs(q.y-r.y);if(d<bd){bd=d;bj=j}});
+   if(bj>=0&&bd<=20&&pc2[bj].length<4)pc2[bj].push({y:r.y,t:r[nI]})});
+  anc.forEach((i,j)=>{const r=body[i];if(nI>=0)r[nI]=pc2[j].sort((a,b)=>b.y-a.y).map(x=>x.t.trim()).filter(Boolean).join(" ");res.push(r)});
+  const dr=hr.findIndex(c=>/debit|withdraw|dr\b/i.test(c)),cr=hr.findIndex(c=>/credit|deposit|cr\b/i.test(c)),am=hr.findIndex(c=>/^amount$/i.test(c));
+  colRes=res;cc=res.slice(hi+1).filter(r=>pd(r[dI]||"")&&(num(r[dr])||num(r[cr])||num(r[am]))).length}
+ const D=/(?<!\d)(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,]+\d{2,4}|\d{4}-\d{2}-\d{2})(?!\d)/,A=/-?\d[\d,]*\.\d{2}(?!\d)/g,lr=[["Date","Narration","Ref","Debit","Credit","Balance"]];let prev=null,ly=1e9,lp=0,n2=0;
+ for(const tx of allL){const t=tx.join(" "),dm=t.match(D),t2=t.replace(new RegExp(D.source,"g")," "),am=t2.match(A)||[];
+  if(!dm&&am.length&&prev==null&&/opening|b\/f|brought forward/i.test(t)){prev=num(am[am.length-1]);continue}
+  if(dm&&am.length>=2){const bal=num(am[am.length-1]),amt=Math.abs(num(am[am.length-2]));
+   const out=prev!=null?(bal<prev-0.004?true:bal>prev+0.004?false:/\bdr\b/i.test(t2)):!/\bcr\b|credit|deposit|received/i.test(t2);prev=bal;ly=tx.y;lp=tx.p;n2=0;
+   lr.push([dm[0],(/^\s*\d{1,5}\s+$/.test(t.slice(0,dm.index))?t2.replace(/^\s*\d{1,5}(?=\s)/,""):t2).replace(A," ").replace(/(^|\s)[-–—](?=\s|$)/g," ").replace(/\s+/g," ").trim(),"",out?String(amt):"",out?"":String(amt),String(bal)])}
+  else if(!dm&&!am.length&&lr.length>1&&t.trim().length>3&&tx.p==lp&&ly-tx.y<=16&&n2<2&&!BP.test(t)&&!/page|statement|total|balance/i.test(t)){lr[lr.length-1][1]+=" "+t.trim();ly=tx.y;n2++}}
+ return colRes&&cc>=lr.length-1?colRes:(lr.length>1?lr:(colRes||out))}
+$("pw").onchange=()=>{const f=$("f").files[0];if(f&&/\.pdf$/i.test(f.name))$("f").onchange({target:$("f")})};
+["bank","dp","dr","cash"].forEach(i=>$(i).addEventListener("input",chkF));chkF();
+let brT=false;$("br").addEventListener("input",()=>{brT=$("br").value.trim()!==""});
+$("bank").addEventListener("input",()=>{if(!brT)$("br").value=$("bank").value});
+
+let hs=false,obAuto=false;
+const sbv=c=>{const t=String(c==null?"":c).trim();return t===""||!/\d/.test(t)?null:num(t)*(/\bdr\b/i.test(t)?-1:1)},mm=x=>x.sb!=null&&x.rb!=null&&Math.abs(x.sb-x.rb)>0.01;
+function calcBal(){if(!data.length)return;const idx=data.map((_,i)=>i);if(data[0].d>data[data.length-1].d)idx.reverse();const dl=x=>x.out?-x.amt:x.amt,f=data[idx[0]];
+ let ob=parseFloat($("ob").value);if(isNaN(ob)&&OPN!=null){ob=OPN;$("ob").value=ob.toFixed(2);obAuto=true}if(isNaN(ob)&&f.sb!=null){ob=Math.round((f.sb-dl(f))*100)/100;$("ob").value=ob.toFixed(2);obAuto=true}
+ let b=isNaN(ob)?0:ob;idx.forEach(i=>{b=Math.round((b+dl(data[i]))*100)/100;data[i].rb=b});hs=data.some(x=>x.sb!=null);
+ const m=data.filter(mm).length;$("bc").textContent=hs?(m?`⚠ Balance check: ${m} of ${data.length} rows differ from the statement balance (✗). Look for skipped rows, a wrong opening balance, or a wrong debit/credit.`:"✓ Running balance matches the statement on every row"):(isNaN(ob)?"Enter the opening balance to see a true running balance (currently starts from 0).":"")}
+$("ob").oninput=()=>{obAuto=false;calcBal();draw()};
+try{localStorage.removeItem("rl");localStorage.removeItem("ib")}catch(e){}
+
+
+function ruleKw(){const q=$("q").value.trim().toLowerCase();if(q.length>=3)return q.includes("=")?null:q;if(vis.length<2)return null;
+ const lc=(a,b)=>{let best="";const m=Array.from({length:b.length+1},()=>new Uint16Array(a.length+1));for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)if(b[i-1]==a[j-1]){m[i][j]=m[i-1][j-1]+1;if(m[i][j]>best.length)best=a.slice(j-m[i][j],j)}return best};
+ let c=vis[0][0].nar.toLowerCase();for(const[x]of vis.slice(1)){c=lc(c,x.nar.toLowerCase());if(c.length<4)break}
+ c=c.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,"");return c.length>=4&&/[a-z]/.test(c)&&!c.includes("=")?c:null}
+function addRule(kw,L){const ls=$("rules").value.split("\n").filter(x=>x.trim()),i=ls.findIndex(l=>l.split("=")[0].trim().toLowerCase()==kw),nl=kw+"="+L;if(i>=0)ls[i]=nl;else ls.unshift(nl);$("rules").value=ls.join("\n");
+ data.forEach(x=>{if(x.t!="Contra"&&x.nar.toLowerCase().includes(kw)&&(x.led==$("dp").value||x.led==$("dr").value))x.led=L})}
+$("ba").onclick=()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="";vis.forEach(([x])=>{if(!x.del)x.led=L});
+ if($("lr").checked){const kw=ruleKw();if(kw){addRule(kw,L);msg=`Auto-rule saved: "${kw}" → ${L}. It is applied automatically next time (export settings to keep it in your settings file).`}else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
+ draw();$("rm").textContent=msg};
+
+function fillDD(){["dp","dr"].forEach(i=>{const e=$(i),cur=e.value||"Suspense",o=[...new Set(["Suspense",...led])];if(!o.includes(cur))o.push(cur);e.innerHTML=o.map(x=>`<option${x==cur?" selected":""}>${esc(x)}</option>`).join("");e.value=cur})}
+function setV(i,v){const e=$(i);if(e.tagName=="SELECT"&&![...e.options].some(o=>o.value==v)){const o=document.createElement("option");o.textContent=v;e.appendChild(o)}e.value=v}
+const unx=t=>t.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+$("tf").onclick=async()=>{const port=$("port").value.trim()||"9000",u="http://localhost:"+port,post=b=>fetch(u,{method:"POST",headers:{"Content-Type":"text/xml"},body:b}).then(r=>r.text());
+ const mk=(id,ty,f)=>`<ENVELOPE><HEADER><VERSION>1</VERSION><TALLYREQUEST>Export</TALLYREQUEST><TYPE>Collection</TYPE><ID>${id}</ID></HEADER><BODY><DESC><STATICVARIABLES><SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT></STATICVARIABLES><TDL><TDLMESSAGE><COLLECTION NAME="${id}" ISMODIFY="No"><TYPE>${ty}</TYPE><FETCH>${f}</FETCH></COLLECTION></TDLMESSAGE></TDL></DESC></BODY></ENVELOPE>`;
+ $("lm").textContent="Contacting Tally on port "+port+"…";
+ try{const t=await post(mk("LedgerCol","Ledger","Name")),o=[...t.matchAll(/<LEDGER[^>]*\sNAME="([^"]+)"/g)].map(m=>unx(m[1]));
+  if(!o.length)throw new Error("Tally replied but returned no ledgers (is a company open?)");
+  setL(o);try{const g=await post(mk("GroupCol","Group","Name"));setG([...g.matchAll(/<GROUP\s[^>]*?\bNAME="([^"]+)"/g)].map(m=>unx(m[1])))}catch(e){}let co="";try{const c=await post(mk("CoCol","Company","Name")),n=[...c.matchAll(/<COMPANY[^>]*\sNAME="([^"]+)"/g)].map(m=>unx(m[1]));if(n.length==1)co=n[0]}catch(e){}
+  if(co)$("co").value=co;$("lm").textContent=`Fetched ${led.length} ledgers${grp.length?` and ${grp.length} groups`:""} from Tally`+(co?" · company: "+co:" · set the company name manually")+"."}
+ catch(e){$("lm").textContent="Could not read from Tally ("+(e.message||e)+"). Browsers often block this (CORS / localhost). Use Alt+E in Tally to export the List of Accounts and load that file instead."}};
+fillDD();
+
+/* ---- left navigation ---- */
+const SEC=["up","setup","pv","cs"];
+function nav(id){cur=id;SEC.forEach(k=>$(k).classList.toggle("off",k!=id));navUp();scrollTo(0,0)}
+function navUp(){document.querySelectorAll("#nv button").forEach(b=>{const n=b.dataset.n;b.classList.toggle("on",n==cur);b.disabled=n=="cs"?$("pv").hidden:$(n).hidden&&n!="up"});
+ const m=[...new Set(data.filter(x=>!x.del).map(x=>x.led).filter(bad))].length;$("nvb").hidden=!m;$("nvb").textContent=m}
+document.querySelectorAll("#nv button").forEach(b=>b.onclick=()=>{const n=b.dataset.n;if(n=="cs"){goCs=true;openCs()}nav(n)});
+new MutationObserver(ms=>ms.forEach(m=>{const t=m.target;if(!SEC.includes(t.id))return;if(!t.hidden){if(t.id!="cs"||goCs){goCs=false;nav(t.id)}else navUp()}else nav(cur==t.id?(t.id=="cs"?"pv":"up"):cur)})).observe(document.body,{attributes:true,subtree:true,attributeFilter:["hidden"]});
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#cm"))goCs=true},true);
+$("go").addEventListener("click",()=>setTimeout(()=>{if(!$("pv").hidden)nav("pv")},0));
+{const w0=warn;warn=function(){w0();navUp()}}
+nav("up");
+/* ---- ledger dropdown with "create new" ---- */
+const cbm=document.createElement("div");cbm.id="cbm";document.body.appendChild(cbm);let cbE=null;
+const cbHide=()=>{cbm.style.display="none";cbE=null};
+function cbShow(e,all){cbE=e;const u=e.dataset.cb=="u",src=u?[...new Set(data.map(x=>x.led).filter(Boolean))].sort():led,v=e.value.trim(),q=all?"":v.toLowerCase(),L=src.filter(l=>!q||l.toLowerCase().includes(q)).slice(0,80),ex=src.some(l=>l.toLowerCase()==v.toLowerCase());
+ cbm.innerHTML=L.map(l=>`<div data-v="${esc(l)}">${esc(l)}</div>`).join("")+(!u&&v&&!ex?`<div class="nw" data-n="1">➕ Create new ledger “${esc(v)}”</div>`:"")||'<div class="mu">'+(u?"No ledgers used yet":"No ledger master loaded: type a name to create it")+'</div>';
+ const r=e.getBoundingClientRect();cbm.style.cssText=`display:block;left:${r.left}px;top:${r.bottom}px;min-width:${Math.max(r.width,230)}px`}
+cbm.onmousedown=ev=>{ev.preventDefault();const t=ev.target.closest("[data-v],[data-n]"),e=cbE;if(!t||!e)return;const nw=!!t.dataset.n;e.value=nw?e.value.trim():t.dataset.v;e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}));cbHide();if(nw&&led.length&&e.closest("#pv")){goCs=true;openCs()}};
+const isCb=e=>e.target.dataset&&e.target.dataset.cb;
+document.addEventListener("focusin",e=>{if(isCb(e))cbShow(e.target,true)});
+document.addEventListener("click",e=>{if(isCb(e))cbShow(e.target,true)});
+document.addEventListener("input",e=>{if(isCb(e)&&e.isTrusted)cbShow(e.target,false)});
+document.addEventListener("focusout",e=>{if(isCb(e))cbHide()});
+document.addEventListener("keydown",e=>{if(e.key=="Escape"||e.key=="Enter")cbHide()});
+addEventListener("scroll",cbHide,true);
+document.addEventListener("change",e=>{const t=e.target;if(isCb(e)&&t.dataset.cb=="1"&&t.closest("#pv")&&led.length&&t.value.trim()&&bad(t.value)&&!csOpen)openCs()});
+/* ---- multi-select rows ---- */
+function selUp(){const n=[...selS].filter(i=>data[i]&&!data[i].del).length,v=vis.filter(([x])=>!x.del),a=$("sa");$("sn").textContent=n+" selected";a.checked=v.length>0&&v.every(([,i])=>selS.has(i))}
+function selBind(){document.querySelectorAll("#tb .sc").forEach(e=>e.onchange=()=>{const i=+e.dataset.s;e.checked?selS.add(i):selS.delete(i);selUp()});
+ const a=$("sa");a.onchange=()=>{const w=$("tb").closest(".w"),st=w.scrollTop;vis.forEach(([x,i])=>{if(!x.del)a.checked?selS.add(i):selS.delete(i)});draw();w.scrollTop=st};selUp()}
+$("sx").onclick=()=>{selS.clear();draw()};
+$("sap").onclick=()=>{const L=canon($("sl").value.trim()),T=$("stt").value;if(!selS.size||(!L&&!T))return;const w=$("tb").closest(".w"),st=w.scrollTop;selS.forEach(i=>{const x=data[i];if(x&&!x.del){if(L)x.led=L;if(T)x.t=T}});if(L&&led.length&&bad(L))openCs();draw();w.scrollTop=st};
+
+/* ---- dialogs, narration edit, export guard ---- */
+function ledXml(cr){return cr.map(n=>{const o=cl[n],ob=Math.abs(parseFloat(o.ob))||0;return `<TALLYMESSAGE xmlns:UDF="TallyUDF"><LEDGER NAME="${esc(n)}" ACTION="Create"><NAME.LIST><NAME>${esc(n)}</NAME></NAME.LIST><PARENT>${esc(o.grp.trim()||"Suspense A/c")}</PARENT>${o.bw?`<ISBILLWISEON>${o.bw}</ISBILLWISEON>`:""}${ob?`<OPENINGBALANCE>${o.dc=="Cr"?"":"-"}${ob.toFixed(2)}</OPENINGBALANCE>`:""}</LEDGER></TALLYMESSAGE>`}).join("\n");}
+function doLed(){const cr=missL().filter(isCl),xw=$("xw");if(!cr.length){xw.innerHTML='<div class="mu" style="color:#d93025">No ledgers are ticked to be created, so there is no ledger file to export. Tick ledgers on the Create ledgers page.</div>';return false}
+ const co=esc($("co").value);dl("tally-ledgers.xml",`<ENVELOPE><HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER><BODY><IMPORTDATA><REQUESTDESC><REPORTNAME>All Masters</REPORTNAME>${co?`<STATICVARIABLES><SVCURRENTCOMPANY>${co}</SVCURRENTCOMPANY></STATICVARIABLES>`:""}</REQUESTDESC><REQUESTDATA>\n${ledXml(cr)}\n</REQUESTDATA></IMPORTDATA></BODY></ENVELOPE>`,"text/xml");
+ xw.innerHTML=`<div class="mu">Ledger file exported: ${cr.length} ledger${cr.length>1?"s":""}, no vouchers. Import it in Tally before the voucher file.</div>`;return true}
+let csSig=null;const csMark=()=>setTimeout(()=>{csSig=missL().join("|")},0);
+["change","input"].forEach(t=>$("cs").addEventListener(t,csMark));$("cs").addEventListener("click",e=>{if(e.target.closest("#csx,#cxs,#cxml,#clo,#ccsv"))return;if(e.target.closest("button,input"))csMark()});
+const csRun=f=>async()=>{await f();$("cxw").innerHTML=$("xw").innerHTML};
+$("lo").onclick=async()=>{if(await expGuard())doLed()};
+$("cxs").onclick=csRun(()=>$("xs").onclick());$("cxml").onclick=csRun(()=>$("xml").onclick());$("ccsv").onclick=csRun(()=>$("csv").onclick());
+$("clo").onclick=csRun(()=>$("lo").onclick());
+{const c0=cmUpd;cmUpd=function(){c0();const b=$("cm"),n=led.length?missL().length:0;if(b)b.style.cssText=n?"background:#d93025;color:#fff;font-weight:600":""};cmUpd()}
+
+function dlg(t,h,b,k,c){return new Promise(res=>{const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px";
+ o.innerHTML=`<div class="card" style="max-width:580px;max-height:92vh;overflow:auto;margin:0"><b style="font-size:16px">${t}</b><div style="margin:10px 0">${h}</div>${c?`<label class="ck" style="font-size:13px;color:var(--tx);margin-bottom:10px"><input type="checkbox" id="dc">${c}</label>`:""}${k?'<label>Anthropic API key (used only in this tab, never saved)</label><input id="dk" type="password" autocomplete="off" style="margin-bottom:10px">':""}<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">${b.map((x,i)=>`<button type="button" data-i="${i}"${i==0&&c?" disabled":""} class="${x.s?"s":""}">${x.t}</button>`).join("")}</div></div>`;
+ document.body.appendChild(o);if(k)o.querySelector("#dk").value=$("aik").value;
+ if(c)o.querySelector("#dc").onchange=e=>{o.querySelector("button[data-i='0']").disabled=!e.target.checked};
+ o.onclick=e=>{const bt=e.target.closest("button[data-i]");if(!bt||bt.disabled)return;const key=k?o.querySelector("#dk").value.trim():"";o.remove();res({i:+bt.dataset.i,key})}})}
+document.addEventListener("change",e=>{const t=e.target;if(!(t.dataset&&t.dataset.nar!=null&&t.closest("#tb")))return;const x=data[t.dataset.nar];if(!x)return;x.nar=t.value.replace(/\s+/g," ").trim();x.nk=nk(x.nar);nc={};ac={};data.forEach(y=>{nc[y.nk]=(nc[y.nk]||0)+1;ac[y.ak]=(ac[y.ak]||0)+1});const w=$("tb").closest(".w"),st=w.scrollTop;draw();w.scrollTop=st});
+async function expGuard(){const m=missL().filter(n=>led.length||isCl(n)),un=m.filter(n=>!isCl(n)),dg=m.filter(n=>isCl(n)&&(!(cl[n].grp||"").trim()||cl[n].grp.trim().toLowerCase()=="suspense a/c")),L=a=>esc(a.slice(0,8).join(", "))+(a.length>8?"…":"");
+ if(!un.length&&!dg.length)return true;
+ const sg=missL().join("|");if(csSig===sg)return true;
+ const r=await dlg("Ledgers need attention before export",(dg.length?`<p><b>${dg.length} new ledger(s)</b> will be created without a group chosen: ${L(dg)}.<br>If you do not select a group for each, they are created under the default <b>Suspense A/c</b>.</p>`:"")+(un.length?`<p><b>${un.length} ledger(s)</b> are not in your Tally master and are not ticked to be created: ${L(un)}.<br>Tally will reject vouchers that use them.</p>`:"")+`<p>You can go to the <b>Create ledgers</b> page to choose groups and tick ledgers, or export anyway.</p>`,[{t:"Go to Create ledgers page"},{t:"Export anyway",s:1},{t:"Cancel",s:1}]);
+ if(r.i==0){goCs=true;openCs();nav("cs");return false}if(r.i==1)csSig=sg;return r.i==1}
+/* ---- clear (x) button on every input ---- */
+const xb=document.createElement("button");xb.id="xclr";xb.type="button";xb.textContent="×";xb.title="Clear";xb.setAttribute("aria-label","Clear this field");document.body.appendChild(xb);let xT=null,xI=null;
+const xOk=e=>e&&e.matches&&e.matches("input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([type=hidden]):not([type=range]),textarea")&&!e.readOnly&&!e.disabled&&!e.closest(".qw");
+const xHide=()=>{xb.style.display="none";xI=null};
+function xShow(e){clearTimeout(xT);if(!xOk(e)||!e.value){xHide();return}const r=e.getBoundingClientRect(),o=e.dataset.cb?42:(e.type=="number"||e.type=="date")?46:e.tagName=="TEXTAREA"?30:26;xI=e;xb.style.cssText=`display:block;left:${r.right-o}px;top:${r.top+Math.min(r.height/2,18)-10}px`}
+document.addEventListener("mouseover",e=>{if(e.target===xb)clearTimeout(xT);else if(xOk(e.target))xShow(e.target)},true);
+document.addEventListener("mouseout",()=>{if(xI&&document.activeElement!==xI)xT=setTimeout(xHide,250)},true);
+document.addEventListener("focusin",e=>xShow(e.target));
+document.addEventListener("input",e=>{if(e.target===xI||xOk(e.target))xShow(e.target)});
+document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
+addEventListener("scroll",xHide,true);addEventListener("resize",xHide);
+xb.onmousedown=e=>e.preventDefault();
+xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
+</script><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p></main></body></html>
