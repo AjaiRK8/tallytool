@@ -895,4 +895,33 @@ o.addEventListener("click",e=>{if(e.target===o)close()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
 })();
 </script>
+<script>
+/* Windows app download popup: shows a direct link to the installer for the version shown on this page. */
+(function(){
+var OWNER_REPO="AjaiRK8/tallysoftupdates",o=null;
+function ver(){var e=document.getElementById("appver"),v=e?e.textContent.trim():"";return /^\d+\.\d+\.\d+$/.test(v)?v:""}
+function build(){
+ var s=document.createElement("style");
+ s.textContent="#exo{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000;padding:16px}#exo.show{display:flex}#exm{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;max-width:420px;width:100%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center}#exm p{margin:0 0 12px;font-size:15px}#exm a.exf{display:inline-block;padding:10px 14px;border-radius:6px;background:var(--ac);color:#fff;text-decoration:none;font-weight:600;word-break:break-all}#exm button{margin-top:14px;padding:6px 14px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit;cursor:pointer}";
+ document.head.appendChild(s);
+ o=document.createElement("div");o.id="exo";
+ o.innerHTML='<div id="exm" role="dialog" aria-modal="true" aria-labelledby="ext"><p id="ext"><b>Download the Windows app</b></p><a class="exf" target="_blank" rel="noopener"></a><br><button type="button">Close</button></div>';
+ document.body.appendChild(o);
+ o.addEventListener("click",function(e){if(e.target===o||e.target.tagName==="BUTTON")o.classList.remove("show")});
+ document.addEventListener("keydown",function(e){if(e.key==="Escape")o.classList.remove("show")});
+}
+document.addEventListener("click",function(e){
+ var a=e.target.closest&&e.target.closest('a[href*="'+OWNER_REPO+'/releases"]');
+ if(!a)return;
+ var v=ver();
+ if(!v)return; /* version unknown: let the link open the latest-release page */
+ e.preventDefault();
+ if(!o)build();
+ var n="BankToTally-Setup-"+v+".exe",l=o.querySelector("a.exf");
+ l.href="https://github.com/"+OWNER_REPO+"/releases/download/v"+v+"/"+n;
+ l.textContent=n;
+ o.classList.add("show");l.focus();
+});
+})();
+</script>
 </body></html>
