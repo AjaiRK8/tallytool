@@ -494,7 +494,7 @@ $("pf").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JS
  pc=p.cols||null;applyCols();brT=$("br").value.trim()!==""&&$("br").value!==$("bank").value;if(!brT)$("br").value=$("bank").value;$("setup").hidden=!rows.length&&$("setup").hidden;
  $("msg").textContent="Settings loaded from "+f.name+(rows.length?"":". Now upload the statement.")+mr}catch(x){$("msg").textContent="Invalid settings file: "+x.message}};
 
-const BP=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
+const BP=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
  L.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const buf=await f.arrayBuffer(),pw=$("pw").value;
@@ -518,7 +518,7 @@ function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(h
 /* ---- OCR fallback ---- */
 async function loadTess(){if(window.Tesseract)return;await new Promise((ok,no)=>{const e=document.createElement("script");e.src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.5/tesseract.min.js";e.onload=ok;e.onerror=()=>no(new Error("OCR library could not be loaded (internet needed)"));document.head.appendChild(e)})}
 async function renderPg(doc,p,sc,enh){const pg=await doc.getPage(p),vp=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;
- if(enh){const im=x.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=Math.max(0,Math.min(255,(g-128)*1.5+128));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0)}return c}
+ if(enh){const im=x.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=enh===2?(g>200?255:g):Math.max(0,Math.min(255,(g-128)*1.5+128));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0)}return c}
 const dgFix=t=>/\d/.test(t)&&/^[\d,.\-()OoIl|]+(?:\s?(?:Cr|Dr|CR|DR))?$/.test(t)?t.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1"):t;
 async function ocrPages(doc,SC=3,enh=true,pp){await loadTess();const w=await Tesseract.createWorker("eng"),out=[];if(pp){try{await w.setParameters(pp)}catch(e){}}
  try{for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;
@@ -552,8 +552,13 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
  const pick=()=>C.filter(c=>c.v.n).sort((x,y)=>(y.v.n-y.v.bad-y.v.nw)-(x.v.n-x.v.bad-x.v.nw))[0];
  let ok=false;$("msg").textContent="Reading PDF text...";
  try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}
+ {const tx=C.length&&C[C.length-1].src=="PDF text"?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
+  try{$("msg").textContent="Cross-checking with balance-chain reader...";const okc=tryR(await chainRows(doc),"Balance-chain reader"),ch=C[C.length-1];
+   if(okc&&(!ok||(ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03)))ok=true;/* both reconcile: keep the one with the fuller narration */
+   else if(tx)C.push(C.splice(C.indexOf(tx),1)[0])}catch(e){errs.push("Chain: "+e.message)}}
  if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";if(tryR(await pdfText(doc,await ocrPages(doc)),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
- if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,4,false,{preserve_interword_spaces:"1"})),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,3,2,{tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"})),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR 2nd pass"){try{$("msg").textContent="Trying a third OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,4,false,{preserve_interword_spaces:"1"})),"OCR 3rd pass")){ok=true;pre="Used OCR (third pass). "}}catch(e){errs.push("OCR 3rd pass: "+e.message)}}
  if(ok&&!weak(C[C.length-1]))return fin(C[C.length-1],pre);
  /* not everything verified: AI only with the user's permission */
  let useAI=false,key="";
@@ -571,6 +576,59 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
  if(!best&&raw){pipeNote="⚠ "+(noAI?"AI not used (your choice). ":"")+"The table structure could not be recognised. The raw text lines are shown: check the column mapping and parsed preview below, then edit in the preview.";return raw.R}
  if(!best)throw new Error("No transactions could be extracted. "+errs.join(" | "));
  return fin(best,"⚠ "+(noAI?"AI not used (your choice). ":"")+"Could not fully verify: please review and edit below. ")}
+/* ---- universal balance-chain parser v2: balance column = truth for amounts; geometry = truth for narration ---- */
+async function chainRows(doc){
+ const AM=/^\(?-?₹?\d[\d,]*\.\d{1,2}\)?-?(?:dr|cr)?\.?$/i,MK=/^(dr|cr)\.?$/i,
+ DT=/(?<!\d)(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{4}[\/\-.]\d{2}[\/\-.]\d{2}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,']+\d{2,4})(?!\d)/,
+ YL=/^\s*(?:\d{1,5}\s+)?(\d{1,2})[\s\-\/]([A-Za-z]{3})[a-z]*\b(?![\s\-\/,']*\d{2,4}\b)/,
+ SK=/^\s*(total|closing|grand|statement summary|end of)/i,OP=/opening|b\/f|brought forward/i,
+ eq=(a,b)=>Math.abs(a-b)<=.011,f=x=>(Math.round(x*100)/100).toFixed(2),
+ tk=w=>{const neg=/^\(|^-|-$/.test(w)||/dr\.?$/i.test(w),h=/dr\.?$/i.test(w)||/^\(|-$/.test(w)?true:/cr\.?$/i.test(w)?false:null,v=Math.abs(num(w.replace(/[()]/g,"").replace(/-$/,"").replace(/(dr|cr)\.?$/i,"")));return{v,sv:neg?-v:v,h}};
+ const L=[],yc={};
+ for(let p=1;p<=doc.numPages;p++){const its=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()),ls=[];
+  for(const i of its){const it={s:i.str,x:i.transform[4],y:i.transform[5],r:i.transform[4]+i.width},l=ls.find(l=>Math.abs(l.y-it.y)<3);l?l.it.push(it):ls.push({y:it.y,it:[it],p})}
+  ls.sort((a,b)=>b.y-a.y).forEach(l=>{l.it.sort((a,b)=>a.x-b.x);l.w=[];
+   for(const it of l.it){const n=it.s.length,wd=it.s.split(/\s+/).filter(Boolean);let o=0;for(const s of wd){const i0=it.s.indexOf(s,o);o=i0+s.length;l.w.push({s,x:it.x+(it.r-it.x)*i0/n,r:it.x+(it.r-it.x)*o/n})}}
+   l.t=l.w.map(w=>w.s).join(" ");L.push(l)})}
+ if(!L.length)throw new Error("No text layer");
+ (L.slice(0,80).map(l=>l.t).join(" ").match(/\b20\d\d\b/g)||[]).forEach(y=>yc[y]=(yc[y]||0)+1);
+ const YR=Object.keys(yc).sort((a,b)=>yc[b]-yc[a])[0]||String(new Date().getFullYear());
+ const S=[],O=[];let cur=null;
+ for(const l of L){const t=l.t;let dd=null,dl=0,m=t.match(DT);
+  if(m&&m.index<=8){dd=m[0];dl=m.index+m[0].length}else if((m=t.match(YL))&&MON[m[2].toLowerCase()]){dd=m[1]+" "+m[2]+" "+YR;dl=m[0].length}
+  const ams=[];l.w.forEach((w,i)=>{if(AM.test(w.s)){const a=tk(w.s);a.r=w.r;a.x=w.x;a.i=i;a.l=l;ams.push(a)}else if(MK.test(w.s)&&i&&ams.length&&ams[ams.length-1].i==i-1)ams[ams.length-1].h=/dr/i.test(w.s)?(ams[ams.length-1].mk=true):false});
+  if(dd&&!BP.test(t)){l.dl=dl;cur={d:dd,lines:[l],tk:[...ams],p:l.p,y:l.y};S.push(cur);continue}
+  if(isH(l.w.map(w=>w.s))||BP.test(t)||SK.test(t)){cur=null;continue}
+  if(!cur&&OP.test(t)&&ams.length==1){S.push({op:true,tk:ams});continue}
+  if(!ams.length){O.push(l);continue}/* text-only line: attached to the nearest row by position (above OR below) */
+  if(!cur)continue;
+  if(ams.length>=2&&cur.tk.length>=2){cur={d:cur.d,lines:[l],tk:[...ams],p:l.p,y:l.y};S.push(cur);continue}
+  if(cur.lines.length<4&&cur.p==l.p&&cur.y-l.y<=24){cur.lines.push(l);cur.tk.push(...ams);cur.y=l.y}else cur=null}
+ const adv=(w,k,len)=>{let n=0;for(;k<w.length;k++){n+=w[k].s.length+(n?1:0);if(n>=len)return k+1}return k},
+ pk=l=>{let k=l.dl?adv(l.w,0,l.dl):0;if(l.dl){const m=l.w.slice(k).map(w=>w.s).join(" ").match(DT);if(m&&m.index<=1)k=adv(l.w,k,m.index+m[0].length)}return k};
+ const xs=S.filter(s=>!s.op&&s.lines[0].dl).map(s=>(s.lines[0].w[pk(s.lines[0])]||{}).x).filter(x=>x!=null).sort((a,b)=>a-b),NL=xs.length?xs[xs.length>>1]:0;
+ for(const o of O){if(o.w[0].x<NL-8)continue;let bs=null,bd=1e9;for(const s of S){if(s.op||s.p!=o.p)continue;for(const l of s.lines){const d=Math.abs(l.y-o.y);if(d<bd){bd=d;bs=s}}}
+  if(bs&&bd<=40&&(bs.ex=bs.ex||[]).length<6)bs.ex.push(o)}
+ const J=(a,b)=>!a?b:!b?a:(/[^\s][\/\-_@]$/.test(a)||a.split(" ").pop().length>=28?a+b:a+" "+b);
+ const nar=(s,u)=>{let r="";for(const l of[...s.lines,...(s.ex||[])].sort((a,b)=>b.y-a.y)){const k=l===s.lines[0]?pk(l):0;let e=l.w.length;while(e>k&&(AM.test(l.w[e-1].s)||MK.test(l.w[e-1].s)))e--;
+   const us=u.filter(x=>x.l===l);if(us.length)e=Math.min(e,...us.map(x=>x.i));let q=l.w.slice(k,e).map(w=>w.s).join(" ");if(l===s.lines[0])q=q.replace(new RegExp("\\s*"+DT.source+"\\s*$"),"");r=J(r,q.trim())}
+  return r.replace(/\s+/g," ").trim()};
+ const KI=/\b(cr|credit|deposit|received|refund)\b/i,KO=/\b(dr|debit|withdraw|paid|purchase|atm|pos)\b/i;
+ const run=A=>{let prev=null,good=0,N=0;const R=[],P=[],cx={o:[],i:[]};
+  for(const s of A){if(s.op){if(prev==null)prev=s.tk[0].sv;continue}
+   const t=s.tk;if(!t.length)continue;const b=t[t.length-1],o=t.slice(0,-1);
+   if(!o.length){if(prev==null||OP.test(nar(s,[b])))prev=b.sv;continue}
+   N++;let a=null,out=null;
+   if(prev!=null){const d=Math.round((b.sv-prev)*100)/100;a=o.filter(x=>eq(x.v,Math.abs(d))).pop();if(a){out=d<0;good++;(out?cx.o:cx.i).push(a.r)}}
+   const m0=!!a;if(!a)a=o.filter(x=>x.v).pop()||o[o.length-1];
+   const nr=nar(s,[a,b]),row=[s.d,nr,"","","",f(b.sv)];row.y=s.y;row.p=s.p;row.oc=false;
+   if(m0)row[out?3:4]=f(a.v);else P.push({row,a,nr});R.push(row);prev=b.sv}
+  const mn=x=>x.length?x.reduce((p,c)=>p+c,0)/x.length:null,co=mn(cx.o),ci=mn(cx.i);
+  for(const{row,a,nr}of P){let out=a.h!=null?a.h:KI.test(nr)&&!KO.test(nr)?false:KO.test(nr)&&!KI.test(nr)?true:co!=null&&ci!=null?Math.abs(a.r-co)<=Math.abs(a.r-ci):null;if(out==null)out=true;row[out?3:4]=f(a.v);row[out?4:3]=""}
+  return{R,q:N?good/N:0,N}};
+ let r=run(S);if(r.q<.6){const r2=run([...S].reverse());if(r2.q>r.q)r=r2}
+ return[["Date","Narration","Ref","Debit","Credit","Balance"],...r.R]}
+
 async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
  for(let p=1;p<=doc.numPages;p++){const its=OC?(OC[p-1]||[]):(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],r:i.transform[4]+i.width}));if(its.length)any=true;
   const lines=[];for(const it of its){const l=lines.find(l=>Math.abs(l.y-it.y)<3);if(l)l.it.push(it);else lines.push({y:it.y,it:[it]})}
@@ -593,7 +651,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
  if(!any)throw new Error("No text found in the PDF (it may be a scanned image).");
  const hi=out.findIndex(isH);let colRes=null,cc=0;
  if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
-  const body=out.slice(hi+1).filter(r=>!isH(r)),anc=[];body.forEach((r,i)=>{if(pd(r[dI]||""))anc.push(i)});
+  const body=out.slice(hi+1).filter(r=>!isH(r)),anc=[];body.forEach((r,i)=>{if(pd(r[dI]||"")&&!/computer[\s-]generated|statement is generated|signature/i.test(r.join(" ")))anc.push(i)});
   const pc2=anc.map(i=>[{y:body[i].y,t:body[i][nI]||""}]);
   body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" ")))return;let bj=-1,bd=1e9;
    anc.forEach((a,j)=>{const q=body[a];if(q.p!=r.p)return;const d=Math.abs(q.y-r.y);if(d<bd){bd=d;bj=j}});
