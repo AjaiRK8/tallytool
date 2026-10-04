@@ -912,7 +912,7 @@ function build(){
 }
 document.addEventListener("click",function(e){
  var a=e.target.closest&&e.target.closest('a[href*="'+OWNER_REPO+'/releases"]');
- if(!a)return;
+ if(!a||a.classList.contains("exf"))return; /* the popup's own download link must open normally */
  var v=ver();
  if(!v)return; /* version unknown: let the link open the latest-release page */
  e.preventDefault();
