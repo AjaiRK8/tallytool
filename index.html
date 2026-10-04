@@ -26,7 +26,7 @@ body{padding-left:190px}main{max-width:1150px}.off{display:none!important}
 #nv b{font-size:15px;margin-bottom:8px}#nv button{background:none;color:var(--tx);text-align:left;padding:9px 10px}#nv button.on{background:var(--ac);color:#fff}#nv button:disabled{opacity:.4;cursor:default}#nv small{margin-top:auto;line-height:1.4}#nvb{background:#d93025;color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px}
 @media(max-width:760px){body{padding-left:0}#nv{position:static;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center}#nv small{margin:0}}
 input[data-cb]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
-#cbm{position:fixed;display:none;z-index:50;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:13px}#cbm div{padding:6px 10px;cursor:pointer}#cbm div:hover{background:var(--bd)}#cbm .nw{color:var(--ac);font-weight:600;border-top:1px solid var(--bd)}
+#cbm{position:fixed;display:none;z-index:50;max-height:260px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:var(--card);border:1px solid var(--bd);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:13px}#cbm div{padding:6px 10px;cursor:pointer}#cbm div:hover{background:var(--bd)}#cbm .nw{color:var(--tx);font-weight:400;border-top:1px solid var(--bd);background:rgba(26,86,219,.08);line-height:1.4;white-space:normal;cursor:default}#cbm .nw:hover{background:rgba(26,86,219,.08)}#cbm .nw b{color:var(--ac)}
 .sc{width:16px;height:16px;min-width:0;padding:0}
 #xclr{position:fixed;display:none;z-index:60;width:20px;height:20px;padding:0;line-height:18px;border-radius:50%;background:var(--bd);color:var(--tx);font-size:15px;text-align:center;cursor:pointer}
 td.n textarea{width:100%;min-width:230px;min-height:30px;resize:vertical;line-height:1.35}
@@ -79,7 +79,7 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 .exe-link{display:none!important}
 </style></head><body><nav id="nv"><div class="bh"><img src="data:image/png;base64,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" alt="Bank to Tally logo" width="40" height="40"><b>Bank → Tally</b></div><button data-n="up">1 · Upload</button><button data-n="setup">2 · Settings</button><button data-n="pv">3 · Preview &amp; Export</button><button data-n="cs">4 · Create ledgers<span id="nvb" hidden></span></button><a class="dl exe-link" href="https://xyz.com" target="_blank" rel="noopener" title="Download the Windows desktop app">&#11015; Windows app (.exe)<small>Desktop version</small></a><small>© 2026 Ajai R Krishnan<br>All rights reserved</small></nav><main>
 <h1>Bank Statement → Tally Import</h1>
-<div class="card" id="up"><label>1. Upload statement (PDF / CSV / XLS / XLSX)</label><input type="file" id="f" accept=".pdf,.csv,.xls,.xlsx"><div id="pww" hidden style="margin-top:8px"><label>🔒 This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
+<div class="card" id="up"><label>1. Upload statement (PDF / Excel / CSV / photos: select every page of the statement together)</label><input type="file" id="f" multiple accept=".pdf,.csv,.tsv,.txt,.xls,.xlsx,.xlsm,.xlsb,.jpg,.jpeg,.png,.webp,.bmp"><div id="pww" hidden style="margin-top:8px"><label>🔒 This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
 <div id="pgw" class="pgw" hidden role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Reading statement">
 <div class="pgt"><b id="pgl">Reading your statement...</b><span id="pgp" class="mu">0%</span></div>
 <div class="pgr"><span class="pgi" title="Your bank statement">&#127974;</span><div class="pgtrack"><div class="pgfill" id="pgf"><span class="pgcoin">&#8377;</span></div><div class="pgchips"><i>Dr</i><i>Cr</i><i>Dr</i><i>Cr</i><i>Dr</i></div></div><span class="pgi" id="pgb" title="Tally">&#128210;</span></div>
@@ -171,7 +171,7 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 <script>
 const $=id=>document.getElementById(id);let rows=[],hdr=[],data=[],selS=new Set(),OPN=null,goCs=false,cur="up";
 const F=[["date","Date",/date|txn/i],["nar","Narration",/narr|desc|partic|remark|detail|memo/i],["ref","Ref / Cheque no",/ref|chq|cheque|utr/i],["dr","Debit / Withdrawal",/debit|withdraw|dr\b/i],["cr","Credit / Deposit",/credit|deposit|cr\b/i],["amt","Single amount (optional)",/^amount$/i],["bal","Balance (optional, for cross-check)",/balance|bal\b/i]];
-function csv(t){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==','){r.push(c);c=""}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c="";o.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);o.push(r)}return o}
+function csv(t,d=","){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==d){r.push(c);c=""}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c="";o.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);o.push(r)}return o}
 const cat=a=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let k=0;a.forEach(x=>{o.set(x,k);k+=x.length});return o},le32=i=>new Uint8Array([i&255,i>>8&255,i>>16&255,i>>>24&255]);
 /* Office 2010+ "Agile" encryption (MS-OFFCRYPTO) using WebCrypto: decrypts a password-protected .xlsx to a normal zip */
 async function agileDec(info,pkg,pw){const S=crypto.subtle,x=new TextDecoder().decode(info.slice(8));
@@ -192,6 +192,69 @@ async function agileDec(info,pkg,pw){const S=crypto.subtle,x=new TextDecoder().d
  size=new DataView(pkg.buffer,pkg.byteOffset).getUint32(0,true),out=new Uint8Array(size);
  for(let i=0,o=8;o<pkg.length&&i*4096<size;i++,o+=4096){const c=pkg.slice(o,o+4096),p=await dec(key,(await HH(h2,ks,le32(i))).slice(0,16),c.length%16?cat([c,new Uint8Array(16-c.length%16)]):c);out.set(p.slice(0,Math.min(4096,size-i*4096)),i*4096)}
  return out}
+const OC=(()=>{
+ const cat=(...a)=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let p=0;for(const x of a){o.set(x,p);p+=x.length}return o},
+  le32=n=>new Uint8Array([n&255,n>>>8&255,n>>>16&255,n>>>24&255]),
+  pw16=s=>{const o=new Uint8Array(s.length*2);for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);o[2*i]=c&255;o[2*i+1]=c>>8}return o},
+  b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),
+  fit=(a,n,pad)=>{const o=new Uint8Array(n).fill(pad);o.set(a.subarray(0,n));return o},
+  hash=async(alg,d)=>new Uint8Array(await crypto.subtle.digest(alg,d)),
+  same=(a,b)=>a.length==b.length&&a.every((x,i)=>x==b[i]),
+  bad=()=>Object.assign(new Error("bad password"),{bad:true}),
+  key=raw=>crypto.subtle.importKey("raw",raw,"AES-CBC",false,["encrypt","decrypt"]);
+ // AES-CBC without padding (the browser insists on PKCS7, so a block that decrypts to valid padding is appended and then dropped)
+ async function cbc(k,iv,data){const last=data.length?data.subarray(data.length-16):iv,
+  e=new Uint8Array(await crypto.subtle.encrypt({name:"AES-CBC",iv:last.map(b=>b^16)},k,new Uint8Array(16))).subarray(0,16);
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-CBC",iv},k,cat(data,e)))}
+ async function ecb(k,data){const c=await cbc(k,new Uint8Array(16),data);return c.map((b,i)=>b^(i<16?0:data[i-16]))}
+ // --- minimal reader for the Office container (compound file): returns {streamName: bytes}
+ function streams(u){const dv=new DataView(u.buffer,u.byteOffset,u.byteLength),ss=1<<dv.getUint16(30,true),ms=1<<dv.getUint16(32,true),
+  sec=i=>u.subarray(ss+i*ss,ss+(i+1)*ss),u32=a=>{const v=new DataView(a.buffer,a.byteOffset,a.byteLength),r=[];for(let i=0;i+4<=a.length;i+=4)r.push(v.getUint32(i,true));return r},
+  fatIds=[];let n=dv.getUint32(0x48,true),d=dv.getUint32(0x44,true);
+  for(let i=0;i<109;i++){const v=dv.getUint32(0x4C+i*4,true);if(v<0xFFFFFFFA)fatIds.push(v)}
+  while(d<0xFFFFFFFA&&n-->0){const x=u32(sec(d));x.slice(0,-1).forEach(v=>{if(v<0xFFFFFFFA)fatIds.push(v)});d=x[x.length-1]}
+  const FAT=fatIds.flatMap(i=>u32(sec(i))),chain=(s,F=FAT)=>{const r=[];while(s<0xFFFFFFFA&&r.length<=F.length){r.push(s);s=F[s]}return r},
+  big=(s,size)=>cat(...chain(s).map(sec)).subarray(0,size),dir=big(dv.getUint32(0x30,true),1e9),out={};
+  let root=null;const ents=[];
+  for(let o=0;o+128<=dir.length;o+=128){const e=new DataView(dir.buffer,dir.byteOffset+o,128),t=e.getUint8(66);if(!t)continue;let nm="";for(let j=0;j<Math.min(e.getUint16(64,true),64)/2-1;j++)nm+=String.fromCharCode(e.getUint16(j*2,true));const r={nm,t,s:e.getUint32(116,true),z:e.getUint32(120,true)};if(t==5)root=r;ents.push(r)}
+  const mFAT=u32(big(dv.getUint32(0x3C,true),dv.getUint32(0x40,true)*ss)),mini=root?big(root.s,root.z):new Uint8Array(0);
+  for(const e of ents)if(e.t==2){out[e.nm]=e.z<dv.getUint32(0x38,true)?cat(...chain(e.s,mFAT).map(i=>mini.subarray(i*ms,(i+1)*ms))).subarray(0,e.z):big(e.s,e.z)}
+  return out}
+ const BK=[[0x14,0x6e,0x0b,0xe7,0xab,0xac,0xd0,0xd6],[0xfe,0xa7,0xd2,0x76,0x3b,0x4b,0x9e,0x79],[0xd7,0xaa,0x0f,0x6d,0x30,0x61,0x34,0x4e]].map(x=>Uint8Array.from(x));
+ const attrs=(xml,tag)=>{const m=xml.match(new RegExp("<(?:\\w+:)?"+tag+"\\s([^>]*)>")),o={};if(m)for(const a of m[1].matchAll(/([\w:]+)="([^"]*)"/g))o[a[1]]=a[2];return o},
+  sz=p=>new DataView(p.buffer,p.byteOffset,8).getUint32(0,true);
+ async function agile(info,pkg,pw,prog){
+  const xml=new TextDecoder().decode(info.subarray(8)).replace(/^\uFEFF/,""),kd=attrs(xml,"keyData"),ek=attrs(xml,"encryptedKey");
+  if(!ek.spinCount||!kd.saltValue)throw new Error("Unsupported Excel encryption layout");
+  const ha="SHA-"+ek.hashAlgorithm.replace(/\D/g,""),salt=b64(ek.saltValue),kb=+ek.keyBits/8,iv=fit(salt,+ek.blockSize,0x36);
+  let h=await hash(ha,cat(salt,pw16(pw)));for(let i=0,n=+ek.spinCount;i<n;i++){h=await hash(ha,cat(le32(i),h));if(prog&&i%2000==0)prog(i/n)}
+  const dk=async b=>key(fit(await hash(ha,cat(h,b)),kb,0x36)),
+   vin=await cbc(await dk(BK[1]),iv,b64(ek.encryptedVerifierHashInput)),vh=await cbc(await dk(BK[2]),iv,b64(ek.encryptedVerifierHashValue)),
+   vo=await hash(ha,vin.subarray(0,+ek.saltSize));
+  if(!same(vo,vh.subarray(0,vo.length)))throw bad();
+  const k=await key((await cbc(await dk(BK[0]),iv,b64(ek.encryptedKeyValue))).subarray(0,kb)),
+   kha="SHA-"+kd.hashAlgorithm.replace(/\D/g,""),ksalt=b64(kd.saltValue),kbs=+kd.blockSize,data=pkg.subarray(8),parts=[];
+  for(let i=0,o=0;o<data.length;i++,o+=4096){let s=data.subarray(o,o+4096);if(s.length%16)s=cat(s,new Uint8Array(16-s.length%16));
+   parts.push(await cbc(k,fit(await hash(kha,cat(ksalt,le32(i))),kbs,0x36),s))}
+  return cat(...parts).subarray(0,sz(pkg))}
+ async function standard(info,pkg,pw,prog){
+  const dv=new DataView(info.buffer,info.byteOffset,info.byteLength),hs=dv.getUint32(8,true),kbits=dv.getUint32(12+16,true)||128,
+   o=12+hs,salt=info.subarray(o+4,o+20),ev=info.subarray(o+20,o+36),eh=info.subarray(o+40,o+72);
+  let h=await hash("SHA-1",cat(salt,pw16(pw)));for(let i=0;i<50000;i++){h=await hash("SHA-1",cat(le32(i),h));if(prog&&i%1000==0)prog(i/50000)}
+  h=await hash("SHA-1",cat(h,le32(0)));
+  const x=async p=>{const b=new Uint8Array(64).fill(p);for(let i=0;i<20;i++)b[i]^=h[i];return hash("SHA-1",b)},
+   k=await key(cat(await x(0x36),await x(0x5c)).subarray(0,kbits/8)),
+   v=await ecb(k,ev),vh=await ecb(k,eh);
+  if(!same(await hash("SHA-1",v),vh.subarray(0,20)))throw bad();
+  const d=pkg.subarray(8);return (await ecb(k,d.subarray(0,d.length-d.length%16))).subarray(0,sz(pkg))}
+ return{streams,async unlock(u,pw,prog){const s=streams(u),info=s.EncryptionInfo,pkg=s.EncryptedPackage;
+  if(!info||!pkg)return null;const dv=new DataView(info.buffer,info.byteOffset,info.byteLength),maj=dv.getUint16(0,true),min=dv.getUint16(2,true);
+  if(maj>=4&&min==4)return agile(info,pkg,pw,prog);
+  if(min==2&&maj>=2&&maj<=4)return standard(info,pkg,pw,prog);
+  throw new Error("This Excel file uses an encryption type that is not supported here. Open it in Excel, Save As .xlsx without a password, then upload that.")},
+  isEnc(u){if(!(u[0]==0xD0&&u[1]==0xCF&&u[2]==0x11&&u[3]==0xE0))return false;try{const s=streams(u);return !!(s.EncryptionInfo&&s.EncryptedPackage)}catch(e){return false}}}})();
+// Dates stored as real Excel dates with the built-in short-date format are shown by the library as m/d/yy (US order). Rewrite them as dd/mm/yyyy so day and month are never swapped.
+function xlDates(wb){const S=XLSX.SSF;if(!S||!S.is_date||!S.parse_date_code)return;for(const n of wb.SheetNames){const ws=wb.Sheets[n];for(const k in ws){if(k[0]=="!")continue;const c=ws[k];if(c&&c.t=="n"&&typeof c.z=="string"&&S.is_date(c.z)){const o=S.parse_date_code(c.v);if(o&&o.y>1900)c.w=String(o.d).padStart(2,"0")+"/"+String(o.m).padStart(2,"0")+"/"+o.y}}}}
 async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value,u=new Uint8Array(buf),ole=u[0]==0xD0&&u[1]==0xCF&&u[2]==0x11&&u[3]==0xE0,xl=/\.(xlsx|xlsm|xlsb)$/i.test(f.name),ask=m=>{$("pww").hidden=false;$("pw").focus();return new Error(m)};
  if(xl&&ole){/* encrypted OOXML wrapped in an OLE container */
   if(!pw)throw ask("This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");
@@ -200,16 +263,17 @@ async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value,u=new 
   $("msg").textContent="Decrypting Excel file (this can take a few seconds)...";
   try{return XLSX.read(await agileDec(new Uint8Array(I.content),new Uint8Array(P.content),pw),{type:"array"})}
   catch(e){if(e.message=="BADPW")throw ask("Incorrect Excel password. Re-enter it and click Unlock.");if(e.message=="UNSUP")throw new Error("This Excel encryption type (Office 2007 'standard') isn't supported. Re-save the file without a password, or with Excel 2010+ encryption.");throw e}}
- try{return XLSX.read(buf,pw?{type:"array",password:pw}:{type:"array"})}catch(e){if(/password|encrypt|decrypt|protected/i.test(e&&e.message||""))throw ask(pw?"Incorrect Excel password (or unsupported encryption). Re-enter it and click Unlock.":"This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");throw e}}
+ try{const wb=XLSX.read(buf,pw?{type:"array",password:pw,cellNF:true}:{type:"array",cellNF:true});xlDates(wb);return wb}catch(e){if(/password|encrypt|decrypt|protected/i.test(e&&e.message||""))throw ask(pw?"Incorrect Excel password (or unsupported encryption). Re-enter it and click Unlock.":"This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");throw e}}
 const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
-let pipeNote="";async function rd(f){pipeNote="";if(/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.csv$/i.test(f.name))return csv(await f.text());const wb=await xlRead(f);let best=[],bsc=-1,bn="";
+let pipeNote="";async function rd(f){pipeNote="";if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text();return csv(t,dlm(t))}const wb=await xlRead(f);let best=[],bsc=-1,bn="";
  wb.SheetNames.forEach(n=>{const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",dateNF:"dd/mm/yyyy"});let bs=0,bi=-1;r.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;bi=i}});const sc=bs*100000+(bi<0?0:r.length-bi);if(sc>bsc){bsc=sc;best=r;bn=n}});
  if(wb.SheetNames.length>1)pipeNote="Sheet used: "+bn+".";return best}
-$("f").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;
+$("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;
  try{a=await rd(f)}catch(x){$("msg").textContent=(x.manual?"":"Could not read file: ")+x.message;return}
- a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
- let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
+ a.forEach((r,i)=>{r.rn=i+1});a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
+ let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
  hdr=a[h].map(x=>String(x).trim());rows=a.slice(h+1);
+ if(IMG.test(f.name)||/\.pdf$/i.test(f.name))window.curSrc=null;else{window.curPdf=null;window.curSrc={a,h,name:f.name};rows.forEach((r,i)=>{r.sr=h+1+i})}
  $("map").innerHTML=F.map(([k,l,re])=>{const i=hdr.findIndex(x=>re.test(x));return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==i&&!(k=="amt"&&i<0)?" selected":""}>${x||"Col "+(j+1)}</option>`).join("")}</select></div>`}).join("");
  $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
  applyCols();$("msg").textContent=`Loaded ${rows.length} rows.`+(pipeNote?" "+pipeNote:"");$("gob").hidden=false;$("gob").scrollIntoView({block:"nearest",behavior:"smooth"})};
@@ -254,7 +318,7 @@ $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\
   if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
   else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
   else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
-  data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt,fl:r.fl||[]})}
+  data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt,fl:r.fl||[],pg:r.p,py:r.y,po:r.oc,sr:r.sr,rn:r.rn})}
  {const k2=keyer();data.forEach(x=>{const k=k2(x);if(rk.has(k))x.del=true;if(ek.has(k))x.ex=true;if(ck.has(k))x.ok=true})}data.forEach(x=>x.led=canon(x.led));nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
  calcBal();$("pv").hidden=false;draw(skip)};
 let nc={},ac={},sk=0,vis=[],bdT=null;
@@ -276,14 +340,15 @@ function rvBind(){const keep=f=>{const w=$("tb").closest(".w"),st=w.scrollTop;f(
  document.querySelectorAll("#tb [data-ed]").forEach(e=>e.onchange=()=>{const v=e.value.replace(/-/g,"");if(v.length==8)keep(()=>chg(data[e.dataset.ed],x=>{x.d=v}))});
  document.querySelectorAll("#tb [data-ea]").forEach(e=>e.onchange=()=>{const a=Math.round(parseFloat(e.value)*100)/100;if(a>0)keep(()=>chg(data[e.dataset.ea],x=>{x.amt=a}))});
  document.querySelectorAll("#tb [data-eo]").forEach(e=>e.onchange=()=>keep(()=>chg(data[e.dataset.eo],x=>{x.out=e.value=="o"})))}
-$("ew").addEventListener("click",e=>{if(e.target.closest("#rvo")){$("eo").checked=true;draw()}});
+$("ew").addEventListener("click",e=>{if(e.target.closest("#rvo")){$("eo").checked=true;draw();setTimeout(()=>{const t=$("tb").closest("table");(t?t.parentElement:$("tb")).scrollIntoView({block:"start",behavior:"smooth"})},50)}});
 async function rvGuard(only){const n=data.filter((x,i)=>rv(x)&&(!only||only.has(i))).length;if(!n)return true;
  const r=await dlg("Review the flagged transactions first",`<p><b>${n} transaction${n>1?"s":""}</b> ${n>1?"were":"was"} not fully parsed or confirmed, so the XML has not been exported.</p><p>Compare each one with your bank statement, correct the date, amount, narration or ledger if needed, then press <b>Confirm</b> on the row. You can export once all of them are confirmed.</p>`,[{t:"Review now"},{t:"Close",s:1}]);
  if(r.i==0){$("eo").checked=true;$("fx").value="";nav("pv");draw();const t=document.querySelector("#tb tr.er");if(t)t.scrollIntoView({block:"center"})}return false}
-var rf=null;const rfm=x=>rf.k=="b"?!x.del&&!(x.led||"").trim():rf.k=="n"?x.nk==rf.v:x.ak==rf.v;
+var adjF=false,rf=null;const rfm=x=>rf.k=="b"?!x.del&&!(x.led||"").trim():rf.k=="n"?x.nk==rf.v:x.ak==rf.v;
 function draw(skip){if(rf&&!data.some(rfm))rf=null;rstBd();if(skip!=null)sk=skip;const q=$("q").value.toLowerCase(),ft=$("ft").value,mn=parseFloat($("mn").value),mx=parseFloat($("mx").value),rc=$("rc").value,df=$("df").value.replace(/-/g,""),dt=$("dt").value.replace(/-/g,""),lq=$("lq").value.toLowerCase();
  if($("eo").checked&&!data.some(rv))$("eo").checked=false;/* auto-remove "Needs review only" once no transaction has an error */
  vis=data.map((x,i)=>[x,i]).filter(([x])=>(!q||x.nar.toLowerCase().includes(q))&&(!df||x.d>=df)&&(!dt||x.d<=dt)&&(!lq||x.led.toLowerCase().includes(lq))&&(!ft||x.t==ft)&&(isNaN(mn)||x.amt>=mn)&&(isNaN(mx)||x.amt<=mx)&&(!$("fu").checked||bad(x.led))&&(!$("eo").checked||rv(x))&&(!rf||rfm(x))&&(!$("fx").value||(!!x.ex)==($("fx").value=="y"))&&(!rc||(rc!="a"&&nc[x.nk]>1)||(rc!="n"&&ac[x.ak]>1)));
+ if(adjF){adjF=false;const fa=$("q").value||$("ft").value||$("mn").value||$("mx").value||$("rc").value||$("df").value||$("dt").value||$("lq").value||$("fu").checked||$("eo").checked||$("fx").value||rf;if(!vis.length&&data.length&&fa){const keepL=!!lq&&data.some(x=>!x.del&&x.led.toLowerCase().includes(lq));["q","ft","mn","mx","rc","df","dt","fx"].forEach(id=>$(id).value="");if(!keepL)$("lq").value="";$("fu").checked=false;$("eo").checked=false;rf=null;draw(skip);$("shown").textContent+=keepL?" · other filters removed: no rows matched after your change; the Ledger filter is kept until no such rows are left":" · filter removed: no rows matched after your change";return}}
  if($("gs").checked)vis.sort((p,q2)=>(p[0].nk>q2[0].nk)-(p[0].nk<q2[0].nk)||p[0].amt-q2[0].amt);
  {const ne=data.filter(rv).length;$("ew").innerHTML=ne?`<div style="padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);color:var(--tx)">⚠ <b>${ne} transaction${ne>1?"s":""} could not be fully parsed or confirmed</b> and ${ne>1?"are":"is"} marked ⚠ in the Date column (hover the mark for the reason). Compare ${ne>1?"them":"it"} with the original statement, edit the date, amount, narration or ledger if needed, then press <b>Confirm</b> on each row. <b>The XML cannot be exported until every one is confirmed.</b> <button type="button" class="s" id="rvo" style="padding:3px 10px;margin-left:6px">Show only these</button></div>`:""}$("sbh").hidden=!hs;$("tb").innerHTML=vis.map(([x,i])=>`<tr class="${x.del?"gone ":""}${x.ex&&!x.del?"exd ":""}${rv(x)?"er":""}"><td><input type="checkbox" class="sc" data-s="${i}"${selS.has(i)?" checked":""}></td><td>${flg(x).length&&!x.del?(x.ok?`<span class="ex-b" style="background:#1a56db" title="${esc("Confirmed by you. Flagged for: "+flg(x).join("; "))}">✓ Confirmed</span>`:`<span class="eb" title="${esc(flg(x).join("; "))}">⚠</span> `):""}${x.ex&&!x.del?`<span class="ex-b" title="Included in an exported XML file">✓ Exported</span>`:""}${flg(x).length&&!x.del?edD(x,i):x.d.replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1")}</td><td><select data-t="${i}"${x.del?" disabled":""}>${["Payment","Receipt","Contra"].map(o=>`<option${o==x.t?" selected":""}>${o}</option>`).join("")}</select></td><td class="n"><textarea data-nar="${i}" rows="${Math.min(4,Math.max(1,Math.ceil(x.nar.length/42)))}"${x.del?" disabled":""}>${esc(x.nar)}</textarea></td><td>${nc[x.nk]>1?`<span class="b${rf&&rf.k=="n"&&rf.v==x.nk?" on":""}" data-rf="n" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${nc[x.nk]} transactions with the same narration (click again to clear)">N×${nc[x.nk]}</span> `:""}${ac[x.ak]>1?`<span class="b${rf&&rf.k=="a"&&rf.v==x.ak?" on":""}" data-rf="a" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${ac[x.ak]} transactions with the same amount (click again to clear)">₹×${ac[x.ak]}</span>`:""}</td><td class="r ${x.out?"dr":"cr"}">${flg(x).length&&!x.del?edA(x,i):x.amt.toFixed(2)}</td><td class="r">${x.rb==null?"":x.rb.toFixed(2)}</td>${hs?`<td class="r ${mm(x)?"dr":""}">${x.sb==null?"":x.sb.toFixed(2)}${mm(x)?" ✗":""}</td>`:""}<td><input data-cb="1" class="${!x.del&&bad(x.led)?"bad":""}" value="${esc(x.led)}" data-i="${i}"${x.del?" disabled":""}></td><td style="white-space:nowrap">${flg(x).length&&!x.del?`<button type="button" class="cfm${x.ok?" s":""}" data-c="${i}" style="padding:4px 9px;margin-right:4px" title="${x.ok?"Undo: mark this transaction as not reviewed again":"I have checked this transaction against the statement; allow it to be exported"}">${x.ok?"Undo":"Confirm"}</button>`:""}<button type="button" class="dx${x.del?" un":""}" data-x="${i}" aria-label="${x.del?"Restore transaction":"Remove transaction"}" title="${x.del?"Restore this transaction (it will be imported again)":"Remove this transaction: it will be skipped in the import"}">${x.del?"&#8617;":'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>'}</button></td></tr>`).join("");
  selBind();rvBind();document.querySelectorAll("#tb input[data-i]").forEach(e=>{e.oninput=()=>data[e.dataset.i].led=e.value;e.onchange=()=>{const v=canon(e.value);e.value=v;data[e.dataset.i].led=v;e.classList.toggle("bad",bad(v));warn();if(csOpen)csRender()}});
@@ -296,8 +361,40 @@ function sum(){dwUpd();const A=data.filter(x=>!x.del),c=t=>A.filter(x=>x.t==t),d
 ["q","ft","mn","mx","rc","gs","df","dt","lq","fu","eo","fx"].forEach(id=>$(id).oninput=()=>draw());
 $("qx").onclick=()=>{$("q").value="";draw();$("q").focus()};
 $("rfb").onclick=()=>{rf=null;draw()};
+/* a change made to rows (edit, apply, confirm, remove) may empty the current filter: draw() then clears it */
+const setAdj=()=>{adjF=true;setTimeout(()=>{adjF=false},0)};
+document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#tb,#bt,#stt"))setAdj()},true);
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#ba,#sap,#bd,#cbb,#dru,#tb .cfm,#tb .dx,#cba"))setAdj()},true);
 $("cf").onclick=()=>{["q","ft","mn","mx","rc","df","dt","lq"].forEach(id=>$(id).value="");$("gs").checked=false;$("fu").checked=false;$("eo").checked=false;$("fx").value="";rf=null;draw()};
 $("bt").onchange=()=>{if($("bt").value)vis.forEach(([x])=>{if(!x.del)x.t=$("bt").value});$("bt").value="";draw()};
+function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+/* ---- proof-reading: show a parsed row on the original PDF page ---- */
+function pvDecorate(){if(!window.curPdf&&!window.curSrc)return;document.querySelectorAll("#tb tr").forEach(tr=>{const c=tr.querySelector(".sc");if(!c)return;const x=data[+c.dataset.s];if(!x||!((window.curPdf&&x.pg&&x.py!=null)||(window.curSrc&&x.sr!=null))||tr.querySelector(".pv-v"))return;const td=tr.children[1];if(!td)return;const b=document.createElement("button");b.type="button";b.className="s pv-v";b.dataset.i=c.dataset.s;b.title="Show this row in the original file";b.textContent="🔍";b.style.cssText="padding:0 6px;margin-left:4px;font-size:12px";td.appendChild(b)})}
+{const d0=draw;draw=function(){const r=d0.apply(this,arguments);try{pvDecorate()}catch(e){}return r}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".pv-v");if(b)pvShow(+b.dataset.i)});
+
+/* ---- proof-reading for CSV / Excel: show the original rows of the file around a parsed row ---- */
+function srcShow(x){const S=window.curSrc,A=S.a,fa=v=>Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}),fd=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");
+ const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px";
+ const lo=Math.max(S.h+1,x.sr-5),hi=Math.min(A.length-1,x.sr+5),nc=Math.max(A[S.h].length,A[x.sr].length),cell="border:1px solid #bbb;padding:4px 8px;white-space:nowrap;vertical-align:top";
+ const tr=(r,i,hd)=>{const t=x.sr==i;return `<tr style="${hd?"background:#e8eaed;font-weight:700":t?"background:#fff3a0;font-weight:600":""}"><td style="${cell};color:#777;text-align:right;${t?"box-shadow:inset 0 0 0 2px #d93025":""}">${r.rn||""}</td>${Array.from({length:nc},(_,j)=>`<td style="${cell}${t?";border-top:2px solid #d93025;border-bottom:2px solid #d93025":""}">${esc(r[j]??"")}</td>`).join("")}</tr>`};
+ let h=tr(A[S.h],-1,1);if(lo>S.h+1)h+=`<tr><td colspan="${nc+1}" style="${cell};color:#777;text-align:center">⋮</td></tr>`;
+ for(let i=lo;i<=hi;i++)h+=tr(A[i],i,0);if(hi<A.length-1)h+=`<tr><td colspan="${nc+1}" style="${cell};color:#777;text-align:center">⋮</td></tr>`;
+ o.innerHTML=`<div class="card" style="max-width:min(980px,96vw);width:100%;max-height:94vh;margin:0;display:flex;flex-direction:column"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div style="font-size:13px"><b>Original file · ${esc(S.name)} · row ${x.rn||""}</b><div class="mu">Parsed as: ${esc(fd(x.d))} · ${esc(x.t)} · ${x.out?"Dr":"Cr"} ₹${fa(x.amt)}${x.sb!=null?" · balance "+fa(x.sb):""}<br>${esc(x.nar)}</div></div><button type="button" class="s" id="pvc">Close</button></div><div style="overflow:auto;margin-top:8px;border:1px solid var(--bd);flex:1;min-height:120px;background:#fff;color:#111"><table style="border-collapse:collapse;font-size:13px;background:#fff;color:#111"><tbody>${h}</tbody></table></div></div>`;
+ document.body.appendChild(o);const kd=ev=>{if(ev.key=="Escape")close()},close=()=>{o.remove();document.removeEventListener("keydown",kd)};
+ document.addEventListener("keydown",kd);o.querySelector("#pvc").onclick=close;o.onclick=ev=>{if(ev.target===o)close()}}
+async function pvShow(i){const x=data[i];if(!x)return;if(x.sr!=null&&window.curSrc&&!window.curPdf)return srcShow(x);if(!window.curPdf)return;
+ const fa=v=>Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}),fd=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");
+ const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px";
+ o.innerHTML=`<div class="card" style="max-width:min(980px,96vw);width:100%;max-height:94vh;margin:0;display:flex;flex-direction:column"><div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between"><div style="font-size:13px"><b>Original statement · page ${x.pg}</b><div class="mu">Parsed as: ${esc(fd(x.d))} · ${esc(x.t)} · ${x.out?"Dr":"Cr"} ₹${fa(x.amt)}${x.sb!=null?" · balance "+fa(x.sb):""}<br>${esc(x.nar)}</div>${x.po?'<div class="mu">This row was read by OCR: compare the digits carefully.</div>':""}</div><button type="button" class="s" id="pvc">Close</button></div><div id="pvw" style="overflow:auto;margin-top:8px;border:1px solid var(--bd);flex:1;min-height:200px;background:#fff"><div style="padding:10px;color:#555">Loading page…</div></div></div>`;
+ document.body.appendChild(o);const kd=ev=>{if(ev.key=="Escape")close()},close=()=>{o.remove();document.removeEventListener("keydown",kd)};
+ document.addEventListener("keydown",kd);o.querySelector("#pvc").onclick=close;o.onclick=ev=>{if(ev.target===o)close()};
+ const w=o.querySelector("#pvw");
+ try{const pg=await window.curPdf.getPage(x.pg),S=1.6,vp=pg.getViewport({scale:S}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:g,viewport:vp}).promise;
+  const vy=x.po?-x.py*S:vp.convertToViewportPoint(0,x.py)[1],top=Math.max(0,vy-11*S),ht=36*S;
+  g.fillStyle="rgba(255,235,0,.35)";g.fillRect(0,top,c.width,ht);g.strokeStyle="#d93025";g.lineWidth=2;g.strokeRect(1,top,c.width-2,ht);
+  c.style.cssText="display:block;max-width:100%;height:auto";w.innerHTML="";w.appendChild(c);w.scrollTop=Math.max(0,top*(c.clientHeight/c.height)-w.clientHeight/3)}
+ catch(e){w.innerHTML='<div style="padding:10px;color:#d93025">Could not show the page: '+esc(e.message)+'</div>'}}
 function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 function needLed(){const s=new Set();const b=canon($("bank").value.trim());if(b)s.add(b);data.forEach(x=>{if(x.led&&!x.del)s.add(canon(x.led))});return[...s]}
 const GR=["Bank Accounts","Bank OD A/c","Branch / Divisions","Capital Account","Cash-in-Hand","Current Assets","Current Liabilities","Deposits (Asset)","Direct Expenses","Direct Incomes","Duties & Taxes","Fixed Assets","Indirect Expenses","Indirect Incomes","Investments","Loans & Advances (Asset)","Loans (Liability)","Misc. Expenses (ASSET)","Provisions","Purchase Accounts","Reserves & Surplus","Retained Earnings","Sales Accounts","Secured Loans","Stock-in-Hand","Sundry Creditors","Sundry Debtors","Suspense A/c","Unsecured Loans"];
@@ -405,7 +502,7 @@ async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF lib
 /* ---- validation: balance chain check with auto-repair ---- */
 function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(hi<0)return Z;
  const h=R[hi],ix=re=>h.findIndex(c=>re.test(c)),dI=ix(/date/i),dr=ix(/debit|withdraw|dr\b/i),cr=ix(/credit|deposit|cr\b/i),bl=ix(/balance|bal\b/i),am=ix(/^amount$/i);
- const T=R.slice(hi+1).filter(r=>pd(r[dI]||"")),n=T.length;if(!n)return Z;const nI=ix(/narr|desc|partic|remark/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
+ const T=(a=>a.length>1&&pd(a[0][dI])>pd(a[a.length-1][dI])?a.reverse():a)(R.slice(hi+1).filter(r=>pd(r[dI]||""))),n=T.length;/* newest-first statements: check the balance chain oldest to newest */if(!n)return Z;const nI=ix(/narr|desc|partic|remark/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
  const split=dr>=0&&cr>=0,S=r=>num(r[cr])-num(r[dr]),B=r=>bl>=0&&String(r[bl]||"").trim()?sbv(r[bl]):null,f=x=>(Math.round(x*100)/100).toFixed(2),eq=(x,y)=>Math.abs(x-y)<=.011;
  let bad=0,fx=0;const sim=(x,y)=>x.length==y.length&&[...x].filter((c,i)=>c!=y[i]).length<=2;
  if(bl<0||!split){T.forEach(r=>{const k=split?[num(r[dr]),num(r[cr])].filter(Boolean).length:(am>=0&&num(r[am])?1:0);if(k!=1){bad++;fl(r,"Debit/credit amount not clear: could not be confirmed")}});return{n,bad,fx,nw,ver:false}}
@@ -423,9 +520,9 @@ async function loadTess(){if(window.Tesseract)return;await new Promise((ok,no)=>
 async function renderPg(doc,p,sc,enh){const pg=await doc.getPage(p),vp=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;
  if(enh){const im=x.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=Math.max(0,Math.min(255,(g-128)*1.5+128));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0)}return c}
 const dgFix=t=>/\d/.test(t)&&/^[\d,.\-()OoIl|]+(?:\s?(?:Cr|Dr|CR|DR))?$/.test(t)?t.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1"):t;
-async function ocrPages(doc){await loadTess();const SC=3,w=await Tesseract.createWorker("eng"),out=[];
+async function ocrPages(doc,SC=3,enh=true,pp){await loadTess();const w=await Tesseract.createWorker("eng"),out=[];if(pp){try{await w.setParameters(pp)}catch(e){}}
  try{for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;
-  const {data}=await w.recognize(await renderPg(doc,p,SC,true));
+  const {data}=await w.recognize(await renderPg(doc,p,SC,enh));
   const ws=data.words||(data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(q=>q.lines.flatMap(l=>l.words)));
   out.push(ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC})))}}
  finally{await w.terminate()}return out}
@@ -442,7 +539,13 @@ async function aiRows(doc,key,model){const R=[],pr='This is one page of a bank s
 function aiOn(){return $("aiy").checked&&$("aia").checked}
 function aiUi(){$("aib").hidden=!$("aiy").checked;$("aik2").hidden=!aiOn();if(!$("aiy").checked)$("aia").checked=false;$("aik2").hidden=!aiOn();if(!aiOn())$("aik").value=""}
 $("aiy").onchange=$("aia").onchange=aiUi;
-async function pdfRows(f){const doc=await openPdf(f),C=[],errs=[];let noAI=false,pre="";
+/* ---- image statements (JPG/PNG...) : wrapped as a one-page document so the existing OCR pipeline can read them ---- */
+const IMG=/\.(jpe?g|png|webp|bmp)$/i;
+const dlm=t=>{const L=t.split(/\r?\n/).filter(x=>x.trim()).slice(0,8);let b=",",n=0;for(const d of [",","\t",";","|"]){const c=L.reduce((s,x)=>s+x.split(d).length-1,0);if(c>n){n=c;b=d}}return b};
+async function imgDoc(f){const P=[];for(const z of (f.imgs||[f])){const bm=await createImageBitmap(z),W=600,H=Math.round(bm.height*W/bm.width);
+ P.push({getViewport:({scale})=>({width:Math.round(W*scale),height:Math.round(H*scale)}),render:({canvasContext:c,viewport:v})=>({promise:Promise.resolve(c.drawImage(bm,0,0,v.width,v.height))}),getTextContent:async()=>({items:[]})})}
+ return{numPages:P.length,getPage:async n=>P[n-1]}}
+async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openPdf(f),C=[],errs=[];window.curPdf=doc;let noAI=false,pre="";
  const tryR=(R,src)=>{const v=chk(R);C.push({R,v,src});return v.n>0&&v.bad<=Math.floor(v.n*.02)&&v.nw<=Math.floor(v.n*.1)};
  const fin=(c,pre)=>{const v=c.v;pipeNote=(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
  const weak=c=>!c||c.v.n==0||c.v.bad>0||c.v.nw>0;
@@ -450,6 +553,7 @@ async function pdfRows(f){const doc=await openPdf(f),C=[],errs=[];let noAI=false
  let ok=false;$("msg").textContent="Reading PDF text...";
  try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}
  if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";if(tryR(await pdfText(doc,await ocrPages(doc)),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,4,false,{preserve_interword_spaces:"1"})),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
  if(ok&&!weak(C[C.length-1]))return fin(C[C.length-1],pre);
  /* not everything verified: AI only with the user's permission */
  let useAI=false,key="";
@@ -480,12 +584,12 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
     k++;M.sort((a,b)=>a.x-b.x);const mt=M.map(c=>c.s.trim());
     if(M.length>=3&&isH(mt)&&/debit|withdraw|credit|deposit/i.test(mt.join(" "))){lines.splice(i,k-i+1,{y:lines[i].y,c:M});break}}}
   for(const l of lines){const cells=l.c;
-   const tx=cells.map(c=>c.s.trim());tx.y=l.y;tx.p=p;allL.push(tx);
+   const tx=cells.map(c=>c.s.trim());tx.y=l.y;tx.p=p;tx.oc=!!OC;allL.push(tx);
    if(cells.length>=3&&isH(tx)){H=cells;out.push(tx);continue}
    if(!H){out.push(tx);continue}
    const row=H.map(()=>"");
    for(const c of cells){let bi=0,bd=1e9;H.forEach((h,i)=>{const d=Math.min(Math.abs((c.x+c.r)/2-(h.x+h.r)/2),Math.abs(c.r-h.r),Math.abs(c.x-h.x));if(d<bd){bd=d;bi=i}});row[bi]+=(row[bi]?" ":"")+c.s.trim()}
-   row.y=l.y;row.p=p;out.push(row)}}
+   row.y=l.y;row.p=p;row.oc=!!OC;out.push(row)}}
  if(!any)throw new Error("No text found in the PDF (it may be a scanned image).");
  const hi=out.findIndex(isH);let colRes=null,cc=0;
  if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
@@ -494,15 +598,19 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
   body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" ")))return;let bj=-1,bd=1e9;
    anc.forEach((a,j)=>{const q=body[a];if(q.p!=r.p)return;const d=Math.abs(q.y-r.y);if(d<bd){bd=d;bj=j}});
    if(bj>=0&&bd<=20&&pc2[bj].length<4)pc2[bj].push({y:r.y,t:r[nI]})});
-  anc.forEach((i,j)=>{const r=body[i];if(nI>=0)r[nI]=pc2[j].sort((a,b)=>b.y-a.y).map(x=>x.t.trim()).filter(Boolean).join(" ");res.push(r)});
+  anc.forEach((i,j)=>{const r=body[i];if(nI>=0)r[nI]=pc2[j].sort((a,b)=>b.y-a.y).map(x=>x.t.trim()).filter(Boolean).reduce((a,b)=>!a?b:((!/\s/.test(a)&&a.length>=30)||/-$/.test(a)?a+b:a+" "+b),"");res.push(r)});
   const dr=hr.findIndex(c=>/debit|withdraw|dr\b/i.test(c)),cr=hr.findIndex(c=>/credit|deposit|cr\b/i.test(c)),am=hr.findIndex(c=>/^amount$/i.test(c));
+  /* amount printed on the wrapped (second) line of a row: attach it to the nearest dated row above/below on the same page */
+  body.forEach(r=>{if(pd(r[dI]||"")||BP.test(r.join(" ")))return;const cols=[dr,cr,am].filter(c=>c>=0&&num(r[c]));if(!cols.length)return;
+   let bj=-1,bd=1e9;anc.forEach((a,j)=>{const q=body[a];if(q.p!=r.p)return;const d=Math.abs(q.y-r.y);if(d<bd){bd=d;bj=j}});
+   if(bj<0||bd>20)return;const q=body[anc[bj]];if([dr,cr,am].some(c=>c>=0&&num(q[c])))return;cols.forEach(c=>{q[c]=r[c]})});
   colRes=res;cc=res.slice(hi+1).filter(r=>pd(r[dI]||"")&&(num(r[dr])||num(r[cr])||num(r[am]))).length}
  const D=/(?<!\d)(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,]+\d{2,4}|\d{4}-\d{2}-\d{2})(?!\d)/,A=/-?\d[\d,]*\.\d{2}(?!\d)/g,lr=[["Date","Narration","Ref","Debit","Credit","Balance"]];let prev=null,ly=1e9,lp=0,n2=0;
  for(const tx of allL){const t=tx.join(" "),dm=t.match(D),t2=t.replace(new RegExp(D.source,"g")," "),am=t2.match(A)||[];
   if(!dm&&am.length&&prev==null&&/opening|b\/f|brought forward/i.test(t)){prev=num(am[am.length-1]);continue}
   if(dm&&am.length>=2){const bal=num(am[am.length-1]),amt=Math.abs(num(am[am.length-2]));
    const out=prev!=null?(bal<prev-0.004?true:bal>prev+0.004?false:/\bdr\b/i.test(t2)):!/\bcr\b|credit|deposit|received/i.test(t2);prev=bal;ly=tx.y;lp=tx.p;n2=0;
-   lr.push([dm[0],(/^\s*\d{1,5}\s+$/.test(t.slice(0,dm.index))?t2.replace(/^\s*\d{1,5}(?=\s)/,""):t2).replace(A," ").replace(/(^|\s)[-–—](?=\s|$)/g," ").replace(/\s+/g," ").trim(),"",out?String(amt):"",out?"":String(amt),String(bal)])}
+   lr.push([dm[0],(/^\s*\d{1,5}\s+$/.test(t.slice(0,dm.index))?t2.replace(/^\s*\d{1,5}(?=\s)/,""):t2).replace(A," ").replace(/(^|\s)[-–—](?=\s|$)/g," ").replace(/\s+/g," ").trim(),"",out?String(amt):"",out?"":String(amt),String(bal)]);{const q=lr[lr.length-1];q.y=tx.y;q.p=tx.p;q.oc=tx.oc}}
   else if(!dm&&!am.length&&lr.length>1&&t.trim().length>3&&tx.p==lp&&ly-tx.y<=16&&n2<2&&!BP.test(t)&&!/page|statement|total|balance/i.test(t)){lr[lr.length-1][1]+=" "+t.trim();ly=tx.y;n2++}}
  return colRes&&cc>=lr.length-1?colRes:(lr.length>1?lr:(colRes||out))}
 $("pwb").onclick=$("rr").onclick=()=>{const f=$("f").files[0];if(f)$("f").onchange({target:$("f")});else $("msg").textContent="Choose a statement file first."};$("pw").onkeydown=e=>{if(e.key=="Enter")$("pwb").onclick()};$("pw").onchange=()=>{const f=$("f").files[0];if(f&&!/\.csv$/i.test(f.name))$("f").onchange({target:$("f")})};
@@ -528,7 +636,7 @@ function addRule(kw,L){const ls=$("rules").value.split("\n").filter(x=>x.trim())
  data.forEach(x=>{if(x.t!="Contra"&&x.nar.toLowerCase().includes(kw)&&(x.led==$("dp").value||x.led==$("dr").value))x.led=L})}
 $("ba").onclick=()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="";vis.forEach(([x])=>{if(!x.del)x.led=L});
  if($("lr").checked){const kw=ruleKw();if(kw){addRule(kw,L);msg=`Auto-rule saved: "${kw}" → ${L}. It is applied automatically next time (export settings to keep it in your settings file).`}else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
- draw();$("rm").textContent=msg};
+ draw();$("rm").textContent=msg;$("bl").value="";$("bl").blur()};
 
 function fillDD(){["dp","dr"].forEach(i=>{const e=$(i),cur=e.value||"Suspense",o=[...new Set(["Suspense",...led])];if(!o.includes(cur))o.push(cur);e.innerHTML=o.map(x=>`<option${x==cur?" selected":""}>${esc(x)}</option>`).join("");e.value=cur})}
 function setV(i,v){const e=$(i);if(e.tagName=="SELECT"&&![...e.options].some(o=>o.value==v)){const o=document.createElement("option");o.textContent=v;e.appendChild(o)}e.value=v}
@@ -550,7 +658,7 @@ nav("up");
 const cbm=document.createElement("div");cbm.id="cbm";document.body.appendChild(cbm);let cbE=null;
 const cbHide=()=>{cbm.style.display="none";cbE=null};
 function cbShow(e,all){cbE=e;const u=e.dataset.cb=="u",src=u?[...new Set(data.map(x=>x.led).filter(Boolean))].sort():led,v=e.value.trim(),q=all?"":v.toLowerCase(),L=src.filter(l=>!q||l.toLowerCase().includes(q)).slice(0,80),ex=src.some(l=>l.toLowerCase()==v.toLowerCase());
- cbm.innerHTML=L.map(l=>`<div data-v="${esc(l)}">${esc(l)}</div>`).join("")+(!u&&v&&!ex?`<div class="nw" data-n="1">➕ Create new ledger “${esc(v)}”</div>`:"")||'<div class="mu">'+(u?"No ledgers used yet":"No ledger master loaded: type a name to create it")+'</div>';
+ cbm.innerHTML=L.map(l=>`<div data-v="${esc(l)}">${esc(l)}</div>`).join("")+(!u&&v&&!ex?(led.length?`<div class="nw">ℹ <b>“${esc(v)}”</b> is not in the Tally master. It will be created automatically from the <b>Create ledgers</b> tab.</div>`:`<div class="nw">ℹ No Tally master is loaded, so <b>“${esc(v)}”</b> cannot be checked. If it does not exist in Tally, tick it in the <b>Create ledgers</b> tab.</div>`):"")||'<div class="mu">'+(u?"No ledgers used yet":"No Tally master loaded. New names can be ticked for creation in the Create ledgers tab.")+'</div>';
  const r=e.getBoundingClientRect();cbm.style.cssText=`display:block;left:${r.left}px;top:${r.bottom}px;min-width:${Math.max(r.width,230)}px`}
 cbm.onmousedown=ev=>{ev.preventDefault();const t=ev.target.closest("[data-v],[data-n]"),e=cbE;if(!t||!e)return;const nw=!!t.dataset.n;e.value=nw?e.value.trim():t.dataset.v;e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}));cbHide();if(nw&&led.length&&e.closest("#pv")){goCs=true;openCs()}};
 const isCb=e=>e.target.dataset&&e.target.dataset.cb;
@@ -559,7 +667,7 @@ document.addEventListener("click",e=>{if(isCb(e))cbShow(e.target,true)});
 document.addEventListener("input",e=>{if(isCb(e)&&e.isTrusted)cbShow(e.target,false)});
 document.addEventListener("focusout",e=>{if(isCb(e))cbHide()});
 document.addEventListener("keydown",e=>{if(e.key=="Escape"||e.key=="Enter")cbHide()});
-addEventListener("scroll",cbHide,true);
+addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;cbHide()},true);
 document.addEventListener("change",e=>{const t=e.target;if(isCb(e)&&t.dataset.cb=="1"&&t.closest("#pv")&&led.length&&t.value.trim()&&bad(t.value)&&!csOpen)openCs()});
 /* ---- multi-select rows ---- */
 function selUp(){const n=[...selS].filter(i=>data[i]&&!data[i].del).length,v=vis.filter(([x])=>!x.del),a=$("sa");$("sn").textContent=n+" selected";{const b=$("xsel");if(b){b.disabled=!n;b.textContent=n?`Export selected only (${n})`:"Export selected only (XML)"}}a.checked=v.length>0&&v.every(([,i])=>selS.has(i));$("sbar").hidden=!(n>0&&!a.checked)/* show only when selection is partial */;{const nr=[...selS].filter(i=>data[i]&&rv(data[i])).length;$("cba").hidden=nr<2;$("cbn").textContent=nr}}
@@ -639,7 +747,7 @@ document.addEventListener("mouseout",()=>{if(xI&&document.activeElement!==xI)xT=
 document.addEventListener("focusin",e=>xShow(e.target));
 document.addEventListener("input",e=>{if(e.target===xI||xOk(e.target))xShow(e.target)});
 document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
-addEventListener("scroll",xHide,true);addEventListener("resize",xHide);
+addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
 </script><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p></main>
