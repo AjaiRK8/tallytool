@@ -26,7 +26,7 @@ body{padding-left:190px}main{max-width:1150px}.off{display:none!important}
 #nv b{font-size:15px;margin-bottom:8px}#nv button{background:none;color:var(--tx);text-align:left;padding:9px 10px}#nv button.on{background:var(--ac);color:#fff}#nv button:disabled{opacity:.4;cursor:default}#nv small{margin-top:auto;line-height:1.4}#nvb{background:#d93025;color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-left:4px}
 @media(max-width:760px){body{padding-left:0}#nv{position:static;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center}#nv small{margin:0}}
 input[data-cb]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
-#cbm{position:fixed;display:none;z-index:50;max-height:260px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:var(--card);border:1px solid var(--bd);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:13px}#cbm div{padding:6px 10px;cursor:pointer}#cbm div:hover{background:var(--bd)}#cbm .nw{color:var(--tx);font-weight:400;border-top:1px solid var(--bd);background:rgba(26,86,219,.08);line-height:1.4;white-space:normal;cursor:default}#cbm .nw:hover{background:rgba(26,86,219,.08)}#cbm .nw b{color:var(--ac)}
+#cbm{position:fixed;display:none;z-index:200;max-height:260px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:var(--card);border:1px solid var(--bd);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:13px}#cbm div{padding:6px 10px;cursor:pointer}#cbm div:hover{background:var(--bd)}#cbm .nw{color:var(--tx);font-weight:400;border-top:1px solid var(--bd);background:rgba(26,86,219,.08);line-height:1.4;white-space:normal;cursor:default}#cbm .nw:hover{background:rgba(26,86,219,.08)}#cbm .nw b{color:var(--ac)}
 .sc{width:16px;height:16px;min-width:0;padding:0}
 #xclr{position:fixed;display:none;z-index:60;width:20px;height:20px;padding:0;line-height:18px;border-radius:50%;background:var(--bd);color:var(--tx);font-size:15px;text-align:center;cursor:pointer}
 td.n textarea{width:100%;min-width:230px;min-height:30px;resize:vertical;line-height:1.35}
@@ -148,6 +148,7 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 <div class="pn" id="sbar" hidden><div class="ph"><span id="sn" style="text-transform:none;font-size:13px;color:var(--tx)">0 selected</span></div>
 <div class="fa"><select id="stt"><option value="">Set type...</option><option>Payment</option><option>Receipt</option><option>Contra</option></select><span class="g1"><input id="sl" data-cb="1" placeholder="Ledger for selected rows"></span><button class="s" id="sap" type="button">Apply to selected</button><button class="s" id="sx" type="button">Clear selection</button></div></div>
 <div class="w"><table><thead><tr><th><input type="checkbox" id="sa" class="sc" title="Select / unselect all shown rows"></th><th>Date</th><th>Type</th><th>Narration</th><th>Same</th><th class="r">Amount</th><th class="r">Balance</th><th class="r" id="sbh" hidden>Stmt bal</th><th>Ledger</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="pn" id="lsn" style="margin-top:10px;border-color:#1a56db;background:rgba(26,86,219,.07)"><div class="fa"><span>ℹ <b>Before the final upload to Tally:</b> a <b>ledger-wise summary</b> of every ledger this import will post to (entries, debit and credit totals, and whether each ledger is new or already in Tally) is available on the <b>Create ledgers</b> page. Please check it first.</span><button type="button" class="s" id="lsb" style="margin-left:auto">Open ledger-wise summary</button></div></div>
 <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button id="xs" title="Downloads the Tally XML, then saves your current settings (rules, bank ledger, contra setup, ledger master) to a settings file">Export XML &amp; save settings</button><button class="s" id="xml" title="Downloads the Tally XML only; settings are not saved">Export XML only</button><button class="s" id="xsel" type="button" disabled title="Tick rows in the table first. Downloads a Tally XML containing only those transactions">Export selected only (XML)</button><button class="s" id="csv">Download CSV</button><button class="s" id="cm" type="button">Create missing ledgers</button></div>
 <div id="xw"></div><p class="mu">In Tally: Gateway → Import → Data (or Alt+O) → choose the XML. Every ledger used must exist in Tally. Use <b>Create missing ledgers</b> to add any that don\'t; they are written into the same XML, ahead of the vouchers, so one import does both. Also make sure the voucher dates fall inside the company's financial year / books-beginning date.</p></div>
 
@@ -308,7 +309,7 @@ $("ibadd").onclick=()=>ibRow("","");
 const nk=t=>t.toLowerCase().replace(/[0-9]+/g,"").replace(/[^a-z ]+/g," ").replace(/\s+/g," ").trim();
 const has=(t,k)=>k.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean).some(x=>t.includes(x));
 $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
- if(obAuto){$("ob").value="";obAuto=false}const kr=keyer(),rk=new Set(),ek=new Set(),ck=new Set();data.forEach(x=>{const k=kr(x);if(x.del)rk.add(k);if(x.ex)ek.add(k);if(x.ok)ck.add(k)});data=[];OPN=null;selS.clear();let skip=0;const opn=r=>{if(OPN==null&&g("bal")>=0&&/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){const v=sbv(r[g("bal")]);if(v!=null)OPN=v}};
+ if(obAuto){$("ob").value="";obAuto=false}const kr=keyer(),rk=new Set(),ek=new Set(),ck=new Set();const MQ=[];let lk=null;data.forEach(x=>{if(x.man){MQ.push({x,after:lk});return}const k=kr(x);lk=k;if(x.del)rk.add(k);if(x.ex)ek.add(k);if(x.ok)ck.add(k)});data=[];OPN=null;selS.clear();let skip=0;const opn=r=>{if(OPN==null&&g("bal")>=0&&/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){const v=sbv(r[g("bal")]);if(v!=null)OPN=v}};
  for(const r of rows){const d=g("date")>=0?pd(r[g("date")]):null;if(!d){opn(r);skip++;continue}
   let dr=g("dr")>=0?num(r[g("dr")]):0,cr=g("cr")>=0?num(r[g("cr")]):0;
   if(!dr&&!cr&&g("amt")>=0){const a=num(r[g("amt")]);if(a<0||/\bdr\b/i.test(String(r[g("amt")])))dr=Math.abs(a);else cr=a}
@@ -319,7 +320,7 @@ $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\
   else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
   else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
   data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt,fl:r.fl||[],pg:r.p,py:r.y,po:r.oc,sr:r.sr,rn:r.rn})}
- {const k2=keyer();data.forEach(x=>{const k=k2(x);if(rk.has(k))x.del=true;if(ek.has(k))x.ex=true;if(ck.has(k))x.ok=true})}data.forEach(x=>x.led=canon(x.led));nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
+ {const k2=keyer();data.forEach(x=>{const k=k2(x);if(rk.has(k))x.del=true;if(ek.has(k))x.ex=true;if(ck.has(k))x.ok=true})}if(MQ.length)data=window.reinsMan(MQ,data,keyer);data.forEach(x=>x.led=canon(x.led));nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
  calcBal();$("pv").hidden=false;draw(skip)};
 let nc={},ac={},sk=0,vis=[],bdT=null;
 const keyer=()=>{const c={};return x=>{const b=x.d+"|"+x.nar+"|"+x.amt+"|"+x.out;c[b]=(c[b]||0)+1;return b+"#"+c[b]}};
@@ -331,7 +332,7 @@ $("bd").onclick=()=>{const b=$("bd"),n=vis.filter(([x])=>!x.del).length;if(!n)re
  if(!b.dataset.arm){b.dataset.arm=1;b.textContent=`Click again to remove ${n} shown`;bdT=setTimeout(rstBd,4000);return}
  rstBd();vis.forEach(([x])=>x.del=true);draw()};
 const rv=x=>!x.del&&!x.ok&&flg(x).length>0;
-function flg(x){const a=[...(x.fl||[])].filter(t=>!(/Narration/.test(t)&&/[A-Za-z]{2}/.test(x.nar)));if(mm(x))a.push("Running balance differs from the statement balance ("+x.sb.toFixed(2)+" vs "+x.rb.toFixed(2)+")");if(!/[A-Za-z]{2}/.test(x.nar)&&!a.some(t=>/Narration/.test(t)))a.push("Narration empty or unclear");return a}
+function flg(x){const a=[...(x.fl||[])].filter(t=>!(/Narration/.test(t)&&/[A-Za-z]{2}/.test(x.nar)));if(mm(x))a.push("Running balance differs from the statement balance ("+x.sb.toFixed(2)+" vs "+x.rb.toFixed(2)+")");if(!x.man&&!/[A-Za-z]{2}/.test(x.nar)&&!a.some(t=>/Narration/.test(t)))a.push("Narration empty or unclear");return a}
 const edD=(x,i)=>`<span class="qw" style="min-width:0;display:block"><input type="date" data-ed="${i}" value="${x.d.replace(/(\d{4})(\d\d)(\d\d)/,"$1-$2-$3")}" style="min-width:140px" title="Edit the date if it was read wrongly"></span>`,
  edA=(x,i)=>`<span class="qw" style="min-width:0;display:block"><input type="number" step="0.01" min="0.01" data-ea="${i}" value="${x.amt.toFixed(2)}" style="min-width:100px;text-align:right" title="Edit the amount if it was read wrongly"></span><select data-eo="${i}" style="width:auto;margin-top:3px" title="Withdrawal = money out of the bank, Deposit = money into the bank"><option value="o"${x.out?" selected":""}>Withdrawal</option><option value="i"${x.out?"":" selected"}>Deposit</option></select>`;
 function rvBind(){const keep=f=>{const w=$("tb").closest(".w"),st=w.scrollTop;f();w.scrollTop=st},
@@ -350,10 +351,10 @@ function draw(skip){if(rf&&!data.some(rfm))rf=null;rstBd();if(skip!=null)sk=skip
  vis=data.map((x,i)=>[x,i]).filter(([x])=>(!q||x.nar.toLowerCase().includes(q))&&(!df||x.d>=df)&&(!dt||x.d<=dt)&&(!lq||x.led.toLowerCase().includes(lq))&&(!ft||x.t==ft)&&(isNaN(mn)||x.amt>=mn)&&(isNaN(mx)||x.amt<=mx)&&(!$("fu").checked||bad(x.led))&&(!$("eo").checked||rv(x))&&(!rf||rfm(x))&&(!$("fx").value||(!!x.ex)==($("fx").value=="y"))&&(!rc||(rc!="a"&&nc[x.nk]>1)||(rc!="n"&&ac[x.ak]>1)));
  if(adjF){adjF=false;const fa=$("q").value||$("ft").value||$("mn").value||$("mx").value||$("rc").value||$("df").value||$("dt").value||$("lq").value||$("fu").checked||$("eo").checked||$("fx").value||rf;if(!vis.length&&data.length&&fa){const keepL=!!lq&&data.some(x=>!x.del&&x.led.toLowerCase().includes(lq));["q","ft","mn","mx","rc","df","dt","fx"].forEach(id=>$(id).value="");if(!keepL)$("lq").value="";$("fu").checked=false;$("eo").checked=false;rf=null;draw(skip);$("shown").textContent+=keepL?" · other filters removed: no rows matched after your change; the Ledger filter is kept until no such rows are left":" · filter removed: no rows matched after your change";return}}
  if($("gs").checked)vis.sort((p,q2)=>(p[0].nk>q2[0].nk)-(p[0].nk<q2[0].nk)||p[0].amt-q2[0].amt);
- {const ne=data.filter(rv).length;$("ew").innerHTML=ne?`<div style="padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);color:var(--tx)">⚠ <b>${ne} transaction${ne>1?"s":""} could not be fully parsed or confirmed</b> and ${ne>1?"are":"is"} marked ⚠ in the Date column (hover the mark for the reason). Compare ${ne>1?"them":"it"} with the original statement, edit the date, amount, narration or ledger if needed, then press <b>Confirm</b> on each row. <b>The XML cannot be exported until every one is confirmed.</b> <button type="button" class="s" id="rvo" style="padding:3px 10px;margin-left:6px">Show only these</button></div>`:""}$("sbh").hidden=!hs;$("tb").innerHTML=vis.map(([x,i])=>`<tr class="${x.del?"gone ":""}${x.ex&&!x.del?"exd ":""}${rv(x)?"er":""}"><td><input type="checkbox" class="sc" data-s="${i}"${selS.has(i)?" checked":""}></td><td>${flg(x).length&&!x.del?(x.ok?`<span class="ex-b" style="background:#1a56db" title="${esc("Confirmed by you. Flagged for: "+flg(x).join("; "))}">✓ Confirmed</span>`:`<span class="eb" title="${esc(flg(x).join("; "))}">⚠</span> `):""}${x.ex&&!x.del?`<span class="ex-b" title="Included in an exported XML file">✓ Exported</span>`:""}${flg(x).length&&!x.del?edD(x,i):x.d.replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1")}</td><td><select data-t="${i}"${x.del?" disabled":""}>${["Payment","Receipt","Contra"].map(o=>`<option${o==x.t?" selected":""}>${o}</option>`).join("")}</select></td><td class="n"><textarea data-nar="${i}" rows="${Math.min(4,Math.max(1,Math.ceil(x.nar.length/42)))}"${x.del?" disabled":""}>${esc(x.nar)}</textarea></td><td>${nc[x.nk]>1?`<span class="b${rf&&rf.k=="n"&&rf.v==x.nk?" on":""}" data-rf="n" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${nc[x.nk]} transactions with the same narration (click again to clear)">N×${nc[x.nk]}</span> `:""}${ac[x.ak]>1?`<span class="b${rf&&rf.k=="a"&&rf.v==x.ak?" on":""}" data-rf="a" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${ac[x.ak]} transactions with the same amount (click again to clear)">₹×${ac[x.ak]}</span>`:""}</td><td class="r ${x.out?"dr":"cr"}">${flg(x).length&&!x.del?edA(x,i):x.amt.toFixed(2)}</td><td class="r">${x.rb==null?"":x.rb.toFixed(2)}</td>${hs?`<td class="r ${mm(x)?"dr":""}">${x.sb==null?"":x.sb.toFixed(2)}${mm(x)?" ✗":""}</td>`:""}<td><input data-cb="1" class="${!x.del&&bad(x.led)?"bad":""}" value="${esc(x.led)}" data-i="${i}"${x.del?" disabled":""}></td><td style="white-space:nowrap">${flg(x).length&&!x.del?`<button type="button" class="cfm${x.ok?" s":""}" data-c="${i}" style="padding:4px 9px;margin-right:4px" title="${x.ok?"Undo: mark this transaction as not reviewed again":"I have checked this transaction against the statement; allow it to be exported"}">${x.ok?"Undo":"Confirm"}</button>`:""}<button type="button" class="dx${x.del?" un":""}" data-x="${i}" aria-label="${x.del?"Restore transaction":"Remove transaction"}" title="${x.del?"Restore this transaction (it will be imported again)":"Remove this transaction: it will be skipped in the import"}">${x.del?"&#8617;":'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>'}</button></td></tr>`).join("");
+ {const ne=data.filter(rv).length;$("ew").innerHTML=ne?`<div style="padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);color:var(--tx)">⚠ <b>${ne} transaction${ne>1?"s":""} could not be fully parsed or confirmed</b> and ${ne>1?"are":"is"} marked ⚠ in the Date column (hover the mark for the reason). Compare ${ne>1?"them":"it"} with the original statement, edit the date, amount, narration or ledger if needed, then press <b>Confirm</b> on each row. <b>The XML cannot be exported until every one is confirmed.</b> <button type="button" class="s" id="rvo" style="padding:3px 10px;margin-left:6px">Show only these</button></div>`:""}$("sbh").hidden=!hs;$("tb").innerHTML=vis.map(([x,i])=>`<tr class="${x.del?"gone ":""}${x.ex&&!x.del?"exd ":""}${rv(x)?"er":""}"><td><input type="checkbox" class="sc" data-s="${i}"${selS.has(i)?" checked":""}></td><td>${flg(x).length&&!x.del?(x.ok?`<span class="ex-b" style="background:#1a56db" title="${esc("Confirmed by you. Flagged for: "+flg(x).join("; "))}">✓ Confirmed</span>`:`<span class="eb" title="${esc(flg(x).join("; "))}">⚠</span> `):""}${x.ex&&!x.del?`<span class="ex-b" title="Included in an exported XML file">✓ Exported</span>`:""}${x.man?`<span class="b" title="Added manually; not read from the statement">Manual</span> `:""}${(flg(x).length||x.man)&&!x.del?edD(x,i):x.d.replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1")}</td><td><select data-t="${i}"${x.del?" disabled":""}>${["Payment","Receipt","Contra"].map(o=>`<option${o==x.t?" selected":""}>${o}</option>`).join("")}</select></td><td class="n"><textarea data-nar="${i}" rows="${Math.min(4,Math.max(1,Math.ceil(x.nar.length/42)))}"${x.del?" disabled":""}>${esc(x.nar)}</textarea></td><td>${nc[x.nk]>1?`<span class="b${rf&&rf.k=="n"&&rf.v==x.nk?" on":""}" data-rf="n" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${nc[x.nk]} transactions with the same narration (click again to clear)">N×${nc[x.nk]}</span> `:""}${ac[x.ak]>1?`<span class="b${rf&&rf.k=="a"&&rf.v==x.ak?" on":""}" data-rf="a" data-i="${i}" role="button" tabindex="0" title="Click to show only the ${ac[x.ak]} transactions with the same amount (click again to clear)">₹×${ac[x.ak]}</span>`:""}</td><td class="r ${x.out?"dr":"cr"}">${(flg(x).length||x.man)&&!x.del?edA(x,i):x.amt.toFixed(2)}</td><td class="r">${x.rb==null?"":x.rb.toFixed(2)}</td>${hs?`<td class="r ${mm(x)?"dr":""}">${x.sb==null?"":x.sb.toFixed(2)}${mm(x)?" ✗":""}</td>`:""}<td><input data-cb="1" class="${!x.del&&bad(x.led)?"bad":""}" value="${esc(x.led)}" data-i="${i}"${x.del?" disabled":""}></td><td style="white-space:nowrap">${flg(x).length&&!x.del?`<button type="button" class="cfm${x.ok?" s":""}" data-c="${i}" style="padding:4px 9px;margin-right:4px" title="${x.ok?"Undo: mark this transaction as not reviewed again":"I have checked this transaction against the statement; allow it to be exported"}">${x.ok?"Undo":"Confirm"}</button>`:""}<button type="button" class="ia" data-ia="${i}" aria-label="Add a transaction before or after this row" title="Add a transaction before or after this row" style="padding:4px 9px;margin-right:4px">+</button><button type="button" class="dx${x.del?" un":""}" data-x="${i}" aria-label="${x.del?"Restore transaction":"Remove transaction"}" title="${x.del?"Restore this transaction (it will be imported again)":x.man?"Delete this manually added transaction":"Remove this transaction: it will be skipped in the import"}">${x.del?"&#8617;":'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>'}</button></td></tr>`).join("");
  selBind();rvBind();document.querySelectorAll("#tb input[data-i]").forEach(e=>{e.oninput=()=>data[e.dataset.i].led=e.value;e.onchange=()=>{const v=canon(e.value);e.value=v;data[e.dataset.i].led=v;e.classList.toggle("bad",bad(v));warn();if(csOpen)csRender()}});
  document.querySelectorAll("#tb select[data-t]").forEach(e=>e.onchange=()=>{data[e.dataset.t].t=e.value;sum()});
- $("qx").hidden=!$("q").value;document.querySelectorAll("#tb .dx").forEach(e=>e.onclick=()=>{const w=e.closest(".w"),st=w.scrollTop,x=data[e.dataset.x];x.del=!x.del;draw();w.scrollTop=st});fitNar();$("shown").textContent=`Showing ${vis.length} of ${data.length}`;{const b=$("rfb");b.hidden=!rf;if(rf)b.textContent=(rf.k=="b"?rf.l:rf.k=="n"?"Same narration: "+rf.l:"Same amount: "+rf.l)+" ✕"}document.querySelectorAll("#tb [data-rf]").forEach(e=>{const go=()=>{const x=data[e.dataset.i],k=e.dataset.rf,v=k=="n"?x.nk:x.ak;rf=rf&&rf.k==k&&rf.v==v?null:{k,v,l:k=="n"?(x.nar.length>28?x.nar.slice(0,28)+"…":x.nar):(x.out?"Withdrawal":"Deposit")+" ₹"+x.amt.toFixed(2)};draw()};e.onclick=go;e.onkeydown=ev=>{if(ev.key=="Enter"||ev.key==" "){ev.preventDefault();go()}}});sum();warn();if(csOpen)csRender()}
+ $("qx").hidden=!$("q").value;document.querySelectorAll("#tb .dx").forEach(e=>e.onclick=()=>{const w=e.closest(".w"),st=w.scrollTop,x=data[e.dataset.x];if(x.man){window.delMan(+e.dataset.x);return}x.del=!x.del;draw();w.scrollTop=st});fitNar();$("shown").textContent=`Showing ${vis.length} of ${data.length}`;{const b=$("rfb");b.hidden=!rf;if(rf)b.textContent=(rf.k=="b"?rf.l:rf.k=="n"?"Same narration: "+rf.l:"Same amount: "+rf.l)+" ✕"}document.querySelectorAll("#tb [data-rf]").forEach(e=>{const go=()=>{const x=data[e.dataset.i],k=e.dataset.rf,v=k=="n"?x.nk:x.ak;rf=rf&&rf.k==k&&rf.v==v?null:{k,v,l:k=="n"?(x.nar.length>28?x.nar.slice(0,28)+"…":x.nar):(x.out?"Withdrawal":"Deposit")+" ₹"+x.amt.toFixed(2)};draw()};e.onclick=go;e.onkeydown=ev=>{if(ev.key=="Enter"||ev.key==" "){ev.preventDefault();go()}}});sum();warn();if(csOpen)csRender()}
 const inr=p=>(p/100).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
 function tot(A){const t=L=>{const d=L.filter(x=>x.out),c=L.filter(x=>!x.out),f=a=>a.reduce((q,x)=>q+Math.round(x.amt*100),0);return `<span class="dr">Total debit: <b>₹${inr(f(d))}</b> (${d.length})</span> &nbsp;·&nbsp; <span class="cr">Total credit: <b>₹${inr(f(c))}</b> (${c.length})</span>`};
  let h=data.length?t(A):"";const V=(typeof vis!="undefined"&&vis?vis.map(([x])=>x).filter(x=>!x.del):A);if(data.length&&V.length!=A.length)h+=`<div class="mu" style="font-size:12px">Shown in the table (${V.length}): ${t(V)}</div>`;$("tt").innerHTML=h}
@@ -415,9 +416,13 @@ function clSum(){const e=$("cls");if(!e)return;const act=data.filter(x=>!x.del),
  const st=n=>led.length?(bad(n)?(isCl(n)?'<span style="color:#188038">New: will be created</span>':'<b style="color:#d93025">Not in master, not ticked</b>'):"In Tally master"):(isCl(n)?'<span style="color:#188038">New: will be created</span>':"Not ticked (assumed to exist in Tally)");
  const fd=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1"),fa=v=>Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
  const L=[...m.entries()].sort((a,b)=>(b[1].b?1:0)-(a[1].b?1:0)||b[1].n-a[1].n||a[0].localeCompare(b[0])),nb=act.filter(x=>!x.led||!String(x.led).trim()).length;
- const det=(n,o)=>{const dr=x=>o.b?!x.out:!!x.out;let td=0,tc=0;const r=o.t.map(x=>{const d=dr(x);if(d)td+=x.amt;else tc+=x.amt;return`<tr><td>${esc(fd(x.d))}</td><td class="n">${esc(x.nar)}</td><td>${esc(x.t||"")}</td><td class="r">${d?fa(x.amt):""}</td><td class="r">${d?"":fa(x.amt)}</td></tr>`}).join("");return`<tr class="lt"><td colspan="3" style="padding:0 0 8px 24px;white-space:normal"><div class="w" style="max-height:260px"><table><thead><tr><th>Date</th><th>Narration</th><th>Type</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead><tbody>${r}<tr style="font-weight:600"><td colspan="3">Total</td><td class="r">${fa(td)}</td><td class="r">${fa(tc)}</td></tr></tbody></table></div></td></tr>`};
+ const det=(n,o)=>{const dr=x=>o.b?!x.out:!!x.out;let td=0,tc=0;const r=o.t.map(x=>{const d=dr(x);if(d)td+=x.amt;else tc+=x.amt;return`<tr class="tj" data-ti="${data.indexOf(x)}" style="cursor:pointer" title="Click to open this transaction in the preview, to edit its ledger, narration etc."><td>${esc(fd(x.d))}</td><td class="n">${esc(x.nar)}</td><td>${esc(x.t||"")}</td><td class="r">${d?fa(x.amt):""}</td><td class="r">${d?"":fa(x.amt)}</td></tr>`}).join("");return`<tr class="lt"><td colspan="3" style="padding:0 0 8px 24px;white-space:normal"><div class="w" style="max-height:260px"><table><thead><tr><th>Date</th><th>Narration</th><th>Type</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead><tbody>${r}<tr style="font-weight:600"><td colspan="3">Total</td><td class="r">${fa(td)}</td><td class="r">${fa(tc)}</td></tr></tbody></table></div></td></tr>`};
  e.innerHTML=`<b>Ledgers affected by this export</b><p class="mu" style="margin:4px 0 8px">${L.length} ledger${L.length>1?"s":""} · ${act.length} voucher${act.length>1?"s":""} (each posts to the bank ledger and one other ledger). Click a ledger to show or hide its transactions.${nb?` <b style="color:#d93025">${nb} voucher${nb>1?"s have":" has"} no ledger set.</b>`:""}</p><div class="w"><table><thead><tr><th>Ledger name</th><th>Status</th><th class="r">Entries</th></tr></thead><tbody>${L.map(([n,o])=>{const g=clGrp(n),op=csOp.has(n),w=o.b?"font-weight:700":"";return`<tr class="lh" data-ln="${esc(n)}" style="cursor:pointer;${w}"><td class="n"><span style="display:inline-block;width:16px;color:var(--mu)">${op?"▾":"▸"}</span>${esc(n)}${g?` <span style="font-weight:${o.b?700:400};color:var(--mu)">(${esc(g)})</span>`:""}${o.b?' <span class="b" title="Bank ledger">bank</span>':""}</td><td>${st(n)}</td><td class="r">${o.n}</td></tr>${op?det(n,o):""}`}).join("")}</tbody></table></div>`}
 document.addEventListener("click",ev=>{const r=ev.target.closest&&ev.target.closest("#cls tr.lh");if(!r)return;const n=r.dataset.ln;csOp.has(n)?csOp.delete(n):csOp.add(n);clSum()});
+/* ledger-wise summary: click a transaction -> open the same row in the Preview table (filters that would hide it are cleared) */
+document.addEventListener("click",ev=>{const r=ev.target.closest&&ev.target.closest("#cls tr.tj");if(!r)return;const x=data[+r.dataset.ti];if(!x)return;nav("pv");draw();
+ if(!vis.some(v=>v[0]===x)){["q","ft","mn","mx","rc","df","dt","lq","fx"].forEach(id=>$(id).value="");$("fu").checked=false;$("eo").checked=false;rf=null;draw()}
+ const go=()=>{const c=document.querySelector('#tb input.sc[data-s="'+r.dataset.ti+'"]'),t=c&&c.closest("tr");if(!t)return;t.scrollIntoView({block:"center",behavior:"smooth"});t.style.transition="background .4s";t.style.background="#fff3a0";setTimeout(()=>{t.style.background=""},2500)};setTimeout(go,80);setTimeout(go,400)});
 function csStat(){clSum();const t=csList.filter(isCl).length,r=csList.length-t;$("css").innerHTML=csList.length?`${t} of ${csList.length} ticked to be created`+(r?` · <b style="color:#d93025">${r} not ticked</b>: vouchers using them will be rejected by Tally unless they already exist`:""):""}
 function csRender(){manual.forEach(x=>{if(!cl[x.n])cl[x.n]={on:true,grp:x.g||"Suspense A/c",ob:x.ob||"",dc:x.dc||"Dr",bw:""}});const m=missL();csList=m;const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim());
  $("cst").innerHTML=m.length?`${m.length} ledger${m.length>1?"s":""} to create.`+(led.length?"":" No Tally master is loaded, so this lists <b>every</b> ledger the import uses and none are ticked: tick only the ones that don't exist in Tally yet (creating an existing ledger gives a duplicate error)."):"✓ No missing ledgers.";$("cst").innerHTML+=` <br>${grp.length?`Groups come from your imported Tally master (${grp.length}).`:"No groups were found in the imported master, so Tally's standard groups are offered. Load an XML master export from Tally to use your own group list."} Groups in red are not in that list.`;
@@ -494,7 +499,160 @@ $("pf").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JS
  pc=p.cols||null;applyCols();brT=$("br").value.trim()!==""&&$("br").value!==$("bank").value;if(!brT)$("br").value=$("bank").value;$("setup").hidden=!rows.length&&$("setup").hidden;
  $("msg").textContent="Settings loaded from "+f.name+(rows.length?"":". Now upload the statement.")+mr}catch(x){$("msg").textContent="Invalid settings file: "+x.message}};
 
-const BP=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
+/* =====================================================================================
+ BANK LAYOUT LIBRARY  (AI / developer: READ THIS BEFORE TOUCHING THE PDF/OCR PARSERS)
+ IDEA: each bank's statement layout is saved as ONE entry in the BL table below. On every PDF/photo
+ upload, pdfRows() calls blFind() on page 1 (text layer first, OCR text if the file is scanned).
+   - layout FOUND     -> global LY is set; pdfText()/chainRows() read LY (junk, zones, cont) and parse with it.
+   - layout NOT found -> LY=null and the generic parser runs exactly as before.
+   - saved layout gives rows that fail the balance check (chk) -> LY is dropped and the generic parser retries.
+ PRIORITY: DATE, NARRATION and AMOUNT are EQUALLY critical. A wrong narration (cut, merged with the next row,
+   header/footer text appended, OCR-changed letters) silently pushes the entry to the wrong Tally ledger because
+   ledger filters match on narration keywords. Never trim or "clean" narration unless the user asks.
+   Per row: date valid & in order | prev balance + credit - debit = balance | narration non-empty, no neighbour/junk text.
+ CUSTOM PARSER (optional): parse:async doc=>rows  (rows = [Date,Narration,Ref,Debit,Credit,Balance] + .y .p .oc). Tried FIRST when det matches;
+   if it throws or fails the balance check (chk) the generic readers run instead. See blAnchor() for a reusable engine.
+ ENTRY FORMAT (one per bank/variant; a bank may have several: savings/current/old/new):
+   {id:"sbi-savings-1", name:"SBI Savings",
+    det:["state bank of india","txn date","value date"],  // ALL must appear in page-1 text; matching is OCR-tolerant (fz)
+    junk:/regex/i,        // lines matching are never appended to a narration (repeated page headers, footers, notes)
+    zones:[[0,.12],[.12,.55],[.55,.70],[.70,.85],[.85,1]], // OPTIONAL column x-ranges as fractions of the header-row width,
+                          // in header-column order; used only if header cell count equals zones.length. Best for OCR.
+    cont:{dy:20,max:4},   // OPTIONAL narration continuation: max vertical gap and max extra lines
+    ocr:{zones:[...],junk:/.../}}  // OPTIONAL overrides applied only when the text came from OCR
+ HOW TO ADD A BANK: convert a sample statement carefully, compare date/narration/amount with the tool's CSV row by row,
+   find what the generic parser got wrong, encode that as one entry, and verify on the sample. Keep index.html and
+   index_software.html identical in this block (the web page and desktop app share this table).
+ LIMITS: layouts apply to PDF/photo input only (CSV/Excel use the column-mapping step). Skewed/cropped photos shift zones.
+   More samples per bank = more reliable layout.
+===================================================================================== */
+const BL=[
+/* ICICI Bank savings/current: DATE | MODE | PARTICULARS | DEPOSITS | WITHDRAWALS | BALANCE; particulars wrap above AND below the date row */
+ {id:"icici-1",name:"ICICI Bank (Date|Mode|Particulars|Deposits|Withdrawals|Balance)",det:["icici bank","statement of transactions in","particulars","withdrawals"],junk:/^\s*page\s*\d+\s*of\s*\d+/i,
+  parse:d=>blAnchor(d,{cols:{date:/^date$/i,mode:/^mode/i,nar:/^particulars$/i,cr:/^deposits$/i,dr:/^withdrawals$/i,bal:/^balance$/i},stop:/^total$/i,open:/^b\/f/i,totals:true})},
+ /* Central Bank of India account statement: Value Date | Post Date | Details | Chq.No. | Debit | Credit | Balance (balance wraps under long amounts; details continue on the lines below; last pages lose x-positions: see blCentral) */
+ {id:"central-bank-1",name:"Central Bank of India (Value Date|Post Date|Details|Debit|Credit|Balance)",det:["central bank of india","brought forward","chq.no"],parse:d=>blCentral(d)},
+ /* Dhanlaxmi Bank savings/current account statement: DATE | VALUE DATE | DESCRIPTION | CHEQUE NO | DEBITS | CREDITS | BALANCE (date row holds line 1 of the narration, the rest wraps BELOW; both Debits and Credits always printed; first row B/F = opening balance; see blDhanlaxmi) */
+ {id:"dhanlaxmi-1",name:"Dhanlaxmi Bank (Date|Value Date|Description|Debits|Credits|Balance)",det:["dhanlaxmi bank","statement of account","value date","cheque no"],parse:d=>blDhanlaxmi(d)},
+ /* add entries here, e.g. {id:"sbi-savings-1",name:"SBI Savings",det:["state bank of india","txn date"],junk:/^\s*page\s*\d/i} */
+];
+let LY=null;
+const fz=s=>String(s).toLowerCase().replace(/[01i5|]/g,m=>({0:"o",1:"l",i:"l",5:"s","|":"l"})[m]).replace(/[^a-z0-9]/g,"");
+function blFind(its,ocr){const t=fz(its.map(i=>i.s).join(" "));let b=null;for(const e of BL)if(e.det.every(k=>t.includes(fz(k)))&&(!b||e.det.length>b.det.length))b=e;return b&&ocr&&b.ocr?{...b,...b.ocr}:b}
+async function ocrL(...a){const o=await ocrPages(...a);if(!LY)LY=blFind(o[0]||[],true);return o}
+function blZ(c){if(!LY||!LY.zones||LY.zones.length!=c.length)return c;const x0=c[0].x,W=c[c.length-1].r-x0;return c.map((k,i)=>({...k,x:x0+LY.zones[i][0]*W,r:x0+LY.zones[i][1]*W}))}
+/* ---- LAYOUT ENGINE "anchor": date+amounts on ONE baseline, particulars wrapped ABOVE and BELOW it (e.g. ICICI).
+   Every non-date word is attached to the NEAREST dated row (by vertical distance), never "the line above/below".
+   Columns come from the page's own header row; amounts are matched to columns by right edge.
+   cfg: {cols:{date,mode?,nar,cr,dr,bal}(header regexes), stop:/^TOTAL$/i, open:/^b\/f/i, maxDy:24, totals:true} ---- */
+async function blAnchor(doc,c){
+ const N=/^\(?-?\d[\d,]*\.\d{2}\)?$/,DT=/^\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}$/,f=x=>(Math.round(x*100)/100).toFixed(2),K=c.cols,A=[];let tot=null;
+ for(let p=1;p<=doc.numPages;p++){
+  const W=[];for(const i of(await(await doc.getPage(p)).getTextContent()).items){if(!i.str.trim())continue;const n=i.str.length,x0=i.transform[4],x1=x0+i.width,y=i.transform[5];let o=0;
+   for(const s of i.str.split(/\s+/).filter(Boolean)){const a=i.str.indexOf(s,o);o=a+s.length;W.push({s,x:x0+(x1-x0)*a/n,r:x0+(x1-x0)*o/n,y})}}
+  const hd=W.find(w=>K.date.test(w.s)&&W.some(v=>Math.abs(v.y-w.y)<3&&K.bal.test(v.s)));if(!hd)continue;/* page without the table header: skip (cover/notes) */
+  const H={};for(const k in K){const w=W.find(v=>Math.abs(v.y-hd.y)<3&&K[k].test(v.s));if(w)H[k]=w}
+  if(!H.nar||!H.cr||!H.dr||!H.bal)continue;
+  let yEnd=-1e9;if(c.stop){const t=W.find(w=>w.y<hd.y-3&&w.x<H.nar.x&&c.stop.test(w.s));if(t){yEnd=t.y+3;const T=W.filter(w=>Math.abs(w.y-t.y)<3&&N.test(w.s)).sort((a,b)=>a.x-b.x);if(T.length>=3)tot={cr:num(T[T.length-3].s),dr:num(T[T.length-2].s),bal:num(T[T.length-1].s)}}}
+  const NW=[],B=W.filter(w=>w.y<hd.y-3&&w.y>yEnd),xm=(H.mode||H.nar).x-4,xn=H.nar.x-4,xa=H.nar.x+.92*(H.cr.x-H.nar.x),R={cr:H.cr.r,dr:H.dr.r,bal:H.bal.r};
+  const an=B.filter(w=>w.x<xm&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],mode:[],amt:{}}));if(!an.length)continue;
+  const near=y=>{let b=null,bd=1e9;for(const a of an){const d=Math.abs(a.y-y);if(d<bd){bd=d;b=a}}return{b,bd}};
+  for(const w of B){if(w.x<xm)continue;
+   if(N.test(w.s)&&w.r>H.cr.x){const{b,bd}=near(w.y);if(!b||bd>8)continue;let k=null,kd=1e9;for(const q in R){const d=Math.abs(w.r-R[q]);if(d<kd){kd=d;k=q}}b.amt[k]=w.s;continue}
+   if(w.x>=xa)continue;if(w.x<xn){const{b,bd}=near(w.y);if(b&&bd<4)b.mode.push(w);continue}NW.push(w)}
+  /* particulars wrap SYMMETRICALLY around the date row (n lines: floor(n/2) above, floor(n/2) below, middle line on the row itself).
+     Lines between two dated rows are therefore split by counting down from the top of the page; nearest-row is only the fallback. */
+  an.sort((a,b)=>b.y-a.y);const LN=[];for(const w of NW){const l=LN.find(l=>Math.abs(l.y-w.y)<2);l?l.w.push(w):LN.push({y:w.y,w:[w]})}LN.sort((a,b)=>b.y-a.y);
+  const G=an.map(()=>[]),bt=an.map(()=>[]).concat([[]]);let ok=true;
+  for(const l of LN){const j=an.findIndex(a=>Math.abs(a.y-l.y)<2);if(j>=0)G[j].push(l);else bt[an.filter(a=>a.y>l.y).length].push(l)}
+  let bp=0;const n=an.length;for(let j=0;j<=n&&ok;j++){const Bj=bt[j];if(bp>Bj.length){ok=false;break}if(j>0)G[j-1].push(...Bj.slice(0,bp));const R=Bj.length-bp;if(j<n){G[j].push(...Bj.slice(bp));bp=R}else if(R)ok=false}
+  if(!ok){G.forEach(g=>g.length=0);for(const l of LN){const{b,bd}=near(l.y);if(b&&bd<=(c.maxDy||24))G[an.indexOf(b)].push(l)}}
+  an.forEach((a,j)=>{a.nar=G[j].flatMap(l=>l.w)});
+  A.push(...an)}
+ if(!A.length)throw new Error("layout table not found");
+ const J=(a,b)=>!a?b:(/\/$/.test(a)||/^\//.test(b))?a+b:a+" "+b,txt=ws=>{const L=[];for(const w of ws){const l=L.find(l=>Math.abs(l.y-w.y)<3);l?l.w.push(w):L.push({y:w.y,w:[w]})}
+  return L.sort((a,b)=>b.y-a.y).map(l=>l.w.sort((a,b)=>a.x-b.x).map(w=>w.s).join(" ")).reduce(J,"")},
+ out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let sc=0,sd=0;
+ for(const a of A){const nr=txt(a.nar),bl=a.amt.bal;if(c.open&&c.open.test(nr)&&!a.amt.cr&&!a.amt.dr)continue;
+  if(!bl||(!a.amt.cr&&!a.amt.dr))throw new Error("row without amount/balance: "+a.d+" "+nr.slice(0,30));
+  const cq=a.amt.cr?num(a.amt.cr):0,dq=a.amt.dr?num(a.amt.dr):0;sc+=cq;sd+=dq;
+  const m=txt(a.mode).match(/cheque\s*(\d+)/i),r=[a.d,nr,m?m[1]:"",dq?f(dq):"",cq?f(cq):"",f(num(bl))];r.y=a.y;r.p=a.p;r.oc=false;out.push(r)}
+ if(c.totals&&tot&&(Math.abs(tot.cr-sc)>.011||Math.abs(tot.dr-sd)>.011))throw new Error("totals differ from the statement's TOTAL row ("+f(sc)+"/"+f(sd)+" vs "+f(tot.cr)+"/"+f(tot.dr)+")");
+ return out}
+/* ---- Central Bank of India (Value Date|Post Date|Details|Chq.No.|Debit|Credit|Balance): custom parser, not blAnchor, because
+   (1) the balance wraps to a 2nd line under long amounts, (2) narration sits 1-2 lines BELOW the date row and continues across printed-page breaks,
+   (3) the last PDF pages lose every x-position and flow as plain text. So the whole text is read as ONE TOKEN STREAM, the CARRIED/BROUGHT FORWARD
+   + Statement Summary + header/footer blocks are cut out, and Dr/Cr comes from the BALANCE CHAIN (never from x).
+   Throws (generic readers then run) if: a balance does not chain, a printed page's Dr/Cr count or totals ("Statement Summary") differ, or
+   CARRIED FORWARD differs from the last balance. The printed CLOSING BALANCE is NOT compared: on the sample it is the print-date balance. ---- */
+async function blCentral(doc){
+ const NM=/^\d{1,3}(?:,\d{2,3})*\.\d{2}$/,BT=/^\d{1,3}(?:,\d{2,3})*\.\d{2}(?:Cr|Dr)?$/,DT=/^\d{2}\/\d{2}\/\d{2}$/,f=x=>(Math.round(x*100)/100).toFixed(2),sg=s=>num(s)*(/Dr$/.test(s)?-1:1),T=[];
+ for(let p=1;p<=doc.numPages;p++){const L=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:Math.round(i.transform[5])})).sort((a,b)=>b.y-a.y||a.x-b.x);
+  for(const l of L){const w=l.s.trim().split(/\s+/);w.forEach((s,k)=>T.push({s,p,y:l.y,e:k==w.length-1}))}}
+ const is=(i,...w)=>w.every((s,k)=>T[i+k]&&T[i+k].s==s),sm=k=>({nd:+T[k+3].s,nc:+T[k+6].s,td:num(T[k+7].s),tc:num(T[k+8].s)}),
+  J=ws=>ws.reduce((a,w,k)=>a+(k&&!(ws[k-1].e&&/\/$/.test(ws[k-1].s))?" ":"")+w.s,"");
+ let i=T.findIndex((t,k)=>is(k,"BROUGHT","FORWARD",":"));if(i<0||!T[i+3]||!BT.test(T[i+3].s))throw new Error("layout table not found");
+ const op=sg(T[i+3].s),R=[],B=[];let cur=null;i+=4;
+ while(i<T.length){const t=T[i].s;
+  if(is(i,"CLOSING","BALANCE")){for(let k=i;k<T.length;k++)if(is(k,"Summary","Dr.","Count")&&is(k+4,"Cr.","Count")){B.push({n:R.length,cf:null,s:sm(k)});break}break}
+  if(is(i,"CARRIED","FORWARD",":")){const b={n:0,cf:T[i+3].s,s:null};if(cur&&cur.amt&&!cur.bal&&BT.test(b.cf))cur.bal=b.cf;b.n=R.length;let j=i+4;
+   for(;j<T.length;j++){if(is(j,"Summary","Dr.","Count")&&is(j+4,"Cr.","Count")){b.s=sm(j);j+=8;continue}if(is(j,"BROUGHT","FORWARD",":")){j+=4;break}}
+   B.push(b);i=j;continue}
+  if(DT.test(t)&&T[i+1]&&DT.test(T[i+1].s)){cur={d:t,ty:[],amt:null,bal:null,nar:[],p:T[i].p,y:T[i].y};R.push(cur);i+=2;continue}
+  if(cur){if(!cur.amt){if(NM.test(t))cur.amt=t;else cur.ty.push(T[i])}else if(!cur.bal&&!cur.nar.length&&BT.test(t))cur.bal=t;else cur.nar.push(T[i])}
+  i++}
+ if(!R.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=op,bi=0,nd=0,nc=0,td=0,tc=0,ld="";
+ const pg=b=>{if(b.s&&(b.s.nd!=nd||b.s.nc!=nc||Math.abs(b.s.td-td)>.011||Math.abs(b.s.tc-tc)>.011))throw new Error("printed page summary differs after "+ld+" (rows Dr "+nd+"/Cr "+nc+", "+f(td)+"/"+f(tc)+" vs Dr "+b.s.nd+"/Cr "+b.s.nc+", "+f(b.s.td)+"/"+f(b.s.tc)+")");
+  if(b.cf!=null&&Math.abs(sg(b.cf)-pv)>.011)throw new Error("CARRIED FORWARD differs from last balance after "+ld);nd=nc=td=tc=0};
+ R.forEach((r,k)=>{while(B[bi]&&B[bi].n==k)pg(B[bi++]);const nr=J([...r.ty,...r.nar]);
+  if(!r.amt||!r.bal)throw new Error("row without amount/balance: "+r.d+" "+nr.slice(0,30));
+  const a=num(r.amt),b=sg(r.bal);let cq=0,dq=0;
+  if(Math.abs(pv+a-b)<.011){cq=a;nc++;tc+=a}else if(Math.abs(pv-a-b)<.011){dq=a;nd++;td+=a}else throw new Error("balance chain breaks at "+r.d+" "+nr.slice(0,30));
+  pv=b;ld=r.d;const o=[r.d,nr,"",dq?f(dq):"",cq?f(cq):"",f(Math.abs(b))+(b<0?"Dr":"")];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)});
+ while(B[bi])pg(B[bi++]);
+ return out}
+/* ---- Dhanlaxmi Bank (DATE|VALUE DATE|DESCRIPTION|CHEQUE NO|DEBITS|CREDITS|BALANCE): custom parser, not blAnchor, because
+   (1) the date row carries the FIRST narration line and the rest wraps BELOW it (blAnchor expects lines above AND below the date row),
+   (2) every row prints BOTH Debits and Credits (0.00 on the unused side) plus the balance: Dr/Cr = the non-zero one, confirmed by the balance chain,
+   (3) dates are DD-MON-YYYY and the first row "B/F ..." is the opening balance, not a transaction (the generic parser made it a Receipt),
+   (4) narration is hard-wrapped at ~25 characters: a line of 20+ characters with no space is a split word and is joined WITHOUT a space.
+   Every narration line goes to the dated row ABOVE it (also across a page break). Throws (generic readers then run) if a row lacks its
+   Debit/Credit/Balance, a balance does not chain, or the printed "Statement Summary" (opening, totals, counts, closing) differs. ---- */
+async function blDhanlaxmi(doc){
+ const AM=/^\d[\d,]*\.\d{2}$/,DT=/^\d{1,2}-[A-Za-z]{3}-\d{4}$/,f=x=>(Math.round(x*100)/100).toFixed(2),R=[];let H=null,cur=null,sm=null;
+ pg:for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],y:i.transform[5]})).sort((a,b)=>b.y-a.y),L=[];
+  for(const w of I){const l=L.find(l=>Math.abs(l.y-w.y)<2);l?l.w.push(w):L.push({y:w.y,w:[w]})}
+  L.sort((a,b)=>b.y-a.y);let top=1e9;
+  const hd=I.find(w=>w.s=="DATE"&&I.some(v=>Math.abs(v.y-w.y)<3&&v.s=="BALANCE"));
+  if(hd){const g=s=>I.find(v=>Math.abs(v.y-hd.y)<3&&v.s==s),V=g("VALUE DATE"),D=g("DESCRIPTION"),C=g("CHEQUE NO");if(V&&D&&C){H={dt:V.x-4,n0:D.x-8,n1:C.x-4};top=hd.y-3}}
+  if(!H)continue;/* page without the table header and before the first table: skip */
+  for(const l of L){if(l.y>=top)continue;l.w.sort((a,b)=>a.x-b.x);
+   if(/^Statement Summary/i.test(l.w[0].s)){const cb=L.find(q=>q.y<l.y&&q.w.some(w=>/^Closing Balance/i.test(w.s))),v=cb&&L.find(q=>q.y<cb.y-3);
+    if(v){const a=v.w.sort((x,y)=>x.x-y.x).map(w=>w.s);if(a.length==6&&a.every(s=>/^\d[\d,]*(\.\d{2})?$/.test(s))){const n=a.map(num);sm={ob:n[0],td:n[1],tc:n[2],nd:n[3],nc:n[4],cb:n[5]}}}
+    break pg}
+   for(const w of l.w){
+    if(DT.test(w.s)&&w.x<H.dt){cur={d:w.s,p,y:l.y,nar:[],am:[],ref:[]};R.push(cur);continue}
+    if(!cur)continue;
+    if(w.x>=H.n0&&w.x<H.n1)cur.nar.push(w.s);
+    else if(w.x>=H.n1&&AM.test(w.s)&&cur.p==p&&Math.abs(l.y-cur.y)<3)cur.am.push(w.s);
+    else if(w.x>=H.n1&&w.x<H.n1+85&&/^\d+$/.test(w.s))cur.ref.push(w.s)}}}
+ if(!R.length)throw new Error("layout table not found");
+ const jn=A=>A.reduce((a,b,k)=>k?a+((/[\/-]$/.test(A[k-1])||/^\//.test(b)||(A[k-1].length>=20&&!/\s/.test(A[k-1])))?"":" ")+b:b,"");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=null,ob=null,sc=0,sd=0,nc=0,nd=0;
+ for(const r of R){const nr=jn(r.nar);
+  if(r.am.length!=3)throw new Error("row without debit/credit/balance: "+r.d+" "+nr.slice(0,30));
+  const dq=num(r.am[0]),cq=num(r.am[1]),bl=num(r.am[2]);
+  if(pv==null&&/^B\/F\b/i.test(nr)){pv=ob=bl;continue}/* opening balance row: not a transaction */
+  if(pv!=null&&Math.abs(pv+cq-dq-bl)>.011)throw new Error("balance chain breaks at "+r.d+" "+nr.slice(0,30));
+  if((dq>0)==(cq>0))throw new Error("debit/credit not exclusive at "+r.d+" "+nr.slice(0,30));
+  pv=bl;if(dq>0){nd++;sd+=dq}else{nc++;sc+=cq}
+  const o=[r.d,nr,r.ref.join(" "),dq>0?f(dq):"",cq>0?f(cq):"",f(bl)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ if(sm&&(Math.abs(sm.td-sd)>.011||Math.abs(sm.tc-sc)>.011||sm.nd!=nd||sm.nc!=nc||(ob!=null&&Math.abs(sm.ob-ob)>.011)||Math.abs(sm.cb-pv)>.011))
+  throw new Error("totals differ from the statement summary (rows Dr "+nd+"/Cr "+nc+", "+f(sd)+"/"+f(sc)+", closing "+f(pv)+" vs Dr "+sm.nd+"/Cr "+sm.nc+", "+f(sm.td)+"/"+f(sm.tc)+", closing "+f(sm.cb)+")");
+ return out}
+const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP={test:t=>BP0.test(t)||!!(LY&&LY.junk&&LY.junk.test(t))};const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
  L.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const buf=await f.arrayBuffer(),pw=$("pw").value;
@@ -547,18 +705,21 @@ async function imgDoc(f){const P=[];for(const z of (f.imgs||[f])){const bm=await
  return{numPages:P.length,getPage:async n=>P[n-1]}}
 async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openPdf(f),C=[],errs=[];window.curPdf=doc;let noAI=false,pre="";
  const tryR=(R,src)=>{const v=chk(R);C.push({R,v,src});return v.n>0&&v.bad<=Math.floor(v.n*.02)&&v.nw<=Math.floor(v.n*.1)};
- const fin=(c,pre)=>{const v=c.v;pipeNote=(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
+ const fin=(c,pre)=>{const v=c.v;pipeNote=(LY?"[Layout: "+LY.name+"] ":"")+(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
  const weak=c=>!c||c.v.n==0||c.v.bad>0||c.v.nw>0;
  const pick=()=>C.filter(c=>c.v.n).sort((x,y)=>(y.v.n-y.v.bad-y.v.nw)-(x.v.n-x.v.bad-x.v.nw))[0];
  let ok=false;$("msg").textContent="Reading PDF text...";
- try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}
- {const tx=C.length&&C[C.length-1].src=="PDF text"?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
+ LY=null;try{LY=blFind((await(await doc.getPage(1)).getTextContent()).items.map(i=>({s:i.str})))}catch(e){}
+ let LP=false;if(LY&&LY.parse){try{$("msg").textContent="Reading with saved layout: "+LY.name+"...";LP=ok=tryR(await LY.parse(doc),"Layout: "+LY.name);if(!ok)errs.push("Layout "+LY.name+" did not reconcile")}catch(e){errs.push("Layout "+LY.name+": "+e.message)}if(!ok)LY=null}/* layout-specific parser first; generic readers are the fallback */
+ if(!ok)try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}
+ if(!ok&&LY){LY=null;try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}}/* saved layout failed balance check: generic parser */
+ if(!LP){const tx=C.length&&C[C.length-1].src=="PDF text"?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
   try{$("msg").textContent="Cross-checking with balance-chain reader...";const okc=tryR(await chainRows(doc),"Balance-chain reader"),ch=C[C.length-1];
    if(okc&&(!ok||(ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03)))ok=true;/* both reconcile: keep the one with the fuller narration */
    else if(tx)C.push(C.splice(C.indexOf(tx),1)[0])}catch(e){errs.push("Chain: "+e.message)}}
- if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";if(tryR(await pdfText(doc,await ocrPages(doc)),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
- if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,3,2,{tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"})),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
- if(!ok&&C.length&&C[C.length-1].src=="OCR 2nd pass"){try{$("msg").textContent="Trying a third OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrPages(doc,4,false,{preserve_interword_spaces:"1"})),"OCR 3rd pass")){ok=true;pre="Used OCR (third pass). "}}catch(e){errs.push("OCR 3rd pass: "+e.message)}}
+ if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";if(tryR(await pdfText(doc,await ocrL(doc)),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrL(doc,3,2,{tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"})),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR 2nd pass"){try{$("msg").textContent="Trying a third OCR pass with different settings...";if(tryR(await pdfText(doc,await ocrL(doc,4,false,{preserve_interword_spaces:"1"})),"OCR 3rd pass")){ok=true;pre="Used OCR (third pass). "}}catch(e){errs.push("OCR 3rd pass: "+e.message)}}
  if(ok&&!weak(C[C.length-1]))return fin(C[C.length-1],pre);
  /* not everything verified: AI only with the user's permission */
  let useAI=false,key="";
@@ -643,7 +804,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
     if(M.length>=3&&isH(mt)&&/debit|withdraw|credit|deposit/i.test(mt.join(" "))){lines.splice(i,k-i+1,{y:lines[i].y,c:M});break}}}
   for(const l of lines){const cells=l.c;
    const tx=cells.map(c=>c.s.trim());tx.y=l.y;tx.p=p;tx.oc=!!OC;allL.push(tx);
-   if(cells.length>=3&&isH(tx)){H=cells;out.push(tx);continue}
+   if(cells.length>=3&&isH(tx)){H=blZ(cells);out.push(tx);continue}
    if(!H){out.push(tx);continue}
    const row=H.map(()=>"");
    for(const c of cells){let bi=0,bd=1e9;H.forEach((h,i)=>{const d=Math.min(Math.abs((c.x+c.r)/2-(h.x+h.r)/2),Math.abs(c.r-h.r),Math.abs(c.x-h.x));if(d<bd){bd=d;bi=i}});row[bi]+=(row[bi]?" ":"")+c.s.trim()}
@@ -655,7 +816,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
   const pc2=anc.map(i=>[{y:body[i].y,t:body[i][nI]||""}]);
   body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" ")))return;let bj=-1,bd=1e9;
    anc.forEach((a,j)=>{const q=body[a];if(q.p!=r.p)return;const d=Math.abs(q.y-r.y);if(d<bd){bd=d;bj=j}});
-   if(bj>=0&&bd<=20&&pc2[bj].length<4)pc2[bj].push({y:r.y,t:r[nI]})});
+   if(bj>=0&&bd<=((LY&&LY.cont&&LY.cont.dy)||20)&&pc2[bj].length<((LY&&LY.cont&&LY.cont.max)||4))pc2[bj].push({y:r.y,t:r[nI]})});
   anc.forEach((i,j)=>{const r=body[i];if(nI>=0)r[nI]=pc2[j].sort((a,b)=>b.y-a.y).map(x=>x.t.trim()).filter(Boolean).reduce((a,b)=>!a?b:((!/\s/.test(a)&&a.length>=30)||/-$/.test(a)?a+b:a+" "+b),"");res.push(r)});
   const dr=hr.findIndex(c=>/debit|withdraw|dr\b/i.test(c)),cr=hr.findIndex(c=>/credit|deposit|cr\b/i.test(c)),am=hr.findIndex(c=>/^amount$/i.test(c));
   /* amount printed on the wrapped (second) line of a row: attach it to the nearest dated row above/below on the same page */
@@ -808,7 +969,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.17<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.18<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 <script>
 (function(){
 const f=document.getElementById("f"),m=document.getElementById("msg"),w=document.getElementById("pgw"),$$=id=>document.getElementById(id);
@@ -922,6 +1083,77 @@ document.addEventListener("click",function(e){
  l.textContent=n;
  o.classList.add("show");l.focus();
 });
+})();
+</script>
+<script>
+/* ===== MANUAL TRANSACTIONS (add a transaction before / after / between statement rows) =====
+   - "+" button on every row  -> add just before or after that row.  "+ Add transaction" button above the table -> start / end of list.
+   - A manual row is a normal entry of `data` with man:true (no rn / pg / sr, so there is no original-file preview).
+     It takes part in the running balance, ledger rules, filters, selection, CSV and Tally XML like any other row.
+   - Date, amount and direction stay editable in the table for manual rows; the delete button removes it completely (no restore).
+   - "Create preview" ($("go")) rebuilds rows from the file: manual rows are kept and re-inserted after the same statement row (see reinsMan).
+   - Ledger / type are auto-suggested from the same rules the statement rows use (rules box, contra options) until the user changes them. */
+(function(){
+const sty=document.createElement("style");sty.textContent=".mxw{position:relative;display:block}.mxw input,.mxw textarea{padding-right:26px}.mxw input[data-cb]{padding-right:44px}.mxc{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:transparent;color:var(--mu);padding:0 7px;font-size:18px;line-height:1.2;border:0;cursor:pointer}.mxc.t{top:14px;transform:none}.mxc.l{right:20px}.mxw input[type=date]{padding-right:44px}.mxw input[type=date]+.mxc{right:26px}";document.head.appendChild(sty);
+const $=id=>document.getElementById(id);
+const dmy=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");
+function remap(fn){const n=[];selS.forEach(i=>{const j=fn(i);if(j!=null)n.push(j)});selS.clear();n.forEach(j=>selS.add(j))}
+function refresh(){nc={};ac={};data.forEach(y=>{nc[y.nk]=(nc[y.nk]||0)+1;ac[y.ak]=(ac[y.ak]||0)+1});calcBal();lpUpd()}
+function autoMap(nar,out){const low=nar.toLowerCase(),rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
+ let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const h=rules.find(x=>low.includes(x[0]));if(h)l=h[1];
+ if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
+ else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
+ else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
+ return{t,l}}
+$("lsb").onclick=()=>{goCs=true;openCs();nav("cs");const go=()=>{const e=$("cls");if(e)e.scrollIntoView({block:"start",behavior:"smooth"})};setTimeout(go,60);setTimeout(go,350)};
+window.reinsMan=function(MQ,arr,keyer){const kr=keyer(),keys=arr.map(x=>kr(x)),known=new Set(keys),lead=[],end=[],by={};
+ MQ.forEach(m=>{if(m.after==null)lead.push(m.x);else if(known.has(m.after))(by[m.after]=by[m.after]||[]).push(m.x);else end.push(m.x)});
+ const out=[...lead];arr.forEach((x,i)=>{out.push(x);if(by[keys[i]])out.push(...by[keys[i]])});return out.concat(end)};
+window.delMan=async function(i){const x=data[i];if(!x)return;
+ const r=await dlg("Delete this manually added transaction?",`<p>${dmy(x.d)} · ${esc(x.nar)} · ₹${x.amt.toFixed(2)}</p><p class="mu">It was not read from the statement, so it cannot be restored; you can add it again.</p>`,[{t:"Delete"},{t:"Cancel",s:1}]);
+ if(r.i!==0||data[i]!==x)return;data.splice(i,1);remap(j=>j==i?null:j>i?j-1:j);refresh();draw()};
+function openAdd(ctx){
+ const row=ctx.i!=null?data[ctx.i]:null,o=document.createElement("div");
+ o.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px";
+ const pos=row?[["a","After this row"],["b","Before this row"]]:[["e","At the end of the list"],["s","At the start of the list"]];
+ const d0=ctx.d||(row?row.d:(data.length?data[data.length-1].d:""))||"",iso=/^\d{8}$/.test(d0)?d0.replace(/(\d{4})(\d\d)(\d\d)/,"$1-$2-$3"):"";
+ const nr=row?`<div class="mu" style="font-size:12px;margin-bottom:6px">Row: ${dmy(row.d)} · ${esc(row.nar.length>70?row.nar.slice(0,70)+"…":row.nar)} · ${row.out?"Dr":"Cr"} ₹${row.amt.toFixed(2)}</div>`:"";
+ const out0=ctx.out!=null?ctx.out:true;
+ const X=(h,k)=>`<span class="mxw">${h}<button type="button" class="mxc${k?" "+k:""}" tabindex="-1" title="Clear" aria-label="Clear this field">&times;</button></span>`;
+ o.innerHTML=`<div class="card" style="max-width:600px;width:100%;max-height:94vh;overflow:auto;margin:0"><b style="font-size:16px">Add a transaction manually</b>${nr}
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+ <div><label>Position</label><select id="mx_p">${pos.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join("")}</select></div>
+ <div><label>Date</label>${X(`<input type="date" id="mx_d" value="${iso}">`)}</div>
+ <div><label>Money</label><select id="mx_o"><option value="o"${out0?" selected":""}>Paid out (debit / withdrawal)</option><option value="i"${out0?"":" selected"}>Received (credit / deposit)</option></select></div>
+ <div><label>Amount</label>${X(`<input type="number" id="mx_a" step="0.01" min="0.01" style="text-align:right">`)}</div>
+ <div style="grid-column:1/3"><label>Narration (optional; kept exactly as typed, ledger rules match on it)</label>${X(`<textarea id="mx_n" rows="2" style="width:100%"></textarea>`,"t")}</div>
+ <div><label>Type</label><select id="mx_t"><option>Payment</option><option>Receipt</option><option>Contra</option></select></div>
+ <div><label>Ledger</label>${X(`<input id="mx_l" data-cb="1" autocomplete="off" placeholder="Choose from the list or type a ledger name">`,"l")}</div>
+ <div><label>Ref / cheque no (optional)</label>${X(`<input id="mx_r">`)}</div>
+ <div><label>Statement balance after this row (optional)</label>${X(`<input id="mx_b" placeholder="e.g. 12,345.67 or 500.00 Dr" style="text-align:right">`)}</div></div>
+ <div id="mx_h" class="mu" style="font-size:12px;min-height:16px"></div><div id="mx_e" style="color:#d93025;font-size:13px;min-height:18px"></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="s" id="mx_x">Cancel</button><button type="button" class="s" id="mx_k">Add &amp; add another</button><button type="button" id="mx_ok">Add transaction</button></div></div>`;
+ document.body.appendChild(o);const g=id=>o.querySelector("#"+id);let tT=false,tL=false;
+ o.querySelectorAll(".mxc").forEach(b=>{b.onmousedown=ev=>ev.preventDefault();b.onclick=()=>{const f=b.parentNode.querySelector("input,textarea");f.value="";f.dispatchEvent(new Event("input",{bubbles:true}));f.dispatchEvent(new Event("change",{bubbles:true}));f.focus()}});
+ const outv=()=>g("mx_o").value=="o",nar=()=>g("mx_n").value.replace(/\s+/g," ").trim();
+ const sugg=()=>{const m=autoMap(nar(),outv());if(!tT)g("mx_t").value=m.t;if(!tL)g("mx_l").value=canon(g("mx_t").value=="Contra"&&!tT?m.l:(tT&&g("mx_t").value=="Contra"?$("cash").value:m.l))};
+ const at=()=>{const p=g("mx_p").value;return ctx.i!=null?(p=="b"?ctx.i:ctx.i+1):(p=="s"?0:data.length)};
+ const hint=()=>{const v=g("mx_d").value.replace(/-/g,""),a=at(),pv=data[a-1],nx=data[a],asc=!(data.length>1&&data[0].d>data[data.length-1].d);let m="";
+  if(v.length==8&&((asc&&((pv&&v<pv.d)||(nx&&v>nx.d)))||(!asc&&((pv&&v>pv.d)||(nx&&v<nx.d)))))m="Note: this date is out of order with the neighbouring rows at this position. You can still add it.";g("mx_h").textContent=m};
+ g("mx_n").oninput=sugg;g("mx_o").onchange=()=>{if(!tT)g("mx_t").value=outv()?"Payment":"Receipt";sugg()};
+ g("mx_t").onchange=()=>{tT=true;if(g("mx_t").value=="Payment")g("mx_o").value="o";if(g("mx_t").value=="Receipt")g("mx_o").value="i";if(!tL){const m=autoMap(nar(),outv());g("mx_l").value=canon(g("mx_t").value=="Contra"?$("cash").value:m.l)}};
+ g("mx_l").oninput=()=>{tL=g("mx_l").value.trim()!==""};g("mx_p").onchange=hint;g("mx_d").onchange=hint;sugg();hint();
+ const close=()=>o.remove();g("mx_x").onclick=close;
+ const go=keep=>{const v=g("mx_d").value.replace(/-/g,""),n=nar(),a=Math.round(parseFloat(g("mx_a").value)*100)/100,e=g("mx_e");
+  if(v.length!=8)return e.textContent="Enter the date.";if(!(a>0))return e.textContent="Enter an amount greater than 0.";
+  const out=outv(),bt=g("mx_b").value.trim(),x={d:v,nar:n,ref:g("mx_r").value.trim(),out,amt:a,t:g("mx_t").value,led:canon(g("mx_l").value.trim()),sb:bt?sbv(bt):null,nk:nk(n),ak:(out?"o":"i")+a,fl:[],man:true},i=at();
+  data.splice(i,0,x);remap(j=>j>=i?j+1:j);refresh();close();const w=$("tb").closest(".w"),st=w.scrollTop;draw();w.scrollTop=st;
+  const c=document.querySelector('#tb .sc[data-s="'+i+'"]'),tr=c&&c.closest("tr");
+  if(tr){tr.scrollIntoView({block:"center"});tr.style.transition="background .4s";tr.style.background="rgba(26,86,219,.22)";setTimeout(()=>{tr.style.background=""},2600)}
+  else dlg("Transaction added","<p>It was added, but the current filter hides it. Press <b>Clear filters</b> to see it.</p>",[{t:"OK"}]);
+  if(keep&&tr)openAdd({i,d:v,out})};
+ g("mx_ok").onclick=()=>go(false);g("mx_k").onclick=()=>go(true);o.onkeydown=ev=>{const m=document.getElementById("cbm");if(ev.key=="Escape"&&!(m&&m.style.display=="block"))close()};g("mx_n").focus()}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#tb .ia");if(b)openAdd({i:+b.dataset.ia})});
 })();
 </script>
 </body></html>
