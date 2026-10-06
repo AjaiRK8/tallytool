@@ -534,6 +534,12 @@ const BL=[
  {id:"central-bank-1",name:"Central Bank of India (Value Date|Post Date|Details|Debit|Credit|Balance)",det:["central bank of india","brought forward","chq.no"],parse:d=>blCentral(d)},
  /* Dhanlaxmi Bank savings/current account statement: DATE | VALUE DATE | DESCRIPTION | CHEQUE NO | DEBITS | CREDITS | BALANCE (date row holds line 1 of the narration, the rest wraps BELOW; both Debits and Credits always printed; first row B/F = opening balance; see blDhanlaxmi) */
  {id:"dhanlaxmi-1",name:"Dhanlaxmi Bank (Date|Value Date|Description|Debits|Credits|Balance)",det:["dhanlaxmi bank","statement of account","value date","cheque no"],parse:d=>blDhanlaxmi(d)},
+ /* ESAF Small Finance Bank customer statement (loan account): Trx. Date | Particulars | Debit | Credit | Balance (narration wraps BELOW the date row; Balance is a running balance only on the last row of a date group, liability shown as (x); see blEsaf) */
+ {id:"esaf-sfb-1",name:"ESAF Small Finance Bank (Trx. Date|Particulars|Debit|Credit|Balance)",det:["esaf small finance bank","customerstatement","client portfolio"],parse:d=>blEsaf(d)},
+ /* Federal Bank savings statement: Date | Value Date | Particulars | Tran Type | Cheque Details | Withdrawals | Deposits | Balance | Dr/Cr (narration wraps BELOW the date row; blank Balance = 0.00; Dr/Cr column is the transaction type; see blFederal) */
+ {id:"federal-1",name:"Federal Bank (Date|Value Date|Particulars|Withdrawals|Deposits|Balance|Dr/Cr)",det:["the federal bank ltd","statement of account period","cheque details","tran type"],parse:d=>blFederal(d)},
+ /* HDFC Bank savings/current statement: Date | Narration | Chq./Ref.No. | Value Dt | Withdrawal Amt. | Deposit Amt. | Closing Balance (narration wraps BELOW the date row and across page breaks; Dr/Cr from the balance chain; opening balance from STATEMENT SUMMARY; see blHdfc) */
+ {id:"hdfc-1",name:"HDFC Bank (Date|Narration|Chq./Ref.No.|Value Dt|Withdrawal|Deposit|Closing Balance)",det:["hdfc bank limited","statement of account","withdrawal amt","deposit amt"],parse:d=>blHdfc(d)},
  /* add entries here, e.g. {id:"sbi-savings-1",name:"SBI Savings",det:["state bank of india","txn date"],junk:/^\s*page\s*\d/i} */
 ];
 let LY=null;
@@ -651,6 +657,106 @@ async function blDhanlaxmi(doc){
   const o=[r.d,nr,r.ref.join(" "),dq>0?f(dq):"",cq>0?f(cq):"",f(bl)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
  if(sm&&(Math.abs(sm.td-sd)>.011||Math.abs(sm.tc-sc)>.011||sm.nd!=nd||sm.nc!=nc||(ob!=null&&Math.abs(sm.ob-ob)>.011)||Math.abs(sm.cb-pv)>.011))
   throw new Error("totals differ from the statement summary (rows Dr "+nd+"/Cr "+nc+", "+f(sd)+"/"+f(sc)+", closing "+f(pv)+" vs Dr "+sm.nd+"/Cr "+sm.nc+", "+f(sm.td)+"/"+f(sm.tc)+", closing "+f(sm.cb)+")");
+ return out}
+/* ---- ESAF Small Finance Bank customer statement (Trx. Date|Particulars|Debit|Credit|Balance): custom parser, not blAnchor, because
+   (1) date, amounts and line 1 of the narration share one baseline but a long narration wraps onto lines BELOW it ("TC @" / "7:59AM"): lines without a date
+       belong to the date row ABOVE them (the generic reader pushed them onto the NEXT row and prepended the page header "CustomerStatement"),
+   (2) the Balance column is a running balance only on the last row of a date group ("(x)" = liability); posting rows echo the credit, charge rows print 0.00,
+       and Debit/Credit were wrongly typed from that column. So Dr/Cr comes from the Debit/Credit column x-position, the balance is CHAINED (prev+credit-debit,
+       liability = negative) and every printed "(x)" balance plus the Closing Balance must match it, else it throws (generic readers then run). ---- */
+async function blEsaf(doc){
+ const N=/^\(?\d[\d,]*\.\d{2}\)?$/,DS=/^(\d{1,2}\/[A-Za-z]{3}\/\d{4})(?:\s+(.*))?$/,JK=/^(br\.net|customerstatement|esaf small|page \d|kuthalam)/i,f=x=>(Math.round(x*100)/100).toFixed(2),sg=s=>num(s)*(/^\(/.test(s)?-1:1);
+ let H=null,op=0,cl=null,R=[];
+ for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]}));
+  const hp=I.find(i=>/^particulars$/i.test(i.s)),hd=I.find(i=>/^debit$/i.test(i.s)&&hp&&Math.abs(i.y-hp.y)<3),hc=I.find(i=>/^credit$/i.test(i.s)&&hp&&Math.abs(i.y-hp.y)<3),hb=I.find(i=>/^balance$/i.test(i.s)&&hp&&Math.abs(i.y-hp.y)<3);
+  if(hp&&hd&&hc&&hb)H={n:hp.x,d:hd.r,c:hc.r,b:hb.r};/* later pages repeat no header: keep the first one */
+  if(!H)continue;
+  const L=[];for(const i of I.sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  let cur=null;
+  for(const l of L){const w=l.w.sort((a,b)=>a.x-b.x),t=w.map(i=>i.s).join(" "),m=w[0].x<80&&w[0].s.match(DS);
+   if(!m&&/^closing\b/i.test(w[0].s)){const a=w.filter(i=>N.test(i.s));if(a.length)cl=a[a.length-1].s;cur=null;break}
+   if(!m&&/^opening\b/i.test(w[0].s)){const a=w.filter(i=>N.test(i.s));if(a.length)op=sg(a[a.length-1].s);continue}
+   if(!m&&(!cur||JK.test(t)))continue;
+   const nar=[],amt={};if(m&&m[2])nar.push(m[2]);
+   for(const i of w.slice(m?1:0)){if(N.test(i.s)&&i.r>H.d-70){let k=null,kd=1e9;for(const q of["d","c","b"]){const d=Math.abs(i.r-H[q]);if(d<kd){kd=d;k=q}}amt[k]=i.s}else if(i.x>=H.n-4)nar.push(i.s)}
+   if(m){cur={d:m[1],nar:nar.length?[nar.join(" ")]:[],amt,p,y:l.y};R.push(cur)}else if(nar.length)cur.nar.push(nar.join(" "))}}
+ if(!R.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=op;
+ for(const r of R){const dq=r.amt.d?num(r.amt.d):0,cq=r.amt.c?num(r.amt.c):0,nr=r.nar.join(" ");
+  if(!dq&&!cq)throw new Error("row without debit/credit: "+r.d+" "+nr.slice(0,30));
+  pv+=cq-dq;if(r.amt.b&&/^\(/.test(r.amt.b)&&Math.abs(sg(r.amt.b)-pv)>.011)throw new Error("balance chain breaks at "+r.d+" "+nr.slice(0,30));
+  const o=[r.d,nr,"",dq?f(dq):"",cq?f(cq):"",f(Math.abs(pv))+(pv<-.005?" Dr":"")];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ if(cl!=null&&Math.abs(sg(cl)-pv)>.011)throw new Error("closing balance differs from the last balance ("+f(pv)+" vs "+cl+")");
+ return out}
+/* ---- Federal Bank savings statement (Date|Value Date|Particulars|Tran Type|Cheque Details|Withdrawals|Deposits|Balance|Dr/Cr): custom parser, not blAnchor, because
+   (1) date, Dr/Cr and amounts sit on the baseline of narration line 1 and a long narration continues on a line BELOW it, sometimes by only 1-2 characters
+       ("...@IPOS0000001/000" / "0"): lines without a date attach to the date row ABOVE; join WITHOUT a space when the previous line ends in a token holding "/" or "@"
+       (cut inside a UPI id), otherwise with a space (word wrap),
+   (2) the Balance cell is BLANK when the balance is 0.00 (blank = 0), and the Dr/Cr column is the TRANSACTION type (not the balance sign),
+   (3) page header/footer text lies in the narration x-range. Dr/Cr comes from the Withdrawals/Deposits column; the balance is chained row by row (prev+deposit-withdrawal
+       must equal the printed balance), the Dr/Cr label must agree with the column, and the GRAND TOTAL row must match; any failure throws (generic readers then run). ---- */
+async function blFederal(doc){
+ const N=/^\d[\d,]*\.\d{2}$/,DT=/^(\d{2}\/\d{2}\/\d{4})(?:\s+\d{2}\/\d{2}\/\d{4})?$/,JK=/^(page \d|the federal bank|phone number|24\*7|\d{4} \d{3,4} \d{4}|www\.)/i,f=x=>(Math.round(x*100)/100).toFixed(2),
+  jn=(a,b)=>/[\/@]/.test(a.split(" ").pop())?a+b:a+" "+b;
+ let H=null,op=null,tot=null,R=[];
+ for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]}));
+  const hp=I.find(i=>/^particulars$/i.test(i.s));
+  if(hp){const g=re=>I.find(i=>re.test(i.s)&&Math.abs(i.y-hp.y)<3),w=g(/^withdrawals$/i),d=g(/^deposits$/i),b=g(/^balance$/i);if(w&&d&&b)H={n:hp.x-85,w0:w.x,w:w.r,d:d.r,b:b.r}}
+  if(!H)continue;
+  const L=[];for(const i of I.sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  let cur=null;
+  const col=i=>{let k=null,kd=1e9;for(const q of["w","d","b"]){const d=Math.abs(i.r-H[q]);if(d<kd){kd=d;k=q}}return k};
+  for(const l of L){const w=l.w.sort((a,b)=>a.x-b.x),t=w.map(i=>i.s).join(" "),m=w[0].x<65&&w[0].s.match(DT);
+   if(!m&&/^opening\b/i.test(w[0].s)){const a=w.filter(i=>N.test(i.s));if(a.length)op=num(a[a.length-1].s);continue}
+   if(!m&&/^grand\b/i.test(w[0].s)){tot={};for(const i of w)if(N.test(i.s))tot[col(i)]=num(i.s);cur=null;break}
+   if(!m&&(!cur||JK.test(t)))continue;
+   const nar=[],amt={};let lb="";
+   for(const i of w.slice(m?1:0)){if(N.test(i.s)&&i.x>=H.w0-10)amt[col(i)]=i.s;else if(/^(cr|dr)$/i.test(i.s)&&i.x>=H.w0+100)lb=i.s.toLowerCase();else if(i.x>=H.n&&i.x<H.w0-90)nar.push(i.s)}
+   if(m){cur={d:m[1],nar:nar.join(" "),amt,lb,p,y:l.y};R.push(cur)}else if(nar.length)cur.nar=jn(cur.nar,nar.join(" "))}}
+ if(!R.length||op==null)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=op,sd=0,sc=0;
+ for(const r of R){const dq=r.amt.w?num(r.amt.w):0,cq=r.amt.d?num(r.amt.d):0;
+  if(!dq&&!cq)throw new Error("row without debit/credit: "+r.d+" "+r.nar.slice(0,30));
+  if(r.lb&&(r.lb=="cr")!=(cq>0))throw new Error("Dr/Cr label differs from the column at "+r.d+" "+r.nar.slice(0,30));
+  pv+=cq-dq;sd+=dq;sc+=cq;const pb=r.amt.b?num(r.amt.b):0;
+  if(Math.abs(pb-pv)>.011)throw new Error("balance chain breaks at "+r.d+" "+r.nar.slice(0,30));
+  const o=[r.d,r.nar,"",dq?f(dq):"",cq?f(cq):"",f(pv)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ if(tot&&((tot.w!=null&&Math.abs(tot.w-sd)>.011)||(tot.d!=null&&Math.abs(tot.d-sc)>.011)))throw new Error("totals differ from GRAND TOTAL ("+f(sd)+"/"+f(sc)+" vs "+f(tot.w||0)+"/"+f(tot.d||0)+")");
+ return out}
+/* ---- HDFC Bank savings/current statement (Date|Narration|Chq./Ref.No.|Value Dt|Withdrawal Amt.|Deposit Amt.|Closing Balance): custom parser, not blAnchor, because
+   (1) the narration wraps onto lines BELOW the date row (even across a printed-page break: pages 2+ start with the tail of the last row of the page before),
+       so lines without a date belong to the date row ABOVE (the generic reader pushed them onto the NEXT row: "630 NHDF...", "...PERSOKNALUPI-3037...");
+       order kept as printed: narration line 1, Chq./Ref.No., wrapped lines,
+   (2) only page 1 has the column header row; every page carries the bank/customer address block above the "Statement of account" title (not table text) and a
+       bank footer below the table, so only lines under that title and above "HDFC BANK LIMITED"/"STATEMENT SUMMARY" are read,
+   (3) Dr/Cr comes from the BALANCE CHAIN (prev+deposit = balance, prev-withdrawal = balance), never from x; the opening balance is the one printed in STATEMENT SUMMARY
+       and the last balance must equal its Closing Bal (the summary's Dr/Cr counts and totals are NOT used: the sample prints Credits 0.00). Throws if the chain breaks. ---- */
+async function blHdfc(doc){
+ const N=/^\d[\d,]*\.\d{2}$/,DT=/^\d{2}\/\d{2}\/\d{2}$/,f=x=>(Math.round(x*100)/100).toFixed(2);
+ let R=[],cur=null,op=null,cl=null;
+ for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]}));
+  const ti=I.find(i=>/^statement of account$/i.test(i.s));if(!ti)continue;
+  const L=[];for(const i of I.filter(i=>i.y<ti.y-3).sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  let sm=false;
+  for(const l of L){const w=l.w.sort((a,b)=>a.x-b.x),t=w.map(i=>i.s).join(" ");
+   if(/^statement summary/i.test(t)){sm=true;continue}
+   if(sm){const a=w.filter(i=>N.test(i.s));if(a.length>=2&&op==null){op=num(a[0].s);cl=num(a[a.length-1].s)}continue}
+   if(/^hdfc bank limited/i.test(t))break;
+   const m=w[0].x<66&&DT.test(w[0].s);
+   if(!m&&(/^date$/i.test(w[0].s)||!cur))continue;
+   const nar=[],am=[];
+   for(const i of w.slice(m?1:0)){if(DT.test(i.s))continue;/* Value Dt column */if(N.test(i.s)&&i.x>=380)am.push(i);else nar.push(i.s)}
+   if(m){if(am.length<2)throw new Error("row without amount/balance: "+w[0].s+" "+nar.join(" ").slice(0,30));cur={d:w[0].s,nar,am,p,y:l.y};R.push(cur)}else cur.nar.push(...nar)}}
+ if(!R.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];
+ let pv=op;if(pv==null){const a=R[0].am,b=num(a[a.length-1].s),x=num(a[a.length-2].s);pv=(a[a.length-1].r-a[a.length-2].r>118)?b+x:b-x}
+ for(const r of R){const b=num(r.am[r.am.length-1].s),a=num(r.am[r.am.length-2].s);let dq=0,cq=0;
+  if(Math.abs(pv+a-b)<.011)cq=a;else if(Math.abs(pv-a-b)<.011)dq=a;else throw new Error("balance chain breaks at "+r.d+" "+r.nar.join(" ").slice(0,30));
+  pv=b;const o=[r.d,r.nar.join(" "),"",dq?f(dq):"",cq?f(cq):"",f(b)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ if(cl!=null&&Math.abs(cl-pv)>.011)throw new Error("closing balance differs from the last balance ("+f(pv)+" vs "+f(cl)+")");
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP={test:t=>BP0.test(t)||!!(LY&&LY.junk&&LY.junk.test(t))};const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
