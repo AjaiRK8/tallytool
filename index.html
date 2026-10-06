@@ -1,4 +1,19 @@
 <!DOCTYPE html>
+<!--
+  AI INSTRUCTION (permanent, do not remove):
+  Whenever you modify this file, ALSO produce a plain-text changelog file named
+  CHANGELOG_<this-filename>_vN.txt (N = new version number) for GitHub upload.
+  Contents:
+   1. Version: previous -> new, date (YYYY-MM-DD)
+   2. Added: new features/fields
+   3. Changed: modified behaviour, with function/section names
+   4. Fixed: bugs fixed
+   5. Removed: anything deleted
+  Compare against the previous version of this file; list only real differences.
+  Keep entries one line each. Also bump the VERSION comment below.
+  VERSION: v1
+-->
+
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bank Statement to Tally</title>
@@ -307,7 +322,7 @@ async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value;let u=
   try{u=await OC.unlock(u,pw,v=>PG.set(v,"Checking the password · "+Math.round(v*100)+"%"))}catch(e){if(e.bad)throw ask("Incorrect Excel password. Re-enter it and click Unlock.");throw e}}
  try{const wb=XLSX.read(u,{type:"array",cellNF:true});xlDates(wb);return wb}catch(e){if(/password|encrypt|decrypt|protected/i.test(e&&e.message||""))throw Object.assign(new Error("This Excel file has a password with an encryption type that is not supported here. Open it in Excel, use Save As without a password, then upload that."),{unsup:true});throw e}}
 const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
-let pipeNote="";async function rd(f){pipeNote="";if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text();return csv(t,dlm(t))}PG.go("sheets","Opening the workbook…");await PG.y();const wb=await xlRead(f);PG.go("sheets","Reading the sheets…");await PG.y();let best=[],bsc=-1,bn="";
+let pipeNote="";async function rd(f){pipeNote="";if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text(),tf=/\.txt$/i.test(f.name)?txtFind(t):null;if(tf){pipeNote=tf.note;return tf.rows}return csv(t,dlm(t))}PG.go("sheets","Opening the workbook…");await PG.y();const wb=await xlRead(f);PG.go("sheets","Reading the sheets…");await PG.y();let best=[],bsc=-1,bn="";
  wb.SheetNames.forEach(n=>{const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",dateNF:"dd/mm/yyyy"});let bs=0,bi=-1;r.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;bi=i}});const sc=bs*100000+(bi<0?0:r.length-bi);if(sc>bsc){bsc=sc;best=r;bn=n}});
  if(wb.SheetNames.length>1)pipeNote="Sheet used: "+bn+".";return best}
 $("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;PG.begin(/\.(pdf|jpe?g|png|webp|bmp)$/i.test(f.name)?"pdf":/\.(xlsx|xlsm|xlsb|xls)$/i.test(f.name)?"xl":"csv");
@@ -570,7 +585,7 @@ $("pf").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JS
  HOW TO ADD A BANK: convert a sample statement carefully, compare date/narration/amount with the tool's CSV row by row,
    find what the generic parser got wrong, encode that as one entry, and verify on the sample. Keep index.html and
    index_software.html identical in this block (the web page and desktop app share this table).
- LIMITS: layouts apply to PDF/photo input only (CSV/Excel use the column-mapping step). Skewed/cropped photos shift zones.
+ LIMITS: layouts apply to PDF/photo input only (CSV/Excel use the column-mapping step). Fixed-width .txt statements use the TL table + txtFind() below. Skewed/cropped photos shift zones.
    More samples per bank = more reliable layout.
 ===================================================================================== */
 const BL=[
@@ -598,6 +613,51 @@ const BL=[
  /* add entries here, e.g. {id:"sbi-savings-1",name:"SBI Savings",det:["state bank of india","txn date"],junk:/^\s*page\s*\d/i} */
 ];
 let LY=null;
+/* ---- TEXT STATEMENT LAYOUTS (TL): fixed-width .txt statements ----
+   .txt files used to go straight to csv()/dlm(), which splits on , ; | tab. A fixed-width bank text file has none of those, so every
+   physical line became a junk row (date in one cell, the whole line in another, amount = the day number). txtFind() runs FIRST in rd()
+   for .txt files: if a TL entry's header line is found, the file is read by COLUMN POSITION (taken from that header line itself, so a
+   different export width still works) and returns rows [Date,Narration,Ref,Debit,Credit,Balance] like the BL parsers.
+   RULES: (1) a row starts at the line holding the TRAN DATE; the lines until the next TRAN DATE line belong to it (some banks print the
+   balance line ABOVE the narration line, some print everything on one line); (2) amounts are matched to Debit/Credit/Balance by RIGHT EDGE
+   (they are right-aligned under the header); (3) the narration is never trimmed or cleaned; (4) every balance is chain-checked (either file
+   order); structure errors -> csv() runs as before, a broken chain -> rows are kept and the note on the upload page says so.
+   ADD A BANK: one entry below: {id,name,hd:regex on the header line with spaces collapsed,cols:{tran,val,nar,chq,wd,dep,bal}: regexes found in the raw header line}. */
+const TL=[
+ /* Bank of Baroda net-banking text export (OpTransactionHistory*.txt): TRAN DATE | VALUE DATE | NARRATION | CHQ.NO. | WITHDRAWAL(DR) | DEPOSIT(CR) | BALANCE(INR) ("6,389.05Cr"), newest first.
+    Row = balance line (TRAN DATE, DEPOSIT, BALANCE) + the line BELOW it (VALUE DATE, NARRATION, WITHDRAWAL); a few rows (Repayment credit, Dr. Tran for funding) are ONE line; the bank cuts NARRATION at 50 characters in this export. */
+ {id:"bob-txt-1",name:"Bank of Baroda text statement (TRAN DATE|VALUE DATE|NARRATION|CHQ.NO.|WITHDRAWAL(DR)|DEPOSIT(CR)|BALANCE(INR))",
+  hd:/TRAN DATE VALUE DATE NARRATION CHQ\.? ?NO\.? WITHDRAWAL ?\(DR\) DEPOSIT ?\(CR\) BALANCE ?\(INR\)/i,
+  cols:{tran:/TRAN DATE/i,val:/VALUE DATE/i,nar:/NARRATION/i,chq:/CHQ\.? ?NO\.?/i,wd:/WITHDRAWAL ?\(DR\)/i,dep:/DEPOSIT ?\(CR\)/i,bal:/BALANCE ?\(INR\)/i}}
+];
+function txtFind(t){const L=t.split(/\r\n|\n|\r/);
+ for(const e of TL){const hi=L.findIndex(l=>e.hd.test(l.replace(/\s+/g," ")));if(hi<0)continue;try{const r=txtFixed(L,hi,e);if(r)return r}catch(x){}}
+ return null}
+function txtFixed(L,hi,e){
+ const P={};for(const k in e.cols){const m=L[hi].match(e.cols[k]);if(!m)return null;P[k]={x:m.index,r:m.index+m[0].length}}
+ const DT=/^\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}$/,AM=/^\d[\d,]*\.\d{2}$/,BX=/^\d[\d,]*\.\d{2} ?(?:Cr|Dr)$/i,JK=/page\s*\d+\s*of\s*\d+|computer.generated|contact-us/i,
+  nv=s=>parseFloat(String(s).replace(/[^\d.]/g,"")),f=x=>(Math.round(x*100)/100).toFixed(2),R=[];let cur=null;
+ for(let i=hi+1;i<L.length;i++){const l=L[i];if(!l.trim())continue;
+  const C=[...l.matchAll(/\S+(?: \S+)*/g)].map(m=>({s:m[0],x:m.index,r:m.index+m[0].length}));
+  const tr=C.find(c=>DT.test(c.s)&&c.x<P.val.x-2);
+  if(tr){cur={d:tr.s,nar:"",ref:"",wd:"",dep:"",bal:""};R.push(cur)}
+  else{if(!cur||JK.test(l))continue;const c0=C[0];if(!((DT.test(c0.s)&&Math.abs(c0.x-P.val.x)<=2)||c0.x>=P.nar.x-1))continue}
+  for(const c of C){if(c===tr)continue;
+   if(BX.test(c.s)){if(cur.bal)return null;cur.bal=c.s.replace(/\s/g,"")}
+   else if(AM.test(c.s)&&c.x>=P.chq.r-2){let k="wd",d=1e9;for(const q of["wd","dep","bal"]){const z=Math.abs(c.r-P[q].r);if(z<d){d=z;k=q}}
+    if(cur[k])return null;cur[k]=c.s}
+   else if(DT.test(c.s)&&c.x<P.nar.x-1){/* VALUE DATE: not used, the TRAN DATE is the entry date */}
+   else if(c.x>=P.nar.x-1&&c.x<P.chq.x-1)cur.nar=cur.nar&&!(/\/$/.test(cur.nar)||/^\//.test(c.s))?cur.nar+" "+c.s:cur.nar+c.s;
+   else if(c.x>=P.chq.x-1&&c.x<P.wd.x)cur.ref=c.s}}
+ if(!R.length)return null;
+ for(const r of R){if(r.wd&&r.dep){if(!nv(r.wd))r.wd="";else if(!nv(r.dep))r.dep=""}if(!r.bal||(!r.wd)==(!r.dep)||!r.nar)return null}
+ const b=R.map(r=>(/Dr$/i.test(r.bal)?-1:1)*nv(r.bal)),a=R.map(r=>r.dep?nv(r.dep):-nv(r.wd)),n=R.length,
+  fw=i=>i>0&&Math.abs(b[i-1]+a[i]-b[i])<.011,bw=i=>i<n-1&&Math.abs(b[i+1]+a[i]-b[i])<.011;let nf=0,nb=0;for(let i=0;i<n;i++){if(fw(i))nf++;if(bw(i))nb++}
+ const asc=nf>=nb,bad=[];for(let i=0;i<n;i++)if(asc?(i>0&&!fw(i)):(i<n-1&&!bw(i)))bad.push(R[i].d+" "+R[i].nar.slice(0,24));
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];
+ R.forEach((r,i)=>out.push([r.d,r.nar,r.ref,r.wd?f(nv(r.wd)):"",r.dep?f(nv(r.dep)):"",f(Math.abs(b[i]))+(b[i]<0?"Dr":"")]));
+ const nd=R.filter(r=>r.wd).length,nc=n-nd;
+ return{rows:out,note:"Read with the "+e.name.split(" (")[0]+" layout: "+nd+" debits, "+nc+" credits, "+(bad.length?"BALANCE CHECK FAILED at "+bad.length+" row(s), first: "+bad[0]+". Verify these rows.":"every balance chains correctly.")}}
 const fz=s=>String(s).toLowerCase().replace(/[01i5|]/g,m=>({0:"o",1:"l",i:"l",5:"s","|":"l"})[m]).replace(/[^a-z0-9]/g,"");
 function blFind(its,ocr){const t=fz(its.map(i=>i.s).join(" "));let b=null;for(const e of BL)if(e.det.every(k=>t.includes(fz(k)))&&(!b||e.det.length>b.det.length))b=e;return b&&ocr&&b.ocr?{...b,...b.ocr}:b}
 async function ocrL(...a){const o=await ocrPages(...a);if(!LY)LY=blFind(o[0]||[],true);return o}
