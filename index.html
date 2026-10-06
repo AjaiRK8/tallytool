@@ -53,25 +53,19 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 #hlpo .tp{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:13px}
 #hlpo .hh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 
-.pgw{margin-top:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
-.pgt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px;margin-bottom:6px}
-.pgr{display:flex;align-items:center;gap:8px}
-.pgi{font-size:24px;line-height:1;flex:none}.pgi.pop{animation:pgpop .6s ease}
-.pgtrack{position:relative;flex:1;height:24px;border-radius:12px;background:var(--bd);overflow:hidden;container-type:inline-size}
-.pgfill{position:absolute;left:0;top:0;bottom:0;width:0;min-width:24px;border-radius:12px;background:linear-gradient(90deg,var(--ac),#5aa0ff);transition:width .45s ease}
-.pgcoin{position:absolute;right:0;top:0;width:24px;height:24px;border-radius:50%;background:#f6b93b;color:#4a3000;font:700 14px/24px system-ui,sans-serif;text-align:center;animation:pgspin 3s linear infinite}
-.pgchips{position:absolute;inset:0;pointer-events:none}
-.pgchips i{position:absolute;top:5px;left:-34px;height:14px;padding:0 6px;border-radius:4px;color:#fff;font:700 9px/14px system-ui,sans-serif;font-style:normal;background:#c0392b;opacity:.9;animation:pgfly 10s linear infinite}
-.pgchips i:nth-child(even){background:#1e8e3e}
-.pgchips i:nth-child(2){animation-delay:-2s}.pgchips i:nth-child(3){animation-delay:-4s}.pgchips i:nth-child(4){animation-delay:-6s}.pgchips i:nth-child(5){animation-delay:-8s}
-.pgw.done .pgchips i,.pgw.stop .pgchips i,.pgw.done .pgcoin,.pgw.stop .pgcoin{animation:none;opacity:0}
-.pgw.done .pgfill{background:#188038}.pgw.stop .pgfill{background:#d93025}
-.pgs{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--mu)}
-.pgs span::before{content:"\25CB  "}.pgs span.on{color:var(--tx);font-weight:600}.pgs span.on::before{content:"\25CF  ";color:var(--ac)}
-.pgs span.dn{color:#188038}.pgs span.dn::before{content:"\2714  "}.pgs span.sk::before{content:"\2013  "}
-@keyframes pgfly{from{transform:translateX(0)}to{transform:translateX(calc(100cqw + 34px))}}
-@keyframes pgspin{to{transform:rotateY(360deg)}}
-@keyframes pgpop{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-8deg)}}
+#prg{margin:10px 0;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);--pc:var(--ac)}
+#prg .pc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+#prg .pc i{font-style:normal;font-size:12px;padding:2px 10px;border-radius:99px;border:1px solid var(--bd);color:var(--mu);transition:all .3s}
+#prg .pc i.on{border-color:var(--pc);color:var(--tx);font-weight:600;box-shadow:0 0 0 2px color-mix(in srgb,var(--pc) 25%,transparent)}
+#prg .pc i.ok{color:#188038;border-color:#188038}#prg .pc i.ok::before{content:"✓ "}
+#prg .pt{height:12px;border-radius:99px;background:var(--bd);margin-right:12px}
+#prg .pf{position:relative;height:100%;min-width:12px;border-radius:99px;background:var(--pc) repeating-linear-gradient(45deg,rgba(255,255,255,.3) 0 8px,transparent 8px 16px);background-size:22px 22px;animation:pst 1s linear infinite;transition:width .4s ease,background-color .3s}
+#prg .ph{position:absolute;right:-12px;top:-8px;font-size:18px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+#prg.ind .pf{width:28%!important;animation:pst 1s linear infinite,psw 1.1s ease-in-out infinite alternate}
+#prg.fin .pf,#prg.err .pf,#prg.wait .pf{animation:none}
+#prg .pl{margin-top:8px;font-size:13px;color:var(--mu);display:flex;justify-content:space-between;gap:10px}#prg .pl b{color:var(--tx);font-weight:600}
+@keyframes pst{to{background-position:22px 0}}@keyframes psw{from{margin-left:0}to{margin-left:72%}}
+@media(prefers-reduced-motion:reduce){#prg .pf,#prg.ind .pf{animation:none!important}}
 @media(prefers-reduced-motion:reduce){.pgchips i,.pgcoin,.pgi.pop{animation:none}}
 #nv .bh{display:flex;align-items:center;gap:9px;margin-bottom:8px}#nv .bh b{margin:0;line-height:1.2}#nv .bh img{width:40px;height:40px;border-radius:9px;flex:none;display:block}
 #nv a.dl{display:block;padding:8px 10px;margin-top:6px;border:1px dashed var(--ac);border-radius:6px;color:var(--ac);text-decoration:none;font-size:13px;line-height:1.3}#nv a.dl:hover{background:var(--bd)}#nv a.dl small{display:block;margin:0;color:var(--mu);font-size:11px}
@@ -80,12 +74,7 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 </style></head><body><nav id="nv"><div class="bh"><img src="data:image/png;base64,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" alt="Bank to Tally logo" width="40" height="40"><b>Bank → Tally</b></div><button data-n="up">1 · Upload</button><button data-n="setup">2 · Settings</button><button data-n="pv">3 · Preview &amp; Export</button><button data-n="cs">4 · Create ledgers<span id="nvb" hidden></span></button><a class="dl exe-link" href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener" title="Download the Windows desktop app">&#11015; Windows app (.exe)<small>Desktop version</small></a><small>© 2026 Ajai R Krishnan<br>All rights reserved</small></nav><main>
 <h1>Bank Statement → Tally Import</h1><p class="mu" style="margin:-6px 0 14px;font-size:13px">Designed for CA articleship trainees, small accounting practices and bookkeepers.</p>
 <div class="card" id="up"><label>1. Upload statement (PDF / Excel / CSV / photos: select every page of the statement together)</label><input type="file" id="f" multiple accept=".pdf,.csv,.tsv,.txt,.xls,.xlsx,.xlsm,.xlsb,.jpg,.jpeg,.png,.webp,.bmp"><div id="pww" hidden style="margin-top:8px"><label>🔒 This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
-<div id="pgw" class="pgw" hidden role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Reading statement">
-<div class="pgt"><b id="pgl">Reading your statement...</b><span id="pgp" class="mu">0%</span></div>
-<div class="pgr"><span class="pgi" title="Your bank statement">&#127974;</span><div class="pgtrack"><div class="pgfill" id="pgf"><span class="pgcoin">&#8377;</span></div><div class="pgchips"><i>Dr</i><i>Cr</i><i>Dr</i><i>Cr</i><i>Dr</i></div></div><span class="pgi" id="pgb" title="Tally">&#128210;</span></div>
-<div class="pgs" id="pgs"><span>Open file</span><span>Read statement</span><span>Scan pages (if needed)</span><span>Ready for Tally</span></div>
-<small id="pgd" class="mu" style="display:block;margin-top:6px"></small>
-</div>
+<div id="prg" hidden role="progressbar" aria-live="polite"></div>
 <div style="margin-top:10px;padding:10px;border:1px solid var(--bd);border-radius:8px">
 <label class="ck" style="font-size:13px;color:var(--tx)"><input type="checkbox" id="aiy"><b>Use AI</b> <span class="mu" style="font-weight:normal">(optional)</span></label>
 <small style="display:block;margin-top:4px">Use AI only if this PDF cannot be read reliably within this tool. Off by default. The tool always tries its own PDF text reading and OCR first and gives you the best verified result it can. If they cannot fully verify the result, AI is used only if you tick this. If you leave it unticked, you will be asked at that point whether to use AI or continue with the current data.</small>
@@ -173,6 +162,31 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 const $=id=>document.getElementById(id);let rows=[],hdr=[],data=[],selS=new Set(),OPN=null,goCs=false,cur="up";
 const F=[["date","Date",/date|txn/i],["nar","Narration",/narr|desc|partic|remark|detail|memo/i],["ref","Ref / Cheque no",/ref|chq|cheque|utr/i],["dr","Debit / Withdrawal",/debit|withdraw|dr\b/i],["cr","Credit / Deposit",/credit|deposit|cr\b/i],["amt","Single amount (optional)",/^amount$/i],["bal","Balance (optional, for cross-check)",/balance|bal\b/i]];
 function csv(t,d=","){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==d){r.push(c);c=""}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c="";o.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);o.push(r)}return o}
+/* ---- progress bar: adapts to the path the file takes (open > unlock > read > OCR / AI > ready) ---- */
+const PG=(()=>{const W={open:5,unlock:15,text:35,sheets:30,read:30,ocr:80,ocr2:80,ai:80,ready:0},
+ L={open:"Open file",unlock:"Unlock",text:"Read text",sheets:"Read sheets",read:"Read rows",ocr:"OCR",ocr2:"OCR retry",ai:"AI",ready:"Ready"},
+ I={open:"📂",unlock:"🔓",text:"📄",sheets:"📊",read:"📑",ocr:"🔍",ocr2:"🔍",ai:"🤖",ready:"✅"};
+ let st=[],i=0,fr=0,shown=0,on=false,ind=true,t0=0,ts=0,info="",tone="",ht,cp;
+ const stop=()=>{clearInterval(cp);cp=null};
+ function draw(){const e=$("prg");if(!e)return;e.hidden=false;
+  const tot=st.reduce((n,k)=>n+W[k],0)||1,dn=st.slice(0,i).reduce((n,k)=>n+W[k],0);
+  shown=tone=="ok"?1:Math.max(shown,Math.min((dn+W[st[i]]*fr)/tot,.97));
+  const k=st[i],col=tone=="ok"?"#188038":tone=="err"?"#d93025":tone=="wait"||/^(ocr|ocr2|ai)$/.test(k)?"#e8a200":"var(--ac)",
+   ic=tone=="ok"?"✅":tone=="err"?"❌":tone=="wait"?"🔒":I[k];
+  e.className=(ind&&!tone?"ind ":"")+(tone?(tone=="ok"?"fin":tone):"");e.style.setProperty("--pc",col);
+  e.innerHTML=`<div class="pc">${st.map((x,j)=>`<i class="${tone=="ok"||j<i?"ok":j==i?"on":""}">${L[x]}</i>`).join("")}</div><div class="pt"><div class="pf" style="width:${(shown*100).toFixed(1)}%"><span class="ph">${ic}</span></div></div><div class="pl"><span>${esc(info)}</span><b>${Math.round(shown*100)}%</b></div>`}
+ return{
+  begin(kind){clearTimeout(ht);stop();on=true;st=kind=="pdf"?["open","text","ready"]:kind=="xl"?["open","sheets","ready"]:["open","read","ready"];i=0;fr=0;shown=0;ind=true;tone="";t0=ts=Date.now();info="Opening the file…";draw();$("prg").scrollIntoView({block:"nearest",behavior:"smooth"})},
+  go(k,txt){if(!on)return;stop();let j=st.indexOf(k);if(j<0){st.splice(k=="unlock"?1:st.length-1,0,k);j=st.indexOf(k)}i=j;fr=0;ind=true;ts=Date.now();info=txt||"";draw()},
+  set(f,txt){if(!on)return;fr=Math.max(0,Math.min(1,f));ind=false;if(txt!=null)info=txt;draw()},
+  // page n of total; creep = ease the bar forward while a slow page (OCR / AI) is being worked on
+  pg(d,n,creep){if(!on)return;stop();const now=Date.now();let x=`Page ${Math.min(d+1,n)} of ${n}`;
+   if(d>0){const r=(now-ts)/1000/d*(n-d);if(r>=4)x+=` · about ${Math.round(r)}s left`}
+   fr=d/n;ind=false;info=x;draw();
+   if(creep&&d<n){const tau=d>0?(now-ts)/d:6000;cp=setInterval(()=>{fr=d/n+.92/n*(1-Math.exp(-(Date.now()-now)/tau));draw()},300)}},
+  y:()=>new Promise(r=>setTimeout(r,20)),
+  done(txt){if(!on)return;on=false;stop();tone="ok";i=st.length-1;ind=false;info=txt+" · "+((Date.now()-t0)/1000).toFixed(1)+"s";draw();ht=setTimeout(()=>{$("prg").hidden=true},6000)},
+  fail(txt,wait){if(!on)return;on=false;stop();tone=wait?"wait":"err";ind=false;info=txt;draw()}}})();
 const cat=a=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let k=0;a.forEach(x=>{o.set(x,k);k+=x.length});return o},le32=i=>new Uint8Array([i&255,i>>8&255,i>>16&255,i>>>24&255]);
 /* Office 2010+ "Agile" encryption (MS-OFFCRYPTO) using WebCrypto: decrypts a password-protected .xlsx to a normal zip */
 async function agileDec(info,pkg,pw){const S=crypto.subtle,x=new TextDecoder().decode(info.slice(8));
@@ -261,23 +275,23 @@ async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value,u=new 
   if(!pw)throw ask("This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");
   const cfb=XLSX.CFB.read(u,{type:"array"}),I=XLSX.CFB.find(cfb,"EncryptionInfo"),P=XLSX.CFB.find(cfb,"EncryptedPackage");
   if(!I||!P)throw new Error("Unrecognised encrypted Excel file.");
-  $("msg").textContent="Decrypting Excel file (this can take a few seconds)...";
+  $("msg").textContent="Decrypting Excel file (this can take a few seconds)...";PG.go("unlock","Checking the password… (this can take a few seconds)");
   try{return XLSX.read(await agileDec(new Uint8Array(I.content),new Uint8Array(P.content),pw),{type:"array"})}
   catch(e){if(e.message=="BADPW")throw ask("Incorrect Excel password. Re-enter it and click Unlock.");if(e.message=="UNSUP")throw new Error("This Excel encryption type (Office 2007 'standard') isn't supported. Re-save the file without a password, or with Excel 2010+ encryption.");throw e}}
  try{const wb=XLSX.read(buf,pw?{type:"array",password:pw,cellNF:true}:{type:"array",cellNF:true});xlDates(wb);return wb}catch(e){if(/password|encrypt|decrypt|protected/i.test(e&&e.message||""))throw ask(pw?"Incorrect Excel password (or unsupported encryption). Re-enter it and click Unlock.":"This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");throw e}}
 const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
-let pipeNote="";async function rd(f){pipeNote="";if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text();return csv(t,dlm(t))}const wb=await xlRead(f);let best=[],bsc=-1,bn="";
+let pipeNote="";async function rd(f){pipeNote="";if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text();return csv(t,dlm(t))}PG.go("sheets","Opening the workbook…");await PG.y();const wb=await xlRead(f);PG.go("sheets","Reading the sheets…");await PG.y();let best=[],bsc=-1,bn="";
  wb.SheetNames.forEach(n=>{const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",dateNF:"dd/mm/yyyy"});let bs=0,bi=-1;r.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;bi=i}});const sc=bs*100000+(bi<0?0:r.length-bi);if(sc>bsc){bsc=sc;best=r;bn=n}});
  if(wb.SheetNames.length>1)pipeNote="Sheet used: "+bn+".";return best}
-$("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;
- try{a=await rd(f)}catch(x){$("msg").textContent=(x.manual?"":"Could not read file: ")+x.message;return}
+$("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;PG.begin(/\.(pdf|jpe?g|png|webp|bmp)$/i.test(f.name)?"pdf":/\.(xlsx|xlsm|xlsb|xls)$/i.test(f.name)?"xl":"csv");
+ try{a=await rd(f)}catch(x){$("msg").textContent=(x.manual?"":"Could not read file: ")+x.message;const w=x.pwErr||/password/i.test(x.message);PG.fail(w?(/incorrect/i.test(x.message)?"Incorrect password: re-enter it above and click Unlock":"Waiting for the password: type it above and click Unlock"):"Stopped: "+x.message,w);return}
  a.forEach((r,i)=>{r.rn=i+1});a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
  let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
  hdr=a[h].map(x=>String(x).trim());rows=a.slice(h+1);
  if(IMG.test(f.name)||/\.pdf$/i.test(f.name))window.curSrc=null;else{window.curPdf=null;window.curSrc={a,h,name:f.name};rows.forEach((r,i)=>{r.sr=h+1+i})}
  $("map").innerHTML=F.map(([k,l,re])=>{const i=hdr.findIndex(x=>re.test(x));return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==i&&!(k=="amt"&&i<0)?" selected":""}>${x||"Col "+(j+1)}</option>`).join("")}</select></div>`}).join("");
  $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
- applyCols();$("msg").textContent=`Loaded ${rows.length} rows.`+(pipeNote?" "+pipeNote:"");$("gob").hidden=false;$("gob").scrollIntoView({block:"nearest",behavior:"smooth"})};
+ applyCols();PG.done(`Loaded ${rows.length} rows`);$("msg").textContent=`Loaded ${rows.length} rows.`+(pipeNote?" "+pipeNote:"");$("gob").hidden=false;$("gob").scrollIntoView({block:"nearest",behavior:"smooth"})};
 $("gob2").onclick=()=>{$("setup").hidden=false;nav("setup")};
 let led=[],grp=[],lpar={};try{lpar=JSON.parse(localStorage.getItem("tlp")||"{}")}catch(e){}const setLP=o=>{lpar=o||{};try{localStorage.setItem("tlp",JSON.stringify(lpar))}catch(e){}};const inM=v=>led.some(l=>l.toLowerCase()==String(v).trim().toLowerCase()),canon=v=>led.find(l=>l.toLowerCase()==String(v).trim().toLowerCase())||v,bad=v=>led.length>0&&!!String(v).trim()&&!inM(v);
 function chkF(){["bank","dp","dr","cash"].forEach(i=>$(i).classList.toggle("bad",bad($(i).value)));document.querySelectorAll(".il").forEach(e=>e.classList.toggle("bad",bad(e.value)))}
@@ -903,8 +917,14 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
   const hd=W.find(w=>/^descri\w*$/i.test(w.s)&&W.some(v=>Math.abs(v.y-w.y)<(OC?5:3)&&/^bal\w*$/i.test(v.s)));if(!hd)continue;/* page without the table header: skip */
   const g=re=>W.find(v=>Math.abs(v.y-hd.y)<(OC?5:3)&&re.test(v.s)),hT=g(/^trans\w*$/i),hV=g(/^val\w*$/i),hC=g(/^che\w*$/i),hD=g(/^deb\w*$/i),hR=g(/^cred\w*$/i);if(!hT||!hV||!hC||!hD||!hR)continue;
   const xd=(hT.x+hV.x)/2,xn=hd.x-4,xc=hC.x-3,B=W.filter(w=>w.y<hd.y-14);/* everything below the 2-line header */
-  const an=B.filter(w=>w.x<xd&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r})).sort((a,b)=>b.y-a.y);/* OCR: a date misread beyond repair must not lose the row: also anchor on any Balance figure that has no date row beside it (date taken from the Value Date column) */
-  if(OC){const bx=g(/^bal\w*$/i).x-6;for(const w of B)if(w.x>=bx&&N.test(w.s)&&!an.some(a=>Math.abs(a.y-w.y)<8)){const v=B.find(u=>u.x>=xd&&u.x<xn&&DT.test(u.s)&&Math.abs(u.y-w.y)<8);an.push({d:v?v.s:"",y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r})}for(const a of an){const v=B.find(u=>u.x>=xd&&u.x<xn&&DT.test(u.s)&&Math.abs(u.y-a.y)<8);a.v=v?v.s:""}if(lo==null){const q=W.filter(w=>w.y>hd.y&&DT.test(w.s)).map(w=>kd(w.s)).sort((x,y)=>x-y);if(q.length>1){lo=q[0];hi=q[q.length-1]}}an.sort((a,b)=>b.y-a.y)}
+  const an=B.filter(w=>w.x<xd&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r})).sort((a,b)=>b.y-a.y);/* OCR: dates are rebuilt from everything printed in the Transaction/Value Date columns (OCR may split "22-04-2026" or change its separators); a row whose date is unreadable is still anchored on its Balance figure */
+  if(OC){const DX=s=>{s=s.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1").replace(/\s+/g,"");const m=/(\d{1,2})\D{0,2}(\d{1,2})\D{0,2}(20\d\d)/.exec(s);return m?m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0")+"-"+m[3]:""},
+   clus=(x0,x1)=>{const L=[];for(const w of B.filter(w=>w.x>=x0&&w.x<x1).sort((u,v)=>v.y-u.y)){const l=L.find(l=>Math.abs(l.y-w.y)<4);l?l.w.push(w):L.push({y:w.y,w:[w]})}return L.map(l=>({y:l.y,s:DX(l.w.sort((u,v)=>u.x-v.x).map(w=>w.s).join(""))})).filter(l=>l.s)},
+   cT=clus(hT.x-6,xd),cV=clus(xd,xn),nr=(C,y)=>{let q=null;for(const c of C)if(Math.abs(c.y-y)<8&&(!q||Math.abs(c.y-y)<Math.abs(q.y-y)))q=c;return q?q.s:""};
+   for(const c of cT)if(!an.some(a=>Math.abs(a.y-c.y)<6))an.push({d:c.s,y:c.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r});
+   const bx=g(/^bal\w*$/i).x-6;for(const w of B)if(w.x>=bx&&N.test(w.s)&&!an.some(a=>Math.abs(a.y-w.y)<8))an.push({d:nr(cV,w.y),y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r});
+   for(const a of an){a.d=nr(cT,a.y)||a.d;a.v=nr(cV,a.y)}
+   if(lo==null){const q=W.filter(w=>w.y>hd.y).map(w=>w.s).join(" ").match(/\d{1,2}-\d{1,2}-\d{4}/g);if(q&&q.length>1){const k=q.map(kd).sort((x,y)=>x-y);lo=k[0];hi=k[k.length-1]}}an.sort((a,b)=>b.y-a.y)}
   if(!an.length)continue;
   const near=(y,m)=>{let b=null,bd=1e9;for(const a of an){const d=Math.abs(a.y-y);if(d<bd){bd=d;b=a}}return bd<=m?b:null};
   for(const w of B){
@@ -918,7 +938,7 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
  const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];/* OCR date repair: a date must lie inside the statement period and not run backwards; otherwise use the Value Date, else the previous row's date */
  if(OC){let pk=0,pd0="";A.forEach((a,i)=>{const nx=A[i+1],nk=nx?Math.max(kd(nx.d),kd(nx.v||"")):1e9,ok=d=>{const k=kd(d);return k&&k>=pk&&k<=nk&&(lo==null||(k>=lo&&k<=hi))},c=[a.d,a.v].find(ok),vr=c?[]:[...new Set([...a.d].flatMap((ch,j)=>ch=="-"?[]:"0123456789".split("").map(x=>a.d.slice(0,j)+x+a.d.slice(j+1))).filter(ok))];a.d=c||(vr.length==1?vr[0]:pd0||a.d);pk=kd(a.d)||pk;pd0=a.d})}
  let pv=null,sn=null,ob=null;
- for(const a of A){const bl=[...a.amt].sort((u,v)=>v.r-u.r)[0],ms=bl?a.amt.filter(w=>w!==bl):[];
+ for(const a of A){const bl=[...a.amt].sort((u,v)=>v.r-u.r)[0],ms0=bl?a.amt.filter(w=>w!==bl):[],ms=OC&&ms0.length>1?[ms0.slice().sort((u,v)=>Math.min(Math.abs(u.r-a.hD),Math.abs(u.r-a.hR))-Math.min(Math.abs(v.r-a.hD),Math.abs(v.r-a.hR)))[0]]:ms0;/* OCR: several figures in one row: take the one nearest the Debit/Credit columns */
   if(!bl||(!OC&&ms.length>1))throw new Error("row without a clear amount/balance: "+a.d+" "+a.nr.slice(0,30));
   const b=num(bl.s);
   if(!ms.length){if(/^opening balance$/i.test(a.nr.trim())){pv=ob=b;sn=a.sr;continue}if(!OC||pv==null)throw new Error("row without amount: "+a.d+" "+a.nr.slice(0,30));const dl=b-pv,r0=[a.d,a.nr,a.ref,dl<0?f(-dl):"",dl>0?f(dl):"",f(b)];r0.y=a.y;r0.p=a.p;r0.oc=true;out.push(r0);pv=b;continue}
@@ -929,8 +949,11 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
  /* OCR repair: a digit read wrong in the Balance or Debit/Credit cell is fixed from the neighbouring balances (only when the OCR figure differs by at most 2 characters; anything else is left for chk() to flag) */
  if(OC&&ob!=null){const R=out.slice(1),sm=(x,y)=>x.length==y.length&&[...x].filter((c,k)=>c!=y[k]).length<=2,sg=q=>num(q[4])-num(q[3]);
   for(let i=0;i<R.length;i++){const r=R[i],nx=R[i+1],pb=i?num(R[i-1][5]):ob;if(Math.abs(pb+sg(r)-num(r[5]))<=.011)continue;
+   {const ex=pb+sg(r);if(sm(f(ex),r[5]))r[5]=f(ex)}/* amount trusted, balance 1-2 characters off */
+   if(Math.abs(pb+sg(r)-num(r[5]))<=.011)continue;
    if(nx){const bw=num(nx[5])-sg(nx);if(sm(f(bw),r[5]))r[5]=f(bw)}
-   const d=num(r[5])-pb;if(Math.abs(d)>.005&&sm(f(Math.abs(d)),f(Math.abs(sg(r))))){r[3]=d<0?f(-d):"";r[4]=d>0?f(d):""}}}
+   const d=num(r[5])-pb;if(Math.abs(d)>.005&&sm(f(Math.abs(d)),f(Math.abs(sg(r))))){r[3]=d<0?f(-d):"";r[4]=d>0?f(d):""}
+   if(Math.abs(pb+sg(r)-num(r[5]))>.011&&nx&&Math.abs(num(r[5])+sg(nx)-num(nx[5]))<=.011){const d2=num(r[5])-pb;if(Math.abs(d2)>.005){r[3]=d2<0?f(-d2):"";r[4]=d2>0?f(d2):""}}/* balance confirmed by the next row: amount follows from it */}}
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP1=new RegExp(BP0.source.replace("www\\.|e-?mail|",""),"i");/* BP0 minus the weak www./e-mail words */
 const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
@@ -959,15 +982,21 @@ async function loadTess(){if(window.Tesseract)return;await new Promise((ok,no)=>
 async function renderPg(doc,p,sc,enh){const pg=await doc.getPage(p),vp=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;
  if(enh){const im=x.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=enh===2?(g>200?255:g):Math.max(0,Math.min(255,(g-128)*1.5+128));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0)}return c}
 const dgFix=t=>/\d/.test(t)&&/^[\d,.\-()OoIl|]+(?:\s?(?:Cr|Dr|CR|DR))?$/.test(t)?t.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1"):t;
-async function ocrPages(doc,SC=3,enh=true,pp){await loadTess();const w=await Tesseract.createWorker("eng"),out=[];if(pp){try{await w.setParameters(pp)}catch(e){}}
- try{for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;
-  const {data}=await w.recognize(await renderPg(doc,p,SC,enh));
-  const ws=data.words||(data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(q=>q.lines.flatMap(l=>l.words)));
-  out.push(ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC})))}}
- finally{await w.terminate()}return out}
+let _tw=[],_twt=0;/* OCR engines are created once and reused (every pass, every upload) instead of being rebuilt and re-downloaded per pass; pages are read in parallel on up to 2 engines; idle engines are released after 90 s */
+async function ocrPages(doc,SC=3,enh=true,pp){await loadTess();clearTimeout(_twt);const n=Math.min(2,doc.numPages),out=new Array(doc.numPages);
+ try{while(_tw.length<n)_tw.push(await Tesseract.createWorker("eng"));const ws0=_tw.slice(0,n);
+  for(const w of ws0){try{await w.setParameters({tessedit_pageseg_mode:"6",preserve_interword_spaces:"0",...(pp||{})})}catch(e){}}/* defaults restored first so a pass never inherits the previous pass's settings */
+  let nx=1,done=0;
+  const run=async w=>{for(;;){const p=nx++;if(p>doc.numPages)return;$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;PG.pg(done,doc.numPages,true);
+   const {data}=await w.recognize(await renderPg(doc,p,SC,enh));
+   const ws=data.words||(data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(q=>q.lines.flatMap(l=>l.words)));
+   out[p-1]=ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC}));PG.pg(++done,doc.numPages)}};
+  await Promise.all(ws0.map(run))}
+ catch(e){await Promise.all(_tw.map(w=>w.terminate().catch(()=>{})));_tw=[];throw e}
+ _twt=setTimeout(()=>{_tw.forEach(w=>w.terminate().catch(()=>{}));_tw=[]},90000);return out}
 /* ---- AI vision fallback (only after user consent) ---- */
 async function aiRows(doc,key,model){const R=[],pr='This is one page of a bank statement. Extract every transaction row exactly as printed, top to bottom. Return ONLY a JSON array, no other text. Each item: {"date":"as printed","narration":"full text including wrapped lines","ref":"cheque/ref/UTR no or empty","debit":"withdrawal amount or empty","credit":"deposit amount or empty","balance":"running balance after the transaction exactly as printed, including Cr/Dr if shown"}. Copy numbers exactly; never calculate or guess. Skip headers, opening/closing balance lines, totals and footers. If the page has no transactions return [].';
- for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`AI: reading page ${p} of ${doc.numPages}...`;
+ for(let p=1;p<=doc.numPages;p++){$("msg").textContent=`AI: reading page ${p} of ${doc.numPages}...`;PG.pg(p-1,doc.numPages,true);
   const b64=(await renderPg(doc,p,1.7,false)).toDataURL("image/jpeg",.85).split(",")[1];
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model,max_tokens:8000,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:pr}]}]})});
   const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||"API error "+r.status);
@@ -984,7 +1013,7 @@ const dlm=t=>{const L=t.split(/\r?\n/).filter(x=>x.trim()).slice(0,8);let b=",",
 async function imgDoc(f){const P=[];for(const z of (f.imgs||[f])){const bm=await createImageBitmap(z),W=600,H=Math.round(bm.height*W/bm.width);
  P.push({getViewport:({scale})=>({width:Math.round(W*scale),height:Math.round(H*scale)}),render:({canvasContext:c,viewport:v})=>({promise:Promise.resolve(c.drawImage(bm,0,0,v.width,v.height))}),getTextContent:async()=>({items:[]})})}
  return{numPages:P.length,getPage:async n=>P[n-1]}}
-async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openPdf(f),C=[],errs=[];window.curPdf=doc;let noAI=false,pre="";
+async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openPdf(f),C=[],errs=[];PG.go("text","Reading page text…");window.curPdf=doc;let noAI=false,pre="";
  const tryR=(R,src)=>{const v=chk(R);C.push({R,v,src});return v.n>0&&v.bad<=Math.floor(v.n*.02)&&v.nw<=Math.floor(v.n*.1)};
  const fin=(c,pre)=>{const v=c.v;pipeNote=(LY?"[Layout: "+LY.name+"] ":"")+(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
  const ocDoc=(d,oc)=>({isOcr:true,numPages:d.numPages,getPage:async p=>{const g=await d.getPage(p);return{getViewport:(...a)=>g.getViewport(...a),render:(...a)=>g.render(...a),getTextContent:async()=>({items:(oc[p-1]||[]).map(w=>({str:w.s,transform:[1,0,0,1,w.x,w.y],width:w.r-w.x,height:8}))})}}});
@@ -1000,9 +1029,9 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
   try{$("msg").textContent="Cross-checking with balance-chain reader...";const okc=tryR(await chainRows(doc),"Balance-chain reader"),ch=C[C.length-1];
    if(okc&&(!ok||(ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03)))ok=true;/* both reconcile: keep the one with the fuller narration */
    else if(tx)C.push(C.splice(C.indexOf(tx),1)[0])}catch(e){errs.push("Chain: "+e.message)}}
- if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";if(await ocrRun(await ocrL(doc),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
- if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";if(await ocrRun(await ocrL(doc,3,2,{tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"}),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
- if(!ok&&C.length&&C[C.length-1].src=="OCR 2nd pass"){try{$("msg").textContent="Trying a third OCR pass with different settings...";if(await ocrRun(await ocrL(doc,4,false,{preserve_interword_spaces:"1"}),"OCR 3rd pass")){ok=true;pre="Used OCR (third pass). "}}catch(e){errs.push("OCR 3rd pass: "+e.message)}}
+ if(!ok){try{$("msg").textContent="Text layer not reliable, trying OCR...";PG.go("ocr","Text layer isn’t reliable · switching to OCR · warming up the engine…");if(await ocrRun(await ocrL(doc),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR"){try{$("msg").textContent="Trying a second OCR pass with different settings...";PG.go("ocr2","Second OCR pass with different settings…");if(await ocrRun(await ocrL(doc,3,2,{tessedit_pageseg_mode:"11",preserve_interword_spaces:"1"}),"OCR 2nd pass")){ok=true;pre="Used OCR (second pass). "}}catch(e){errs.push("OCR 2nd pass: "+e.message)}}
+ if(!ok&&C.length&&C[C.length-1].src=="OCR 2nd pass"){try{$("msg").textContent="Trying a third OCR pass with different settings...";PG.go("ocr2","Second OCR pass with different settings…");if(await ocrRun(await ocrL(doc,4,false,{preserve_interword_spaces:"1"}),"OCR 3rd pass")){ok=true;pre="Used OCR (third pass). "}}catch(e){errs.push("OCR 3rd pass: "+e.message)}}
  if(ok&&!weak(C[C.length-1]))return fin(C[C.length-1],pre);
  /* not everything verified: AI only with the user's permission */
  let useAI=false,key="";
@@ -1015,7 +1044,7 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
   const m=await dlg("Convert with an AI chat yourself",manualHtml,[{t:"OK, I will convert it and upload the CSV"},{t:"Back",s:1}],false,"I understand that uploading my statement to an AI service is my own risk and this tool and its author are not responsible for data security.");
   if(m.i==0)throw Object.assign(new Error("Statement not loaded. Convert it to CSV in an AI chat using the prompt shown, then upload the CSV file here."),{manual:true})}
   if(r.i==0){if(r.key){key=r.key;useAI=true;$("aik").value=r.key}else errs.push("AI skipped: no API key entered")}else noAI=true}
- if(useAI){try{$("msg").textContent="Trying AI (as you allowed)...";if(tryR(await aiRows(doc,key,$("aim").value.trim()||"claude-sonnet-5-5"),"AI"))return fin(C[C.length-1],"Used AI. ")}catch(e){errs.push("AI: "+e.message)}}
+ if(useAI){try{$("msg").textContent="Trying AI (as you allowed)...";PG.go("ai","Sending pages to AI…");if(tryR(await aiRows(doc,key,$("aim").value.trim()||"claude-sonnet-5-5"),"AI"))return fin(C[C.length-1],"Used AI. ")}catch(e){errs.push("AI: "+e.message)}}
  const best=pick(),raw=C.filter(c=>c.R&&c.R.length>1).pop();
  if(!best&&raw){pipeNote="⚠ "+(noAI?"AI not used (your choice). ":"")+"The table structure could not be recognised. The raw text lines are shown: check the column mapping and parsed preview below, then edit in the preview.";return raw.R}
  if(!best)throw new Error("No transactions could be extracted. "+errs.join(" | "));
@@ -1086,7 +1115,7 @@ async function chainRows(doc){
  return[["Date","Narration","Ref","Debit","Credit","Balance"],...r.R]}
 
 async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
- for(let p=1;p<=doc.numPages;p++){const its=OC?(OC[p-1]||[]):(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],r:i.transform[4]+i.width}));if(its.length)any=true;
+ for(let p=1;p<=doc.numPages;p++){if(!OC)PG.pg(p-1,doc.numPages);const its=OC?(OC[p-1]||[]):(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],r:i.transform[4]+i.width}));if(its.length)any=true;
   const lines=[];for(const it of its){const l=lines.find(l=>Math.abs(l.y-it.y)<3);if(l)l.it.push(it);else lines.push({y:it.y,it:[it]})}
   lines.sort((a,b)=>b.y-a.y);
   for(const l of lines){l.it.sort((a,b)=>a.x-b.x);const cs=[];
@@ -1264,33 +1293,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.19<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
-<script>
-(function(){
-const f=document.getElementById("f"),m=document.getElementById("msg"),w=document.getElementById("pgw"),$$=id=>document.getElementById(id);
-if(!f||!m||!w||typeof f.onchange!=="function")return;
-let run=false,cur=0,cap=0,stage=0,tm=null,hd=null,lab="",det="";
-function paint(){const p=Math.round(cur);$$("pgf").style.width=p+"%";$$("pgp").textContent=p+"%";$$("pgl").textContent=lab;$$("pgd").textContent=det;w.setAttribute("aria-valuenow",p);
- [...$$("pgs").children].forEach((e,i)=>{e.className=i<stage?(i==2&&!scan?"sk":"dn"):(i==stage?"on":"")});}
-let scan=false;
-function go(s,floor,cp,l,d){if(s>stage)stage=s;if(s==2)scan=true;if(floor>cur)cur=floor;if(cp>cap)cap=cp;if(l)lab=l;det=d||"";paint()}
-function onMsg(){if(!run)return;const t=m.textContent||"";let x;
- if(x=t.match(/(?:OCR|AI): reading page (\d+) of (\d+)/i)){const a=+x[1],n=Math.max(1,+x[2]),ai=/^AI/i.test(t);go(2,35+(a-1)/n*50,35+a/n*50-1,(ai?"AI is reading page ":"Scanning page ")+a+" of "+n+(ai?"...":" (OCR)..."),ai?"Sending page images to the AI you allowed.":"The first run downloads the OCR engine, so it can take a little longer.")}
- else if(/trying OCR|text layer not reliable/i.test(t))go(2,35,45,"Text unclear: scanning pages with OCR...","")
- else if(/Trying AI/i.test(t))go(2,35,45,"Asking AI to read the pages...","")
- else if(/Reading PDF text/i.test(t))go(1,18,58,"Reading the statement text...","")}
-new MutationObserver(onMsg).observe(m,{childList:true,characterData:true,subtree:true});
-function start(){clearTimeout(hd);clearInterval(tm);run=true;scan=false;cur=0;cap=0;stage=0;w.className="pgw";w.hidden=false;$$("pgb").className="pgi";
- lab="Opening your file...";det="";go(0,4,18,lab,"");
- tm=setInterval(()=>{if(cur<cap){cur=Math.min(cap,cur+(cap-cur)*.06+.05);paint()}},150)}
-function finish(ok){if(!run)return;run=false;clearInterval(tm);
- if(ok){cur=100;stage=4;w.classList.add("done");lab="Statement ready for Tally";det=m.textContent;paint();$$("pgb").className="pgi pop";hd=setTimeout(()=>{w.hidden=true},4000)}
- else{w.classList.add("stop");lab="Paused: see the message below";det="";paint();hd=setTimeout(()=>{w.hidden=true},7000)}}
-const o=f.onchange;
-f.onchange=async function(e){const has=e&&e.target&&e.target.files&&e.target.files[0];if(!has)return o.call(this,e);
- start();let ok=false;try{const r=await o.call(this,e);ok=/^Loaded/.test(m.textContent||"");return r}finally{finish(ok)}};
-})();
-</script>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.20<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 
 <button id="hlpb" type="button" title="Help for this page" aria-label="Help for this page">?</button>
 <div id="hlpo" role="dialog" aria-modal="true" aria-labelledby="hlpt"><div class="card">
