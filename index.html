@@ -11,7 +11,7 @@
    5. Removed: anything deleted
   Compare against the previous version of this file; list only real differences.
   Keep entries one line each. Also bump the VERSION comment below.
-  VERSION: v1
+  VERSION: v2
 -->
 
 <html lang="en"><head><meta charset="utf-8">
@@ -101,7 +101,7 @@ tr.er{background:rgba(217,48,37,.07)}tr.er td:first-child{box-shadow:inset 3px 0
 <div class="g" style="margin-top:6px;align-items:end"><div><label>Load exported ledger list (XML / CSV / XLSX)</label><input type="file" id="lf" accept=".xml,.csv,.xls,.xlsx"></div></div>
 <p class="mu" id="lm" style="margin:6px 0 0">Export in Tally: Display More Reports → List of Accounts → Alt+E.</p><small id="lc"></small><small id="gc"></small><datalist id="ll"></datalist></div>
 <div class="g" style="margin-top:8px">
-<div><label>Bank reference (used in file name)</label><input id="br" class="need" placeholder="HDFC-1234"></div><div><label>Company name (as in Tally)</label><input id="co" placeholder="My Company"></div>
+<div><label>Company name (as in Tally)</label><input id="co" placeholder="My Company"></div>
 <div><label>Bank ledger name</label><input id="bank" class="need" data-cb="1" value="" placeholder="-set bank ledger name here-"></div>
 <div><label>Default ledger (Dr entries / payments)</label><select id="dp"><option>Suspense</option></select></div>
 <div><label>Default ledger (Cr entries / receipts)</label><select id="dr"><option>Suspense</option></select></div>
@@ -541,13 +541,13 @@ $("xsel").onclick=async()=>{if(!selS.size){await dlg("No transactions selected",
 $("xs").onclick=async()=>{EXS=null;if(!(await preGuard())||!(await rvGuard())||!(await expGuard())||!doXml())return;const r=await saveSet();$("xw").insertAdjacentHTML("beforeend",`<div class="mu">Settings ${esc(r)}.</div>`)};
 $("csv").onclick=()=>dl("tally-preview.csv","Date,Type,Narration,Amount,Ledger\n"+data.filter(x=>!x.del).map(x=>[x.d,x.t,x.nar,x.amt,x.led].map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n"),"text/csv");
 
-let pc=null;const TX=["co","br","bank","dp","dr","cash","k1","k2"],CK=["c1","c2","c3","lr","xm"];
+let pc=null;const TX=["co","bank","dp","dr","cash","k1","k2"],CK=["c1","c2","c3","lr","xm"];
 function applyCols(){if(!pc||!hdr.length)return;for(const[k]of F){const el=$("m_"+k);if(!el)continue;const n=pc[k]||"";const o=[...el.options].find(o=>n&&o.text===n);el.value=o?o.value:(n?el.value:"-1")}}
 function buildSet(){const p={v:1,text:{},checks:{},rules:$("rules").value,ib:[...document.querySelectorAll(".ibr")].map(r=>[r.querySelector(".ik").value,r.querySelector(".il").value]),cols:{},ledgers:$("xm").checked?led:[],groups:$("xm").checked?grp:[]};
  TX.forEach(i=>p.text[i]=$(i).value);CK.forEach(i=>p.checks[i]=$(i).checked);
  F.forEach(([k])=>{const el=$("m_"+k);p.cols[k]=el&&el.value!="-1"?el.options[el.selectedIndex].text:""});
  const sf=t=>t.trim().replace(/[^\w\-]+/g,"_").replace(/^_+|_+$/g,"");
- const n=[sf($("co").value),sf($("br").value)].filter(Boolean).join("_")||"tally";
+ const n=[sf($("co").value),sf($("bank").value)].filter(Boolean).join("_")||"tally";
  return{n:n+"_settings.json",t:JSON.stringify(p,null,1)}}
 $("ex").onclick=()=>{const s=buildSet();dl(s.n,s.t,"application/json")};
 async function saveSet(){const s=buildSet();
@@ -558,7 +558,7 @@ $("pf").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JS
  if(p.rules!=null)$("rules").value=p.rules;
  if(p.ib){$("ibl").innerHTML="";p.ib.forEach(x=>ibRow(x[0],x[1]));svIb()}
  if(p.groups&&p.groups.length&&!grp.length)setG(p.groups);let mr="";if(p.ledgers&&p.ledgers.length){if(!led.length){setL(p.ledgers);mr=" · ledger master restored from file"}else mr=" · kept your current ledger master (loading a new master replaces it)"}
- pc=p.cols||null;applyCols();brT=$("br").value.trim()!==""&&$("br").value!==$("bank").value;if(!brT)$("br").value=$("bank").value;$("setup").hidden=!rows.length&&$("setup").hidden;
+ pc=p.cols||null;applyCols();$("setup").hidden=!rows.length&&$("setup").hidden;
  $("msg").textContent="Settings loaded from "+f.name+(rows.length?"":". Now upload the statement.")+mr}catch(x){$("msg").textContent="Invalid settings file: "+x.message}};
 
 /* =====================================================================================
@@ -1244,8 +1244,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
  return colRes&&cc>=lr.length-1?colRes:(lr.length>1?lr:(colRes||out))}
 $("pwb").onclick=()=>{const f=$("f").files[0];if(f)$("f").onchange({target:$("f")});else $("msg").textContent="Choose a statement file first."};$("pw").onkeydown=e=>{if(e.key=="Enter")$("pwb").onclick()};$("pw").onchange=()=>{const f=$("f").files[0];if(f&&!/\.csv$/i.test(f.name))$("f").onchange({target:$("f")})};
 ["bank","dp","dr","cash"].forEach(i=>$(i).addEventListener("input",chkF));chkF();
-let brT=false;$("br").addEventListener("input",()=>{brT=$("br").value.trim()!==""});
-$("bank").addEventListener("input",()=>{if(!brT)$("br").value=$("bank").value});
+
 
 let hs=false,obAuto=false;
 const sbv=c=>{const t=String(c==null?"":c).trim();return t===""||!/\d/.test(t)?null:num(t)*(/\bdr\b/i.test(t)?-1:1)},mm=x=>x.sb!=null&&x.rb!=null&&Math.abs(x.sb-x.rb)>0.01;
@@ -1379,7 +1378,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.25<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.26<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 
 <button id="hlpb" type="button" title="Help for this page" aria-label="Help for this page">?</button>
 <div id="hlpo" role="dialog" aria-modal="true" aria-labelledby="hlpt"><div class="card">
