@@ -327,7 +327,7 @@ $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\
  for(const r of rows){const d=g("date")>=0?pd(r[g("date")]):null;if(!d){opn(r);skip++;continue}
   let dr=g("dr")>=0?num(r[g("dr")]):0,cr=g("cr")>=0?num(r[g("cr")]):0;
   if(!dr&&!cr&&g("amt")>=0){const a=num(r[g("amt")]);if(a<0||/\bdr\b/i.test(String(r[g("amt")])))dr=Math.abs(a);else cr=a}
-  if(!dr&&!cr){opn(r);skip++;continue}
+  if(!dr&&!cr){if((r.fl||[]).some(t=>/Amount not read/.test(t))&&!/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){}else{opn(r);skip++;continue}}
   const nar=g("nar")>=0?String(r[g("nar")]).replace(/please do not share[\s\S]*$/i,"").trim():"",ref=g("ref")>=0?String(r[g("ref")]).trim():"",out=dr>0,amt=out?dr:cr,low=nar.toLowerCase();
   let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const hit=rules.find(x=>low.includes(x[0]));if(hit)l=hit[1];
   if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
@@ -913,17 +913,20 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
  const N=/^\d[\d,]*\.\d{2}$/,DT=/^\d{1,2}-\d{1,2}-\d{4}$/,f=x=>(Math.round(x*100)/100).toFixed(2),A=[];
  for(let p=1;p<=doc.numPages;p++){
   const W=[];for(const i of(await(await doc.getPage(p)).getTextContent()).items){if(!i.str.trim())continue;const n=i.str.length,x0=i.transform[4],x1=x0+i.width,y=i.transform[5];let o=0;
-   for(const s of i.str.split(/\s+/).filter(Boolean)){const a=i.str.indexOf(s,o);o=a+s.length;W.push({s,x:x0+(x1-x0)*a/n,r:x0+(x1-x0)*o/n,y})}}
+   for(const s of i.str.split(/\s+/).filter(Boolean)){const a=i.str.indexOf(s,o);o=a+s.length;W.push({s,x:x0+(x1-x0)*a/n,r:x0+(x1-x0)*o/n,y,c:i.c})}}
   const hd=W.find(w=>/^descri\w*$/i.test(w.s)&&W.some(v=>Math.abs(v.y-w.y)<(OC?5:3)&&/^bal\w*$/i.test(v.s)));if(!hd)continue;/* page without the table header: skip */
   const g=re=>W.find(v=>Math.abs(v.y-hd.y)<(OC?5:3)&&re.test(v.s)),hT=g(/^trans\w*$/i),hV=g(/^val\w*$/i),hC=g(/^che\w*$/i),hD=g(/^deb\w*$/i),hR=g(/^cred\w*$/i);if(!hT||!hV||!hC||!hD||!hR)continue;
-  const xd=(hT.x+hV.x)/2,xn=hd.x-4,xc=hC.x-3,B=W.filter(w=>w.y<hd.y-14);/* everything below the 2-line header */
-  const an=B.filter(w=>w.x<xd&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r})).sort((a,b)=>b.y-a.y);/* OCR: dates are rebuilt from everything printed in the Transaction/Value Date columns (OCR may split "22-04-2026" or change its separators); a row whose date is unreadable is still anchored on its Balance figure */
+  const xd=(hT.x+hV.x)/2,xn=hd.x-4,xc=hC.x-3,B=W.filter(w=>w.y<hd.y-14),hb=(g(/^bal\w*$/i)||{r:0}).r;/* everything below the 2-line header */
+  /* OCR: figures in the amount columns are re-joined if split and their separators normalised (1.905.59 / 1,905,59 -> 1905.59) */
+  if(OC){const Z=B.filter(w=>w.x>=xc&&/^[\d.,]+$/.test(w.s)).sort((u,v)=>u.x-v.x);for(const w of Z){const q=Z.find(z=>z!==w&&B.includes(z)&&B.includes(w)&&Math.abs(z.y-w.y)<4&&w.x-z.r>-1&&w.x-z.r<5&&/[.,]$/.test(z.s));if(q){q.s+=w.s;q.r=w.r;B.splice(B.indexOf(w),1)}}
+   for(const w of B)if(w.x>=xc&&/^[\d.,]*\d[.,]\d{2}$/.test(w.s))w.s=w.s.replace(/[.,](?=\d{2}$)/,"#").replace(/[.,]/g,"").replace("#",".")}
+  const an=B.filter(w=>w.x<xd&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r,hB:hb})).sort((a,b)=>b.y-a.y);/* OCR: dates are rebuilt from everything printed in the Transaction/Value Date columns (OCR may split "22-04-2026" or change its separators); a row whose date is unreadable is still anchored on its Balance figure */
   if(OC){const DX=s=>{s=s.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1").replace(/\s+/g,"");const m=/(\d{1,2})\D{0,2}(\d{1,2})\D{0,2}(20\d\d)/.exec(s);return m?m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0")+"-"+m[3]:""},
-   clus=(x0,x1)=>{const L=[];for(const w of B.filter(w=>w.x>=x0&&w.x<x1).sort((u,v)=>v.y-u.y)){const l=L.find(l=>Math.abs(l.y-w.y)<4);l?l.w.push(w):L.push({y:w.y,w:[w]})}return L.map(l=>({y:l.y,s:DX(l.w.sort((u,v)=>u.x-v.x).map(w=>w.s).join(""))})).filter(l=>l.s)},
-   cT=clus(hT.x-6,xd),cV=clus(xd,xn),nr=(C,y)=>{let q=null;for(const c of C)if(Math.abs(c.y-y)<8&&(!q||Math.abs(c.y-y)<Math.abs(q.y-y)))q=c;return q?q.s:""};
-   for(const c of cT)if(!an.some(a=>Math.abs(a.y-c.y)<6))an.push({d:c.s,y:c.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r});
-   const bx=g(/^bal\w*$/i).x-6;for(const w of B)if(w.x>=bx&&N.test(w.s)&&!an.some(a=>Math.abs(a.y-w.y)<8))an.push({d:nr(cV,w.y),y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r});
-   for(const a of an){a.d=nr(cT,a.y)||a.d;a.v=nr(cV,a.y)}
+   clus=(x0,x1)=>{const L=[];for(const w of B.filter(w=>w.x>=x0&&w.x<x1).sort((u,v)=>v.y-u.y)){const l=L.find(l=>Math.abs(l.y-w.y)<4);l?l.w.push(w):L.push({y:w.y,w:[w]})}return L.map(l=>({y:l.y,c:Math.min(...l.w.map(w=>w.c==null?100:w.c)),s:DX(l.w.sort((u,v)=>u.x-v.x).map(w=>w.s).join(""))})).filter(l=>l.s)},
+   cT=clus(hT.x-6,xd),cV=clus(xd,xn),nr=(C,y)=>{let q=null;for(const c of C)if(Math.abs(c.y-y)<8&&(!q||Math.abs(c.y-y)<Math.abs(q.y-y)))q=c;return q};
+   for(const c of cT)if(!an.some(a=>Math.abs(a.y-c.y)<6))an.push({d:c.s,dc:c.c,y:c.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r,hB:hb});
+   const bx=g(/^bal\w*$/i).x-6;for(const w of B)if(w.x>=bx&&N.test(w.s)&&!an.some(a=>Math.abs(a.y-w.y)<8))an.push({d:(nr(cV,w.y)||{s:""}).s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r,hB:hb});
+   for(const a of an){const t=nr(cT,a.y),v=nr(cV,a.y);if(t){a.d=t.s;a.dc=t.c}a.v=v?v.s:"";a.vc=v?v.c:0}
    if(lo==null){const q=W.filter(w=>w.y>hd.y).map(w=>w.s).join(" ").match(/\d{1,2}-\d{1,2}-\d{4}/g);if(q&&q.length>1){const k=q.map(kd).sort((x,y)=>x-y);lo=k[0];hi=k[k.length-1]}}an.sort((a,b)=>b.y-a.y)}
   if(!an.length)continue;
   const near=(y,m)=>{let b=null,bd=1e9;for(const a of an){const d=Math.abs(a.y-y);if(d<bd){bd=d;b=a}}return bd<=m?b:null};
@@ -936,24 +939,17 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
   A.push(...an)}
  if(!A.length)throw new Error("layout table not found");
  const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];/* OCR date repair: a date must lie inside the statement period and not run backwards; otherwise use the Value Date, else the previous row's date */
- if(OC){let pk=0,pd0="";A.forEach((a,i)=>{const nx=A[i+1],nk=nx?Math.max(kd(nx.d),kd(nx.v||"")):1e9,ok=d=>{const k=kd(d);return k&&k>=pk&&k<=nk&&(lo==null||(k>=lo&&k<=hi))},c=[a.d,a.v].find(ok),vr=c?[]:[...new Set([...a.d].flatMap((ch,j)=>ch=="-"?[]:"0123456789".split("").map(x=>a.d.slice(0,j)+x+a.d.slice(j+1))).filter(ok))];a.d=c||(vr.length==1?vr[0]:pd0||a.d);pk=kd(a.d)||pk;pd0=a.d})}
+ if(OC){let pk=0,pd0="";A.forEach((a,i)=>{const nx=A[i+1],nk=nx?Math.max(kd(nx.d),kd(nx.v||"")):1e9,ok=d=>{const k=kd(d);return k&&k>=pk&&k<=nk&&(lo==null||(k>=lo&&k<=hi))},c=(ok(a.d)&&ok(a.v)&&a.v!==a.d&&(a.dc==null?100:a.dc)<75&&(a.vc||0)>=(a.dc==null?100:a.dc)+8&&a.d.length==a.v.length&&[...a.d].filter((ch,k)=>ch!=a.v[k]).length<=2)?a.v:[a.d,a.v].find(ok),vr=c?[]:[...new Set([...a.d].flatMap((ch,j)=>ch=="-"?[]:"0123456789".split("").map(x=>a.d.slice(0,j)+x+a.d.slice(j+1))).filter(ok))];a.d=c||(vr.length==1?vr[0]:pd0||a.d);pk=kd(a.d)||pk;pd0=a.d})}
  let pv=null,sn=null,ob=null;
- for(const a of A){const bl=[...a.amt].sort((u,v)=>v.r-u.r)[0],ms0=bl?a.amt.filter(w=>w!==bl):[],ms=OC&&ms0.length>1?[ms0.slice().sort((u,v)=>Math.min(Math.abs(u.r-a.hD),Math.abs(u.r-a.hR))-Math.min(Math.abs(v.r-a.hD),Math.abs(v.r-a.hR)))[0]]:ms0;/* OCR: several figures in one row: take the one nearest the Debit/Credit columns */
-  if(!bl||(!OC&&ms.length>1))throw new Error("row without a clear amount/balance: "+a.d+" "+a.nr.slice(0,30));
-  const b=num(bl.s);
-  if(!ms.length){if(/^opening balance$/i.test(a.nr.trim())){pv=ob=b;sn=a.sr;continue}if(!OC||pv==null)throw new Error("row without amount: "+a.d+" "+a.nr.slice(0,30));const dl=b-pv,r0=[a.d,a.nr,a.ref,dl<0?f(-dl):"",dl>0?f(dl):"",f(b)];r0.y=a.y;r0.p=a.p;r0.oc=true;out.push(r0);pv=b;continue}
+ for(const a of A){const col=OC&&a.hB,bl=col?a.amt.filter(w=>Math.abs(w.r-a.hB)<=30).sort((u,v)=>Math.abs(u.r-a.hB)-Math.abs(v.r-a.hB))[0]:[...a.amt].sort((u,v)=>v.r-u.r)[0],ms1=a.amt.filter(w=>w!==bl),ms0=col?ms1.filter(w=>Math.min(Math.abs(w.r-a.hD),Math.abs(w.r-a.hR))<=Math.abs(w.r-a.hB)):ms1,ms=OC&&ms0.length>1?[ms0.slice().sort((u,v)=>Math.min(Math.abs(u.r-a.hD),Math.abs(u.r-a.hR))-Math.min(Math.abs(v.r-a.hD),Math.abs(v.r-a.hR)))[0]]:ms0;/* OCR: several figures in one row: take the one nearest the Debit/Credit columns */
+  if(OC?(!bl&&!ms.length&&!/^opening balance$/i.test(a.nr.trim())&&0):(!bl||ms.length>1))throw new Error("row without a clear amount/balance: "+a.d+" "+a.nr.slice(0,30));
+  let b=bl?num(bl.s):null;/* RULE: an amount is only ever the figure printed in the Debit/Credit cell, and a balance only the figure printed in the Balance cell. Nothing is calculated from balances; an unreadable cell stays blank and chk() flags the row for review. */
+  if(!ms.length){if(/^opening balance$/i.test(a.nr.trim())){pv=ob=b;sn=a.sr;continue}if(!OC)throw new Error("row without amount: "+a.d+" "+a.nr.slice(0,30));const r0=[a.d,a.nr,a.ref,"","",b==null?"":f(b)];r0.y=a.y;r0.p=a.p;r0.oc=true;out.push(r0);if(b!=null)pv=b;continue}/* amount not readable: row kept with a blank amount and flagged, never filled in */
   const m=ms[0],isD=Math.abs(m.r-a.hD)<=Math.abs(m.r-a.hR),dq=isD?num(m.s):0,cq=isD?0:num(m.s);
-  if(!OC&&pv!=null&&Math.abs(pv-dq+cq-b)>.011)throw new Error("balance does not chain at "+a.d+" "+a.nr.slice(0,30));pv=b;
+  if(!OC&&pv!=null&&Math.abs(pv-dq+cq-b)>.011)throw new Error("balance does not chain at "+a.d+" "+a.nr.slice(0,30));if(b!=null)pv=b;
   if(a.sr==null)sn=null;else{if(!OC&&sn!=null&&a.sr!=sn+1)throw new Error("serial no "+(sn+1)+" missing");sn=a.sr}
-  const r=[a.d,a.nr,a.ref,dq?f(dq):"",cq?f(cq):"",f(b)];r.y=a.y;r.p=a.p;r.oc=OC;out.push(r)}
- /* OCR repair: a digit read wrong in the Balance or Debit/Credit cell is fixed from the neighbouring balances (only when the OCR figure differs by at most 2 characters; anything else is left for chk() to flag) */
- if(OC&&ob!=null){const R=out.slice(1),sm=(x,y)=>x.length==y.length&&[...x].filter((c,k)=>c!=y[k]).length<=2,sg=q=>num(q[4])-num(q[3]);
-  for(let i=0;i<R.length;i++){const r=R[i],nx=R[i+1],pb=i?num(R[i-1][5]):ob;if(Math.abs(pb+sg(r)-num(r[5]))<=.011)continue;
-   {const ex=pb+sg(r);if(sm(f(ex),r[5]))r[5]=f(ex)}/* amount trusted, balance 1-2 characters off */
-   if(Math.abs(pb+sg(r)-num(r[5]))<=.011)continue;
-   if(nx){const bw=num(nx[5])-sg(nx);if(sm(f(bw),r[5]))r[5]=f(bw)}
-   const d=num(r[5])-pb;if(Math.abs(d)>.005&&sm(f(Math.abs(d)),f(Math.abs(sg(r))))){r[3]=d<0?f(-d):"";r[4]=d>0?f(d):""}
-   if(Math.abs(pb+sg(r)-num(r[5]))>.011&&nx&&Math.abs(num(r[5])+sg(nx)-num(nx[5]))<=.011){const d2=num(r[5])-pb;if(Math.abs(d2)>.005){r[3]=d2<0?f(-d2):"";r[4]=d2>0?f(d2):""}}/* balance confirmed by the next row: amount follows from it */}}
+  const r=[a.d,a.nr,a.ref,dq?f(dq):"",cq?f(cq):"",b==null?"":f(b)];r.y=a.y;r.p=a.p;r.oc=OC;out.push(r)}
+ /* no 'repair' of amounts or balances from neighbouring balances: a misread figure is reported as read and flagged by chk() */
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP1=new RegExp(BP0.source.replace("www\\.|e-?mail|",""),"i");/* BP0 minus the weak www./e-mail words */
 const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
@@ -973,9 +969,9 @@ function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(h
   if(b==null){bad++;fl(r,"Statement balance not read: amount could not be confirmed");if(prev!=null)prev+=s;return}
   if(prev==null||eq(prev+s,b)){prev=b;return}
   const d=b-prev,set=x=>{if(x>=0){r[cr]=f(x);r[dr]=""}else{r[dr]=f(-x);r[cr]=""}};
-  if(Math.abs(d)>.005&&(eq(prev-s,b)||(nx&&nb!=null&&eq(b+ns,nb)&&sim(f(Math.abs(s)),f(Math.abs(d)))))){set(d);fx++;fl(r,"Debit/credit auto-corrected from the balance column: please confirm");prev=b;return}
+  if(Math.abs(d)>.005&&eq(prev-s,b)&&Math.abs(Math.abs(d)-Math.abs(s))<=.011){set(d);fx++;fl(r,"Debit/credit column swapped to match the balance (same amount): please confirm");prev=b;return}/* only the side may change, never the amount */
   if(nx&&nb!=null&&eq(prev+s+ns,nb)){r[bl]=f(prev+s);prev=prev+s;fx++;fl(r,"Balance auto-corrected: please confirm");return}
-  bad++;fl(r,"Amount does not reconcile with the statement balance");prev=b});
+  bad++;fl(r,!num(r[dr])&&!num(r[cr])?"Amount not read from the statement: enter it from the PDF":"Amount does not reconcile with the statement balance: check this row against the original PDF");prev=b});
  return{n,bad,fx,nw,ver:true}}
 /* ---- OCR fallback ---- */
 async function loadTess(){if(window.Tesseract)return;await new Promise((ok,no)=>{const e=document.createElement("script");e.src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.5/tesseract.min.js";e.onload=ok;e.onerror=()=>no(new Error("OCR library could not be loaded (internet needed)"));document.head.appendChild(e)})}
@@ -990,7 +986,7 @@ async function ocrPages(doc,SC=3,enh=true,pp){await loadTess();clearTimeout(_twt
   const run=async w=>{for(;;){const p=nx++;if(p>doc.numPages)return;$("msg").textContent=`OCR: reading page ${p} of ${doc.numPages}... (first run downloads the OCR engine)`;PG.pg(done,doc.numPages,true);
    const {data}=await w.recognize(await renderPg(doc,p,SC,enh));
    const ws=data.words||(data.blocks||[]).flatMap(b=>b.paragraphs.flatMap(q=>q.lines.flatMap(l=>l.words)));
-   out[p-1]=ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC}));PG.pg(++done,doc.numPages)}};
+   out[p-1]=ws.filter(x=>x.text.trim()).map(x=>({s:dgFix(x.text.trim()),x:x.bbox.x0/SC,y:-(x.bbox.y0+x.bbox.y1)/2/SC,r:x.bbox.x1/SC,c:x.confidence}));PG.pg(++done,doc.numPages)}};
   await Promise.all(ws0.map(run))}
  catch(e){await Promise.all(_tw.map(w=>w.terminate().catch(()=>{})));_tw=[];throw e}
  _twt=setTimeout(()=>{_tw.forEach(w=>w.terminate().catch(()=>{}));_tw=[]},90000);return out}
@@ -1016,7 +1012,7 @@ async function imgDoc(f){const P=[];for(const z of (f.imgs||[f])){const bm=await
 async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openPdf(f),C=[],errs=[];PG.go("text","Reading page text…");window.curPdf=doc;let noAI=false,pre="";
  const tryR=(R,src)=>{const v=chk(R);C.push({R,v,src});return v.n>0&&v.bad<=Math.floor(v.n*.02)&&v.nw<=Math.floor(v.n*.1)};
  const fin=(c,pre)=>{const v=c.v;pipeNote=(LY?"[Layout: "+LY.name+"] ":"")+(pre||"")+`[${c.src}] ${v.n} rows`+(v.nw?`, ⚠ ${v.nw} narration(s) empty or unclear: check Narration`:"")+(v.fx?`, ${v.fx} auto-corrected using the balance chain`:"")+(v.bad?`, ⚠ ${v.bad} row(s) could not be verified: review the ✗ rows`:v.ver?" ✓ all balances reconcile":" (no balance column found, so amounts could not be verified: please review)");return c.R};
- const ocDoc=(d,oc)=>({isOcr:true,numPages:d.numPages,getPage:async p=>{const g=await d.getPage(p);return{getViewport:(...a)=>g.getViewport(...a),render:(...a)=>g.render(...a),getTextContent:async()=>({items:(oc[p-1]||[]).map(w=>({str:w.s,transform:[1,0,0,1,w.x,w.y],width:w.r-w.x,height:8}))})}}});
+ const ocDoc=(d,oc)=>({isOcr:true,numPages:d.numPages,getPage:async p=>{const g=await d.getPage(p);return{getViewport:(...a)=>g.getViewport(...a),render:(...a)=>g.render(...a),getTextContent:async()=>({items:(oc[p-1]||[]).map(w=>({str:w.s,transform:[1,0,0,1,w.x,w.y],width:w.r-w.x,height:8,c:w.c}))})}}});
  const ocrRun=async(oc,src)=>{if(!LY&&oc[0])LY=blFind(oc[0],true);if(LY&&LY.parse){try{if(tryR(await LY.parse(ocDoc(doc,oc)),"Layout: "+LY.name+" ["+src+"]"))return true;errs.push("Layout "+LY.name+" did not reconcile on "+src)}catch(e){errs.push("Layout "+LY.name+" on "+src+": "+e.message)}}return tryR(await pdfText(doc,oc),src)};/* OCR: saved layout first (on OCR words), generic reader as fallback */
  const weak=c=>!c||c.v.n==0||c.v.bad>0||c.v.nw>0;
  const pick=()=>C.filter(c=>c.v.n).sort((x,y)=>(y.v.n-y.v.bad-y.v.nw)-(x.v.n-x.v.bad-x.v.nw))[0];
@@ -1293,7 +1289,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.20<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.21<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 
 <button id="hlpb" type="button" title="Help for this page" aria-label="Help for this page">?</button>
 <div id="hlpo" role="dialog" aria-modal="true" aria-labelledby="hlpt"><div class="card">
