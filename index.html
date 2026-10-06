@@ -540,6 +540,14 @@ const BL=[
  {id:"federal-1",name:"Federal Bank (Date|Value Date|Particulars|Withdrawals|Deposits|Balance|Dr/Cr)",det:["the federal bank ltd","statement of account period","cheque details","tran type"],parse:d=>blFederal(d)},
  /* HDFC Bank savings/current statement: Date | Narration | Chq./Ref.No. | Value Dt | Withdrawal Amt. | Deposit Amt. | Closing Balance (narration wraps BELOW the date row and across page breaks; Dr/Cr from the balance chain; opening balance from STATEMENT SUMMARY; see blHdfc) */
  {id:"hdfc-1",name:"HDFC Bank (Date|Narration|Chq./Ref.No.|Value Dt|Withdrawal|Deposit|Closing Balance)",det:["hdfc bank limited","statement of account","withdrawal amt","deposit amt"],parse:d=>blHdfc(d)},
+ /* SBI savings statement: Txn Date | Value Date | Description | Ref/Cheque No. | Debit | Credit | Balance, amounts printed "1234.00 DR"/"CR" (narration centred on the date row, nearest-row wrap; Dr/Cr from the column + balance chain; see blSbi) */
+ {id:"sbi-1",name:"SBI (Txn Date|Value Date|Description|Ref/Cheque No.|Debit|Credit|Balance)",det:["state bank of india","statement of account","txn date","ref/cheque"],parse:d=>blSbi(d)},
+ /* South Indian Bank savings statement: DATE | PARTICULARS | CHQ.NO. | WITHDRAWALS | DEPOSITS | BALANCE ("549.67Cr"), 23-char narration lines BELOW the date row, Page Total / Grand Total lines (read as one line stream across PDF pages; see blSib) */
+ {id:"sib-1",name:"South Indian Bank (DATE|PARTICULARS|CHQ.NO.|WITHDRAWALS|DEPOSITS|BALANCE)",det:["south indian bank","statement of account for the period","chq.no"],parse:d=>blSib(d)},
+ /* SBI savings statement, "Account Summary" layout: Value Date | Post Date | Details | Ref No/Cheque No | Debit | Credit | Balance (column header drawn as graphics, so detected by the page-1 text "Account Summary"/"CKYCR Number"; Details block of 2-6 lines around the date line, Statement Summary with counts/totals; see blSbiPost) */
+ {id:"sbi-2",name:"SBI Account Summary (Value Date|Post Date|Details|Ref No/Cheque No|Debit|Credit|Balance)",det:["state bank of india","statement of account","account summary","ckycr number"],parse:d=>blSbiPost(d)},
+ /* Bank of Baroda "bob World" app statement: Serial No | Transaction Date | Value Date | Description | Cheque Number | Debit | Credit | Balance (two date columns, header two lines high, Description top-aligned and hard-wrapped at the cell width, empty amount cell "-", first row "Opening Balance"; see blBob) */
+ {id:"bob-1",name:"Bank of Baroda bob World (Serial No|Transaction Date|Value Date|Description|Cheque Number|Debit|Credit|Balance)",det:["account statement from","account details","serial","cheque","bob world"],parse:d=>blBob(d)},
  /* add entries here, e.g. {id:"sbi-savings-1",name:"SBI Savings",det:["state bank of india","txn date"],junk:/^\s*page\s*\d/i} */
 ];
 let LY=null;
@@ -757,6 +765,163 @@ async function blHdfc(doc){
   if(Math.abs(pv+a-b)<.011)cq=a;else if(Math.abs(pv-a-b)<.011)dq=a;else throw new Error("balance chain breaks at "+r.d+" "+r.nar.join(" ").slice(0,30));
   pv=b;const o=[r.d,r.nar.join(" "),"",dq?f(dq):"",cq?f(cq):"",f(b)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
  if(cl!=null&&Math.abs(cl-pv)>.011)throw new Error("closing balance differs from the last balance ("+f(pv)+" vs "+f(cl)+")");
+ return out}
+/* ---- SBI savings statement (Txn Date|Value Date|Description|Ref/Cheque No.|Debit|Credit|Balance, amounts printed "1234.00 DR"/"CR", empty cell "-"): custom parser, not blAnchor, because
+   (1) amount cells may sit up to ~6pt above/below the date line (nearest dated row, max 12pt), (2) there are TWO date columns (blAnchor would make every row twice), and Debit comes BEFORE Credit (blAnchor assumes Credit left of Debit),
+   (3) the narration is vertically CENTRED on the date row: wrapped lines sit ~6pt above/below it (a single line may be on it or 6pt above), so each text line goes to the NEAREST dated
+       row; lines are joined with a space, but with NO space when the next line starts with "/" or the previous line is >=30 chars (hard cut inside a UPI id),
+   (4) the column header repeats on every page; only lines under it and before the "Page No." footer are read. Dr/Cr comes from the Debit/Credit column (its DR/CR suffix must agree),
+       the balance is chained row by row (the statement prints no opening balance, so row 1 is trusted from its column), and any break throws (generic readers then run). ---- */
+async function blSbi(doc){
+ const NM=/^(\d[\d,]*\.\d{2})(?:\s+(CR|DR))?$/i,DT=/^\d{1,2}-\d{1,2}-\d{2,4}$/,JK=/^(page no|please do not share|\*\* this is a computer)/i,f=x=>(Math.round(x*100)/100).toFixed(2);let R=[];
+ for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]}));
+  const hd=I.find(i=>/^description$/i.test(i.s));if(!hd)continue;
+  const g=re=>I.find(i=>re.test(i.s)&&Math.abs(i.y-hd.y)<3),hdb=g(/^debit$/i),hcr=g(/^credit$/i),hba=g(/^balance$/i),hrf=I.find(i=>/^ref\/cheque$/i.test(i.s));
+  if(!hdb||!hcr||!hba||!hrf)continue;
+  const C={d:hdb.r,c:hcr.r,b:hba.r},n0=hd.x-60,n1=hrf.x-1;
+  const L=[];for(const i of I.filter(i=>i.y<hd.y-15).sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  const D=[],T=[],AM=[];
+  for(const l of L){l.w.sort((a,b)=>a.x-b.x);const t=l.w.map(i=>i.s).join(" ");if(JK.test(t))break;
+   const dt=l.w.find(i=>i.x<n0-60&&DT.test(i.s)),nar=l.w.filter(i=>i.x>=n0&&i.r<=n1).map(i=>i.s).join(" ");
+   for(const i of l.w){const m=i.s.match(NM);if(m&&i.x>=n1){const e=i.x+(i.r-i.x)*m[1].length/i.s.length;let k=null,kd=1e9;for(const q in C){const d=Math.abs(e-C[q]);if(d<kd){kd=d;k=q}}AM.push({y:l.y,k,v:m[1],sf:(m[2]||"").toUpperCase()})}else if(i.x>=n1&&i.x<n1+60&&/^\d+$/.test(i.s))AM.push({y:l.y,k:"rf",v:i.s})}
+   if(dt)D.push({d:dt.s,y:l.y,am:{},rf:"",p,on:nar,ab:[],bw:[]});
+   else if(nar)T.push({y:l.y,s:nar})}
+  if(!D.length)continue;
+  for(const a of AM){const r=D.reduce((x,y)=>Math.abs(y.y-a.y)<Math.abs(x.y-a.y)?y:x);if(Math.abs(r.y-a.y)>12)continue;if(a.k=='rf')r.rf=a.v;else r.am[a.k]=a}/* amount cells can sit a few points off the date line */
+  for(const t of T){const r=D.reduce((x,y)=>Math.abs(y.y-t.y)<Math.abs(x.y-t.y)?y:x);(t.y>r.y?r.ab:r.bw).push(t)}/* nearest dated row: wrapped lines sit +-6pt around it (single lines may sit 6pt above) */
+  for(const r of D){r.ab.sort((x,y)=>y.y-x.y);r.bw.sort((x,y)=>y.y-x.y)}
+  R.push(...D)}
+ if(!R.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=null;
+ for(const r of R){const ln=[...r.ab.map(t=>t.s),...(r.on?[r.on]:[]),...r.bw.map(t=>t.s)],nr=ln.reduce((a,b,k)=>k?(/^\//.test(b)||ln[k-1].length>=30?a+b:a+" "+b):b,""),a=r.am;
+  if(!a.b||(!!a.d==!!a.c))throw new Error("row without a single debit/credit and balance: "+r.d+" "+nr.slice(0,30));
+  if((a.d&&a.d.sf&&a.d.sf!="DR")||(a.c&&a.c.sf&&a.c.sf!="CR"))throw new Error("DR/CR suffix differs from the column at "+r.d);
+  const dq=a.d?num(a.d.v):0,cq=a.c?num(a.c.v):0,b=num(a.b.v)*(a.b.sf=="DR"?-1:1);
+  if(pv==null)pv=b-cq+dq;
+  if(Math.abs(pv+cq-dq-b)>.011)throw new Error("balance chain breaks at "+r.d+" "+nr.slice(0,30));
+  pv=b;const o=[r.d,nr,/^0*$/.test(r.rf)?"":r.rf,dq?f(dq):"",cq?f(cq):"",f(Math.abs(b))+(b<0?" Dr":"")];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ return out}
+/* ---- South Indian Bank savings statement (DATE|PARTICULARS|CHQ.NO.|WITHDRAWALS|DEPOSITS|BALANCE, fixed-width text, balance printed "549.67Cr"): custom parser, not blAnchor, because
+   (1) the narration is cut into 23-character lines BELOW the date row (4-6 lines, also across a printed page: the next page starts with the tail of the last row), so lines without a date belong
+       to the date row ABOVE; the generic reader attached them to the wrong row and swallowed the "Page Total:" line,
+   (2) the printed pages do not follow the PDF pages (page 2's header sits at the bottom of PDF page 1), so all PDF pages are read as ONE line stream: a table starts under the dashed line below the
+       DATE|PARTICULARS header and ends at the next dashed line, which is followed by the "Page Total:" line,
+   (3) a full-width line (23 chars) was cut inside a word -> joined with NO space, a shorter line -> joined with a space. Dr/Cr comes from the Withdrawals/Deposits column, the balance is chained
+       from B/F, and every Page Total (withdrawals, deposits, last balance) must match the rows; any failure throws (generic readers then run). ---- */
+async function blSib(doc){
+ const AM=/^([\d,]+\.\d{2})(Cr|Dr)?$/i,DT=/^\d{2}-\d{2}-\d{2}$/,f=x=>(Math.round(x*100)/100).toFixed(2),sg=(v,s)=>num(v)*(/^dr$/i.test(s||"")?-1:1);
+ const S=[];
+ for(let p=1;p<=doc.numPages;p++){
+  const I=(await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]}));
+  const L=[];for(const i of I.sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  for(const l of L){l.w.sort((a,b)=>a.x-b.x);l.p=p;S.push(l)}}
+ const am=(w,H)=>{const o={};for(let k=0;k<w.length;k++){const m=w[k].s.match(AM);if(!m||w[k].x<H.cq)continue;let sf=m[2]||"";if(!sf&&w[k+1]&&/^(cr|dr)$/i.test(w[k+1].s)&&w[k+1].x-w[k].r<4)sf=w[k+1].s;
+   const c=sf?"b":Math.abs(w[k].r-H.w)<Math.abs(w[k].r-H.d)?"w":"d";o[c]={v:m[1],sf}}return o};
+ let st="out",H=null,cur=null,R=[],op=null,seg={w:0,d:0,b:null,n:0},grand=null,sumW=0,sumD=0,nT=0;
+ for(const l of S){const t=l.w.map(i=>i.s).join(" "),dash=t.replace(/\s/g,"").length>=10&&/^-+$/.test(t.replace(/\s/g,""));
+  if(st=="out"){
+   const hw=l.w.find(i=>/^withdrawals$/i.test(i.s)),hdp=l.w.find(i=>/^deposits$/i.test(i.s)),hq=l.w.find(i=>/^chq\.no\.$/i.test(i.s));
+   if(hw&&hdp&&l.w.some(i=>/^particulars$/i.test(i.s))){H={w:hw.r,d:hdp.r,cq:hq?hq.x-2:238};st="hdr";continue}
+   if(/^grand total/i.test(t))grand=(t.match(/\d[\d,]*\.\d{1,2}/g)||[]).map(num);continue}
+  if(st=="hdr"){if(dash){st="in";seg={w:0,d:0,b:null,n:0};}continue}
+  if(st=="in"){
+   if(dash){st="tot";continue}
+   const m=l.w[0].x<100&&DT.test(l.w[0].s),nar=l.w.filter(i=>i.x>=100&&i.x<H.cq);
+   if(m){const a=am(l.w,H),rf=l.w.find(i=>i.x>=H.cq&&i.x<H.cq+60&&/^\d+$/.test(i.s));
+    if(/^b\/f$/i.test(nar.map(i=>i.s).join(" "))){if(a.b&&op==null)op=sg(a.b.v,a.b.sf);cur=null;continue}
+    if(!a.b||(!!a.w==!!a.d))throw new Error("row without a single debit/credit and balance: "+l.w[0].s);
+    cur={d:l.w[0].s,ch:[],a,rf:rf?rf.s:"",p:l.p,y:l.y};R.push(cur);if(a.w)seg.w+=num(a.w.v);if(a.d)seg.d+=num(a.d.v);seg.b=sg(a.b.v,a.b.sf);seg.n++}
+   if(cur&&nar.length)cur.ch.push({s:nar.map(i=>i.s).join(" "),r:nar[nar.length-1].r});continue}
+  if(st=="tot"){if(/^page total/i.test(t)){const a=am(l.w,H),w=a.w?num(a.w.v):0,d=a.d?num(a.d.v):0;
+    if(Math.abs(w-seg.w)>.011||Math.abs(d-seg.d)>.011)throw new Error("Page Total differs from the rows ("+f(seg.w)+"/"+f(seg.d)+" vs "+f(w)+"/"+f(d)+")");
+    if(a.b&&seg.b!=null&&Math.abs(sg(a.b.v,a.b.sf)-seg.b)>.011)throw new Error("Page Total balance differs from the last row");
+    sumW+=w;sumD+=d;nT++}st="out"}}
+ if(!R.length)throw new Error("layout table not found");
+ if(grand&&grand.length>=2&&(Math.abs(grand[0]-sumW)>.011||Math.abs(grand[1]-sumD)>.011))throw new Error("Grand Total differs from the Page Totals");
+ const CW=Math.max(...R.flatMap(r=>r.ch.map(c=>c.r))),out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=op;
+ for(const r of R){const wq=r.a.w?num(r.a.w.v):0,dq=r.a.d?num(r.a.d.v):0,b=sg(r.a.b.v,r.a.b.sf);
+  if(pv==null)pv=b-dq+wq;
+  if(Math.abs(pv+dq-wq-b)>.011)throw new Error("balance chain breaks at "+r.d);
+  pv=b;const nr=r.ch.reduce((a,c,k)=>k?(r.ch[k-1].r>=CW-1.5?a+c.s:a+" "+c.s):c.s,"");
+  const o=[r.d,nr,/^0*$/.test(r.rf)?"":r.rf,wq?f(wq):"",dq?f(dq):"",f(Math.abs(b))+(b<0?" Dr":"")];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ return out}
+/* ---- SBI savings statement, "Account Summary" layout (Value Date|Post Date|Details|Ref No/Cheque No|Debit|Credit|Balance, plain amounts, empty cell "-"): custom parser, not blAnchor, because
+   (1) there are TWO date columns (blAnchor would make every row twice), Debit comes BEFORE Credit and the header cells are drawn as graphics (only "Balance" is text): the 3 amount columns are found as the 3 big clusters of amount centres,
+   (2) the Details cell holds 2-6 lines (DEP/WDL TFR, UPI text, "0097.. AT 70070", "PARAKODE") placed from ABOVE the date line to well BELOW it, not centred: a line goes to the row whose date
+       line lies inside its block of lines (blocks are separated by the larger gap between rows); the generic reader put the last line ("PARAKODE") of every row on the NEXT row and added the "-"
+       placeholders and the table header ("Balance") to narrations,
+   (3) wrapped lines are joined with a space, but with NO space when the next line starts with "/" or the previous ends with "/" or the previous line is full width (>=120pt wide: cut inside a word, "BA"+"RB", "DEVASWO"+"M"),
+   (4) Dr/Cr comes from the Debit/Credit column; the balance is chained from the Brought Forward of the Statement Summary, which also gives Dr/Cr counts, Total Debits/Credits and the
+       Closing Balance: any difference throws (generic readers then run). ---- */
+async function blSbiPost(doc){
+ const NM=/^\d[\d,]*\.\d{2}$/,DT=/^\d{2}\/\d{2}\/\d{4}$/,f=x=>(Math.round(x*100)/100).toFixed(2),sg=s=>num(s)*(/dr$/i.test(s)?-1:1);let R=[],sm=null,lf=1e9,PG=[];
+ for(let p=1;p<=doc.numPages;p++)PG.push((await(await doc.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],r:i.transform[4]+i.width,y:i.transform[5]})));
+ const ct=PG.flat().filter(i=>NM.test(i.s)&&i.x>300).map(i=>(i.x+i.r)/2).sort((a,b)=>a-b),K=[];for(const c of ct){const k=K[K.length-1];if(k&&c-k.v[k.v.length-1]<12)k.v.push(c);else K.push({v:[c]})}
+ const big=K.filter(k=>k.v.length>=3).sort((a,b)=>b.v.length-a.v.length).slice(0,3).map(k=>k.v.reduce((x,y)=>x+y)/k.v.length).sort((a,b)=>a-b);if(big.length<3)throw new Error("amount columns not found");
+ const C={d:big[0],c:big[1],b:big[2]};
+ for(let p=1;p<=doc.numPages;p++){
+  const I=PG[p-1],hb=I.find(i=>/^balance$/i.test(i.s)&&i.x>450);if(!hb)continue;
+  const cut=hb.y-16,n1=C.d-70;
+  const L=[];for(const i of I.filter(i=>i.y<cut).sort((a,b)=>b.y-a.y||a.x-b.x)){const l=L.find(l=>Math.abs(l.y-i.y)<3);l?l.w.push(i):L.push({y:i.y,w:[i]})}
+  const dts=L.flatMap(l=>l.w.filter(i=>i.x>=70&&i.x<200&&DT.test(i.s)));if(!dts.length&&!L.some(l=>l.w.some(i=>/^statement summary/i.test(i.s))))continue;
+  const n0=dts.length?Math.max(...dts.map(i=>i.r))+3:130,D=[],T=[];let sum=false;
+  for(const l of L){l.w.sort((a,b)=>a.x-b.x);const t=l.w.map(i=>i.s).join(" ");
+   if(/^page no/i.test(t))continue;
+   if(/statement summary/i.test(t)){sum=true;continue}
+   if(sum){const a=l.w.filter(i=>/^[\d,]+(\.\d{2})?(CR|DR)?$/i.test(i.s));if(a.length>=6&&!sm)sm=a.map(i=>i.s);continue}
+   const dt=l.w.find(i=>i.x<70&&DT.test(i.s)),nr=l.w.filter(i=>i.x>=n0&&i.x<n1);
+   if(nr.length){const r={y:nr[0].y,s:nr.map(i=>i.s).join(" "),r:nr[nr.length-1].r};T.push(r);lf=Math.min(lf,nr[0].x)}
+   if(dt){const am={};let rf="";for(const i of l.w){if(NM.test(i.s)&&i.x>=n1){let k=null,kd=1e9;for(const q in C){const d=Math.abs((i.x+i.r)/2-C[q]);if(d<kd){kd=d;k=q}}am[k]=i.s}else if(i.x>=n1&&i.x<C.d-30&&/^\d+$/.test(i.s))rf=i.s}
+    D.push({d:dt.s,y:l.y,am,rf,p,ln:[]})}}
+  const B=[];for(const t of T){const b=B[B.length-1];if(b&&b.lo-t.y<11.5){b.ls.push(t);b.lo=t.y}else B.push({hi:t.y,lo:t.y,ls:[t]})}/* blocks of lines; rows are separated by a larger gap */
+  for(const r of D){const c=B.filter(b=>r.y<=b.hi+4&&r.y>=b.lo-4);if(c.length!=1)throw new Error("cannot place the Details lines of "+r.d);if(c[0].row)throw new Error("two dates share one Details block at "+r.d);c[0].row=r;r.ln=c[0].ls}
+  if(B.some(b=>!b.row))throw new Error("Details lines without a date row on page "+p);
+  R.push(...D)}
+ if(!R.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=sm?sg(sm[0]):null,sd=0,sc=0,nd=0,nc=0;
+ for(const r of R){const a=r.am;if(!a.b||(!!a.d==!!a.c))throw new Error("row without a single debit/credit and balance: "+r.d);
+  const dq=a.d?num(a.d):0,cq=a.c?num(a.c):0,b=num(a.b);if(pv==null)pv=b-cq+dq;
+  if(Math.abs(pv+cq-dq-b)>.011)throw new Error("balance chain breaks at "+r.d);pv=b;if(dq){sd+=dq;nd++}else{sc+=cq;nc++}
+  const nr=r.ln.reduce((x,t,k)=>k?(/^\//.test(t.s)||/\/$/.test(x)||r.ln[k-1].r-lf>=120?x+t.s:x+" "+t.s):t.s,"");
+  const o=[r.d,nr,r.rf,dq?f(dq):"",cq?f(cq):"",f(b)];o.y=r.y;o.p=r.p;o.oc=false;out.push(o)}
+ if(sm&&sm.length>=6&&(Math.abs(num(sm[3])-sd)>.011||Math.abs(num(sm[4])-sc)>.011||num(sm[1])!=nd||num(sm[2])!=nc||Math.abs(sg(sm[5])-pv)>.011))
+  throw new Error("Statement Summary differs from the rows ("+nd+"/"+nc+", "+f(sd)+"/"+f(sc)+", closing "+f(pv)+")");
+ return out}
+/* ---- Bank of Baroda "bob World" statement (Serial No|Transaction Date|Value Date|Description|Cheque Number|Debit|Credit|Balance, empty amount cell "-"): custom parser, not blAnchor, because
+   (1) there are TWO date columns plus a Serial No column and the header is two lines high ("Transaction"/"Date"): blAnchor needs "Date" and "Balance" on one line and would make every row twice,
+   (2) the Description is top-aligned in the row: line 1 sits ~5pt ABOVE the date baseline, a wrapped line 2 ~3pt BELOW it, so every word goes to the NEAREST dated row; the wrap is a hard break at the cell width (joined WITHOUT a space,
+       e.g. "...@super"+"yes") unless line 1 stops short of the right edge (word wrap at a space: joined WITH one space, e.g. "AJAI R"+"KRISHNAN/..."),
+   (3) the generic reader treats any line containing "www." as footer junk (BP0), so a narration like "UPI/648555915823/09:37:07/UPI/www.radhakrishnann" lost its first line and the row came out as just "-".
+   The narration is kept exactly as printed (a lone "-" on the wrapped line is part of it). Dr/Cr = Debit/Credit column (nearest header right edge; the rightmost amount is the Balance); the first row "Opening Balance" starts the
+   balance chain. Throws (generic readers then run) if a balance does not chain, a row has no amount, or the Serial No does not run 1..n without gaps. The statement prints no TOTAL row. ---- */
+async function blBob(doc){
+ const N=/^\d[\d,]*\.\d{2}$/,DT=/^\d{1,2}-\d{1,2}-\d{4}$/,f=x=>(Math.round(x*100)/100).toFixed(2),A=[];
+ for(let p=1;p<=doc.numPages;p++){
+  const W=[];for(const i of(await(await doc.getPage(p)).getTextContent()).items){if(!i.str.trim())continue;const n=i.str.length,x0=i.transform[4],x1=x0+i.width,y=i.transform[5];let o=0;
+   for(const s of i.str.split(/\s+/).filter(Boolean)){const a=i.str.indexOf(s,o);o=a+s.length;W.push({s,x:x0+(x1-x0)*a/n,r:x0+(x1-x0)*o/n,y})}}
+  const hd=W.find(w=>/^description$/i.test(w.s)&&W.some(v=>Math.abs(v.y-w.y)<3&&/^balance$/i.test(v.s)));if(!hd)continue;/* page without the table header: skip */
+  const g=re=>W.find(v=>Math.abs(v.y-hd.y)<3&&re.test(v.s)),hT=g(/^transaction$/i),hV=g(/^value$/i),hC=g(/^cheque$/i),hD=g(/^debit$/i),hR=g(/^credit$/i);if(!hT||!hV||!hC||!hD||!hR)continue;
+  const xd=(hT.x+hV.x)/2,xn=hd.x-4,xc=hC.x-3,B=W.filter(w=>w.y<hd.y-14);/* everything below the 2-line header */
+  const an=B.filter(w=>w.x<xd&&DT.test(w.s)).map(w=>({d:w.s,y:w.y,p,nar:[],amt:[],ref:"",sr:null,hD:hD.r,hR:hR.r})).sort((a,b)=>b.y-a.y);if(!an.length)continue;
+  const near=(y,m)=>{let b=null,bd=1e9;for(const a of an){const d=Math.abs(a.y-y);if(d<bd){bd=d;b=a}}return bd<=m?b:null};
+  for(const w of B){
+   if(w.x<xd){if(/^\d{1,4}$/.test(w.s)&&w.x<hT.x-8){const a=near(w.y,6);if(a)a.sr=+w.s}continue}
+   if(w.x>=xc){const a=near(w.y,6);if(!a)continue;if(N.test(w.s))a.amt.push(w);else if(/^\d+$/.test(w.s)&&w.r<hD.x)a.ref+=w.s;continue}
+   if(w.x>=xn){const a=near(w.y,12);if(a)a.nar.push(w)}}
+  for(const a of an){const L=[];for(const w of a.nar){const l=L.find(l=>Math.abs(l.y-w.y)<2.5);l?l.w.push(w):L.push({y:w.y,w:[w]})}L.sort((u,v)=>v.y-u.y);
+   a.nr=L.reduce((s,l,k)=>{l.w.sort((u,v)=>u.x-v.x);const t=l.w.map(w=>w.s).join(" ");if(!k)return t;return s+(Math.max(...L[k-1].w.map(w=>w.r))>=xc-9?"":" ")+t},"")}
+  A.push(...an)}
+ if(!A.length)throw new Error("layout table not found");
+ const out=[["Date","Narration","Ref","Debit","Credit","Balance"]];let pv=null,sn=null;
+ for(const a of A){const bl=[...a.amt].sort((u,v)=>v.r-u.r)[0],ms=bl?a.amt.filter(w=>w!==bl):[];
+  if(!bl||ms.length>1)throw new Error("row without a clear amount/balance: "+a.d+" "+a.nr.slice(0,30));
+  const b=num(bl.s);
+  if(!ms.length){if(/^opening balance$/i.test(a.nr.trim())){pv=b;sn=a.sr;continue}throw new Error("row without amount: "+a.d+" "+a.nr.slice(0,30))}
+  const m=ms[0],isD=Math.abs(m.r-a.hD)<=Math.abs(m.r-a.hR),dq=isD?num(m.s):0,cq=isD?0:num(m.s);
+  if(pv!=null&&Math.abs(pv-dq+cq-b)>.011)throw new Error("balance does not chain at "+a.d+" "+a.nr.slice(0,30));pv=b;
+  if(a.sr==null)sn=null;else{if(sn!=null&&a.sr!=sn+1)throw new Error("serial no "+(sn+1)+" missing");sn=a.sr}
+  const r=[a.d,a.nr,a.ref,dq?f(dq):"",cq?f(cq):"",f(b)];r.y=a.y;r.p=a.p;r.oc=false;out.push(r)}
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP={test:t=>BP0.test(t)||!!(LY&&LY.junk&&LY.junk.test(t))};const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
@@ -1075,7 +1240,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.18<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.19<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 <script>
 (function(){
 const f=document.getElementById("f"),m=document.getElementById("msg"),w=document.getElementById("pgw"),$$=id=>document.getElementById(id);
@@ -1262,4 +1427,96 @@ function openAdd(ctx){
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#tb .ia");if(b)openAdd({i:+b.dataset.ia})});
 })();
 </script>
+<!-- ===== ADD-ON: (1) wait-time accounting quiz game + sidebar level meter, (2) coffee support popup after export. Self-contained; hooks window.rd and window.dl only. Keep identical in index.html and index_software.html ===== -->
+<style>
+#bxo{position:fixed;left:16px;bottom:16px;z-index:60;max-width:330px;padding:14px 16px;border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);box-shadow:0 8px 28px rgba(0,0,0,.28);animation:bxup .35s ease}
+#bxo p{margin:0 0 10px;font-size:14px;line-height:1.45}#bxo .r{display:flex;gap:8px;justify-content:flex-end}
+@keyframes bxup{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+#bxg{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+#bxg .card{max-width:560px;width:100%;max-height:92vh;overflow:auto;margin:0}
+#bxg .h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+#bxg .q{font-size:15px;font-weight:600;line-height:1.45;margin:10px 0}
+#bxg .op{display:block;width:100%;text-align:left;margin:6px 0;background:var(--bg);color:var(--tx);border:1px solid var(--bd);padding:10px 12px;border-radius:8px}
+#bxg .op:hover:not(:disabled){border-color:var(--ac)}#bxg .op.ok{background:rgba(24,128,56,.14);border-color:#188038}#bxg .op.no{background:rgba(217,48,37,.12);border-color:#d93025}
+#bxg .fb{margin:10px 0;padding:10px 12px;border-radius:8px;font-size:14px;line-height:1.5;border:1px solid var(--bd)}
+#bxg .rd{margin-bottom:8px;padding:8px 10px;border-radius:8px;background:rgba(24,128,56,.14);font-size:13px}
+#bxm{margin-top:auto;padding:8px 6px;font-size:12px;border-top:1px solid var(--bd)}#bxm+small{margin-top:10px!important}
+#bxm .s{display:flex;gap:3px;margin:6px 0 4px}#bxm .s i{flex:1;height:8px;border-radius:4px;background:var(--bd);transition:background .4s}#bxm .s i.on{background:#188038}
+#bxm span{color:var(--mu)}
+#bxc{position:fixed;right:18px;bottom:18px;z-index:90;display:flex;align-items:flex-end;gap:8px;animation:bxin .9s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes bxin{from{transform:translate(140%,140%) rotate(35deg);opacity:0}to{transform:none;opacity:1}}
+#bxc .b{position:relative;max-width:210px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px 12px 2px 12px;background:var(--card);color:var(--tx);box-shadow:0 6px 22px rgba(0,0,0,.25);font-size:13px;line-height:1.4}
+#bxc .b a{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:99px;background:#f2a900;color:#222;font-weight:700;font-size:13px;text-decoration:none;cursor:pointer}
+#bxc .x{position:absolute;top:-9px;right:-9px;width:22px;height:22px;min-width:0;padding:0;border-radius:50%;background:var(--bd);color:var(--tx);font-size:14px;line-height:20px}
+#bxc .cup{width:64px;height:64px;cursor:pointer;animation:bxbob 2.4s ease-in-out 1s infinite}
+#bxc .st path{stroke:#9aa0a6;fill:none;stroke-width:2.5;stroke-linecap:round;opacity:0;animation:bxst 2s ease-in-out infinite}
+#bxc .st path:nth-child(2){animation-delay:.5s}#bxc .st path:nth-child(3){animation-delay:1s}
+@keyframes bxst{0%{opacity:0;transform:translateY(6px)}50%{opacity:.9}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes bxbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+#bxc.sm .cup{width:38px;height:38px}#bxc.sm .b{max-width:150px;font-size:11px;padding:6px 8px}#bxc.sm .b a{margin-top:4px;padding:3px 8px;font-size:11px}
+@media(prefers-reduced-motion:reduce){#bxc,#bxc .cup,#bxc .st path{animation:none!important}}
+</style>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),G=k=>{try{return localStorage.getItem(k)}catch(e){return null}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
+LV=["Beginner","Learner","Intermediate","Advanced","Professional"],URL_="https://razorpay.me/@ajairkrishnan";
+let lvl=Math.min(4,Math.max(0,+G("bxLvl")||0));
+/* [question, options, correct index, reason, difficulty 0-4]. Add more questions here. */
+const Q=[
+["Which of these is an ASSET?",["Cash in hand","Creditors","Capital","Bank loan"],0,"Assets are resources the business owns. Creditors and loans are liabilities; capital is the owner's claim.",0],
+["The accounting equation is:",["Assets = Liabilities + Capital","Assets = Capital − Liabilities","Liabilities = Assets + Capital","Capital = Assets + Liabilities"],0,"Everything the business owns (assets) is financed by outsiders (liabilities) or the owner (capital).",0],
+["Money received in cash is recorded on which side of the Cash account?",["Debit","Credit","Either side","Neither"],0,"Cash is an asset: debit what comes in, credit what goes out.",0],
+["Golden rule for a PERSONAL account:",["Debit the receiver, credit the giver","Debit what comes in, credit what goes out","Debit expenses and losses, credit incomes and gains","Debit the giver, credit the receiver"],0,"The person who receives a benefit is debited; the one who gives it is credited.",1],
+["Which is a NOMINAL account?",["Rent paid","Building","Debtors","Cash"],0,"Nominal accounts deal with expenses, losses, incomes and gains. Building and cash are real; debtors are personal.",1],
+["In Tally, a CONTRA voucher is used for:",["Cash deposited into / withdrawn from bank","Paying a supplier","Recording a sale","Adjusting depreciation"],0,"Contra entries move money between cash and bank accounts (or bank to bank).",1],
+["Goods returned by a customer are first recorded through a:",["Credit note (Sales Return)","Debit note","Receipt voucher","Contra voucher"],0,"A sales return reduces sales and the customer's debt, so a credit note is raised.",1],
+["A cheque is issued but not yet presented to the bank. The passbook balance will be:",["Higher than the cash book balance","Lower than the cash book balance","Same","Zero"],0,"Your books already show the payment; the bank has not deducted it yet, so the passbook still shows more.",2],
+["Depreciation is a:",["Non-cash expense","Cash expense","Liability","Source of cash"],0,"It spreads an asset's cost over its life; no money leaves the business when it is charged.",2],
+["Bank charges debited by the bank are recorded in Tally with a:",["Payment voucher","Receipt voucher","Sales voucher","Contra voucher"],0,"It is an expense paid from the bank account: debit Bank Charges, credit Bank.",2],
+["Outstanding (accrued) expenses are shown in the balance sheet as a:",["Current liability","Current asset","Fixed asset","Capital"],0,"The expense is incurred but unpaid, so the business owes it.",2],
+["Closing stock appears in the final accounts:",["Credit side of Trading A/c and as an asset in the Balance Sheet","Debit side of P&L only","Liabilities side","Nowhere"],0,"It reduces the cost of goods sold and is also an unsold asset at year end.",2],
+["Machine of ₹1,00,000 depreciated at 10% on written-down value. Year-2 depreciation is:",["₹9,000","₹10,000","₹8,000","₹11,000"],0,"Year 1: 10,000, so WDV = 90,000. Year 2: 10% of 90,000 = 9,000.",3],
+["The matching concept says:",["Expenses are matched with the revenue they helped earn in the same period","Debits must equal credits","Assets must equal liabilities","Cash must match bank"],0,"This is why accrued and prepaid items are adjusted before preparing profit and loss.",3],
+["A bad debt written off earlier is now recovered. It is:",["Income (Bad debts recovered)","A reduction of sales","A liability","Capital introduced"],0,"The amount was already expensed earlier, so recovering it is a gain.",3],
+["A Suspense account is used to:",["Temporarily hold a trial balance difference or unidentified entry","Record bad debts","Record owner's drawings","Hold closing stock"],0,"It parks the difference until the actual error or correct ledger is found.",3],
+["Which error is NOT revealed by a trial balance?",["Complete omission of a transaction","Wrong totalling of a ledger","Posting to one side only","Wrong balancing"],0,"If both debit and credit are omitted, the trial balance still tallies.",4],
+["Stock is valued at:",["Lower of cost and net realisable value","Higher of cost and market price","Selling price","Cost always"],0,"Prudence: never carry stock above what it can realistically be sold for.",4],
+["Machine purchase of ₹50,000 wrongly debited to Repairs. Profit is:",["Understated","Overstated","Unaffected","Doubled"],0,"A capital item was treated as an expense, so expenses are too high and profit too low.",4],
+["Current ratio is 2:1. Paying a creditor in cash will:",["Increase the ratio","Decrease the ratio","Not change it","Make it zero"],0,"Example: 200/100 = 2. Pay 50: 150/50 = 3. Both sides fall equally but the ratio rises when it is above 1.",4]];
+/* sidebar level meter */
+let mt;function meter(){const nv=$("nv");if(!nv)return;if(!mt){mt=document.createElement("div");mt.id="bxm";const sm=[...nv.children].filter(e=>e.tagName=="SMALL").pop();sm?nv.insertBefore(mt,sm):nv.appendChild(mt)}
+mt.hidden=!G("bxPlayed");mt.innerHTML=`<b>🎓 Accounting level</b><div class="s">${LV.map((x,i)=>`<i class="${i<=lvl?"on":""}"></i>`).join("")}</div><span>${LV[lvl]}${lvl==4?" 🏆":""}</span>`}
+meter();
+/* game */
+let seen=new Set(),gm=null,ready=false;
+const pick=()=>{let p=Q.map((_,i)=>i).filter(i=>!seen.has(i));if(!p.length){seen.clear();p=Q.map((_,i)=>i)}const b=Math.min(...p.map(i=>Math.abs(Q[i][4]-lvl))),c=p.filter(i=>Math.abs(Q[i][4]-lvl)==b);return c[Math.random()*c.length|0]};
+function openGame(){S("bxPlayed","1");meter();if(gm)return;gm=document.createElement("div");gm.id="bxg";document.body.appendChild(gm);ask()}
+function closeGame(){if(gm){gm.remove();gm=null}}
+function ask(){if(!gm)return;const i=pick();seen.add(i);const q=Q[i],o=q[1].map((t,j)=>({t,c:j==q[2]})).sort(()=>Math.random()-.5);
+gm.innerHTML=`<div class="card"><div class="h"><b>🎮 Accounting quiz · ${LV[lvl]}</b><button class="s" type="button" id="bxq">Close</button></div>${ready?'<div class="rd">✅ Your statement is ready. Close the game whenever you like.</div>':""}<div class="q">${q[0]}</div>${o.map((x,k)=>`<button class="op" type="button" data-k="${k}">${String.fromCharCode(65+k)}. ${x.t}</button>`).join("")}<div id="bxf"></div></div>`;
+gm.querySelector("#bxq").onclick=closeGame;
+gm.querySelectorAll(".op").forEach(b=>b.onclick=()=>{const x=o[+b.dataset.k],old=lvl;gm.querySelectorAll(".op").forEach((e,k)=>{e.disabled=true;if(o[k].c)e.classList.add("ok")});
+if(x.c){lvl=Math.min(4,lvl+1)}else{b.classList.add("no");lvl=Math.max(0,lvl-1)}S("bxLvl",lvl);meter();
+$("bxf").innerHTML=`<div class="fb">${x.c?`✅ <b>Correct!</b> ${lvl>old?"Level up: <b>"+LV[lvl]+"</b>":"You are already at the top level 🏆"}`:`❌ <b>Not quite.</b> Correct answer: <b>${q[1][q[2]]}</b>${lvl<old?" · Level down: <b>"+LV[lvl]+"</b>":""}`}<br><span style="color:var(--mu)">Why: ${q[3]}</span></div><div style="text-align:right"><button type="button" id="bxn">Next question →</button></div>`;$("bxn").onclick=ask})}
+/* offer popup while parsing is slow */
+let tm=null,t0=0,offered=false,off=null;
+function offer(){offered=true;off=document.createElement("div");off.id="bxo";off.innerHTML='<p>🥱 Feeling bored? Let\'s play a game in the meantime while this processes.</p><div class="r"><button class="s" type="button" data-a="n">No thanks</button><button type="button" data-a="y">Play 🎮</button></div>';
+off.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;hideOffer();if(a=="y")openGame()};document.body.appendChild(off)}
+function hideOffer(){if(off){off.remove();off=null}}
+function check(){if(offered||gm)return;const el=(Date.now()-t0)/1000,p=$("prg"),tx=p?p.textContent:"",m=/about (\d+)s left/.exec(tx),est=m?+m[1]:0,slow=p&&p.querySelector&&p.querySelector("i.on")&&/OCR|AI/.test(p.querySelector("i.on").textContent);
+if(est>=60||(slow&&el>=6)||el>=20)offer()}
+function startW(){stopW(true);ready=false;offered=false;t0=Date.now();tm=setInterval(check,1000)}
+function stopW(quiet){clearInterval(tm);tm=null;hideOffer();if(!quiet){ready=true;if(gm&&!gm.querySelector(".rd")){const c=gm.querySelector(".card");if(c)c.insertAdjacentHTML("afterbegin",'<div class="rd">✅ Your statement is ready. Close the game whenever you like.</div>')}}}
+const r0=window.rd;if(typeof r0=="function")window.rd=async function(){startW();try{return await r0.apply(this,arguments)}finally{stopW()}};
+/* coffee popup after a successful export */
+function coffee(){if($("bxc"))return;const sm=G("bxCoffeeX")=="1",c=document.createElement("div");c.id="bxc";c.className=sm?"sm":"";
+if($("hlpb"))c.style.bottom="74px";
+c.innerHTML=`<div class="b"><button class="x" type="button" aria-label="Hide" title="Hide">×</button>Enjoy the software?<br>Wanna buy me some coffee? ☕<br><a role="button" tabindex="0">Buy me a coffee</a></div><svg class="cup" viewBox="0 0 64 64" role="button" aria-label="Buy me a coffee"><g class="st"><path d="M24 20c-3-4 3-6 0-10"/><path d="M32 20c-3-4 3-6 0-10"/><path d="M40 20c-3-4 3-6 0-10"/></g><path d="M16 26h32v12a14 14 0 0 1-14 14h-4A14 14 0 0 1 16 38z" fill="#fff" stroke="#6b4423" stroke-width="3"/><path d="M18 28h28v4H18z" fill="#6b4423"/><path d="M48 29h4a6 6 0 0 1 0 12h-5" fill="none" stroke="#6b4423" stroke-width="3"/><ellipse cx="32" cy="57" rx="20" ry="4" fill="#e8d5c0" stroke="#6b4423" stroke-width="2"/></svg>`;
+const go=()=>{window.open(URL_,"_blank","noopener");c.remove()};
+c.querySelector("a").onclick=go;c.querySelector(".cup").onclick=go;c.querySelector("a").onkeydown=e=>{if(e.key=="Enter"||e.key==" ")go()};
+c.querySelector(".x").onclick=()=>{S("bxCoffeeX","1");c.remove()};document.body.appendChild(c)}
+const d0=window.dl;if(typeof d0=="function")window.dl=function(n){const r=d0.apply(this,arguments);if(/\.xml$|^tally-preview\.csv$/i.test(String(n)))setTimeout(coffee,1200);return r};
+})();
+</script>
+
 </body></html>
