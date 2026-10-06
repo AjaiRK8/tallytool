@@ -357,11 +357,11 @@ function pd(s){s=String(s).trim();let m;const p=(d,mo,y)=>{y=+y;d=+d;mo=+mo;if(y
  if(m=s.match(/(?<!\d)(\d{1,2})(?:st|nd|rd|th)?[\s\-\/]([A-Za-z]{3})[a-z]*[\s\-\/,]+(\d{4}|\d{2})(?!\d)/)){const mo=MON[m[2].toLowerCase()];if(mo)return p(m[1],mo,m[3])}if(m=s.match(/(?<![A-Za-z])([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})(?!\d)/)){const mo=MON[m[1].toLowerCase()];if(mo)return p(m[2],mo,m[3])}
  return null}
 const esc=s=>String(s).replace(/[<>&"']/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[c]));
-function ibRow(k,l){const d=document.createElement("div");d.className="g ibr";d.style.cssText="margin-top:6px;grid-template-columns:1fr 1fr auto";d.innerHTML=`<input class="ik" placeholder="Keywords in narration, comma separated (e.g. HDFC, a/c 1234)" value="${esc(k||"")}"><input class="il" data-cb="1" placeholder="Bank ledger in Tally" value="${esc(l||"")}"><button class="s" title="Remove">✕</button>`;d.querySelector("button").onclick=()=>{d.remove();svIb()};d.querySelectorAll("input").forEach(i=>i.oninput=svIb);$("ibl").appendChild(d)}
+function ibRow(k,l){const d=document.createElement("div");d.className="g ibr";d.style.cssText="margin-top:6px;grid-template-columns:1fr 1fr auto";d.innerHTML=`<input class="ik" placeholder="Keywords in narration, comma separated (e.g. HDFC, a/c 1234)" value="${esc(k||"")}"><input class="il" data-cb="1" placeholder="- select your other bank for contra entry -" value="${esc(l||"")}"><button class="s" title="Remove">✕</button>`;d.querySelector("button").onclick=()=>{d.remove();svIb()};d.querySelectorAll("input").forEach(i=>i.oninput=svIb);$("ibl").appendChild(d)}
 function svIb(){chkF()}
 function ibMatch(low){for(const r of document.querySelectorAll(".ibr")){const k=r.querySelector(".ik").value,l=r.querySelector(".il").value;if(l&&has(low,k))return l}return null}
 $("ibadd").onclick=()=>ibRow("","");
-[["self transfer,own account,own a/c","Other Bank Account"]].forEach(x=>ibRow(x[0],x[1]));
+ibRow("","");
 const nk=t=>t.toLowerCase().replace(/[0-9]+/g,"").replace(/[^a-z ]+/g," ").replace(/\s+/g," ").trim();
 const has=(t,k)=>k.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean).some(x=>t.includes(x));
 $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
@@ -423,7 +423,9 @@ const setAdj=()=>{adjF=true;setTimeout(()=>{adjF=false},0)};
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#tb,#bt,#stt"))setAdj()},true);
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#ba,#sap,#bd,#cbb,#dru,#tb .cfm,#tb .dx,#cba"))setAdj()},true);
 $("cf").onclick=()=>{["q","ft","mn","mx","rc","df","dt","lq"].forEach(id=>$(id).value="");$("gs").checked=false;$("fu").checked=false;$("eo").checked=false;$("fx").value="";rf=null;draw()};
-$("bt").onchange=()=>{if($("bt").value)vis.forEach(([x])=>{if(!x.del)x.t=$("bt").value});$("bt").value="";draw()};
+$("bt").onchange=()=>{const T=$("bt").value;let msg="";if(T){const ch=[],L=T=="Contra"?(canon($("bl").value.trim())||$("cash").value.trim()):"";vis.forEach(([x,i])=>{if(x.del)return;const was=x.t;x.t=T;if(T=="Contra"&&was!="Contra"){x.led=L;ch.push([x,i])}});
+ if(T=="Contra"&&ch.length){msg=$("lr").checked?contraRule(ch,L):`Contra ledger set to ${L}.`;if(L&&led.length&&bad(L)&&!isCl(L))openCs()}}
+ $("bt").value="";draw();$("rm").textContent=msg};
 function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 /* ---- proof-reading: show a parsed row on the original PDF page ---- */
 function pvDecorate(){if(!window.curPdf&&!window.curSrc)return;document.querySelectorAll("#tb tr").forEach(tr=>{const c=tr.querySelector(".sc");if(!c)return;const x=data[+c.dataset.s];if(!x||!((window.curPdf&&x.pg&&x.py!=null)||(window.curSrc&&x.sr!=null))||tr.querySelector(".pv-v"))return;const td=tr.children[1];if(!td)return;const b=document.createElement("button");b.type="button";b.className="s pv-v";b.dataset.i=c.dataset.s;b.title="Show this row in the original file";b.textContent="🔍";b.style.cssText="padding:0 6px;margin-left:4px;font-size:12px";td.appendChild(b)})}
@@ -1256,14 +1258,25 @@ $("ob").oninput=()=>{obAuto=false;calcBal();draw()};
 try{localStorage.removeItem("rl");localStorage.removeItem("ib")}catch(e){}
 
 
-function ruleKw(){const q=$("q").value.trim().toLowerCase();if(q.length>=3)return q.includes("=")?null:q;if(vis.length<2)return null;
+function ruleKw(rs){rs=rs||vis;const q=$("q").value.trim().toLowerCase();if(q.length>=3)return q.includes("=")?null:q;if(rs.length<2)return null;
  const lc=(a,b)=>{let best="";const m=Array.from({length:b.length+1},()=>new Uint16Array(a.length+1));for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)if(b[i-1]==a[j-1]){m[i][j]=m[i-1][j-1]+1;if(m[i][j]>best.length)best=a.slice(j-m[i][j],j)}return best};
- let c=vis[0][0].nar.toLowerCase();for(const[x]of vis.slice(1)){c=lc(c,x.nar.toLowerCase());if(c.length<4)break}
+ let c=rs[0][0].nar.toLowerCase();for(const[x]of rs.slice(1)){c=lc(c,x.nar.toLowerCase());if(c.length<4)break}
  c=c.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,"");return c.length>=4&&/[a-z]/.test(c)&&!c.includes("=")?c:null}
 function addRule(kw,L){const ls=$("rules").value.split("\n").filter(x=>x.trim()),i=ls.findIndex(l=>l.split("=")[0].trim().toLowerCase()==kw),nl=kw+"="+L;if(i>=0)ls[i]=nl;else ls.unshift(nl);$("rules").value=ls.join("\n");
  data.forEach(x=>{if(x.t!="Contra"&&x.nar.toLowerCase().includes(kw)&&(x.led==$("dp").value||x.led==$("dr").value))x.led=L})}
+/* Contra auto-rule: Cash ledger -> cash withdrawal/deposit keywords; any other ledger -> interbank row */
+function contraRule(rs,L){const rows=rs.filter(([x])=>x&&!x.del&&x.t=="Contra");if(!rows.length||!L)return "";
+ const kw=ruleKw(rows);if(!kw)return "No common keyword found in these rows, so no Contra auto-rule was saved. Type a word in the narration search first.";
+ const addKw=(e,k)=>{const a=e.value.split(",").map(z=>z.trim()).filter(Boolean);if(!a.some(z=>z.toLowerCase()==k.toLowerCase())){a.push(k);e.value=a.join(",")}};
+ if(L.trim().toLowerCase()==$("cash").value.trim().toLowerCase()){const o=rows.some(([x])=>x.out),n=rows.some(([x])=>!x.out);
+  if(o){addKw($("k1"),kw);$("c1").checked=true}if(n){addKw($("k2"),kw);$("c2").checked=true}chkF();
+  return `Contra auto-rule saved: "${kw}" → ${L} as ${o&&n?"cash withdrawal and deposit":o?"cash withdrawal":"cash deposit"} keyword. Applied automatically next time (export settings to keep it).`}
+ let r=[...document.querySelectorAll(".ibr")].find(z=>z.querySelector(".il").value.trim().toLowerCase()==L.trim().toLowerCase());
+ if(!r)r=[...document.querySelectorAll(".ibr")].find(z=>!z.querySelector(".il").value.trim()&&!z.querySelector(".ik").value.trim());
+ if(r){addKw(r.querySelector(".ik"),kw);r.querySelector(".il").value=L}else ibRow(kw,L);$("c3").checked=true;svIb();
+ return `Contra auto-rule saved: "${kw}" → ${L} as an interbank transfer. Applied automatically next time (export settings to keep it).`}
 $("ba").onclick=()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="";vis.forEach(([x])=>{if(!x.del)x.led=L});
- if($("lr").checked){const kw=ruleKw();if(kw){addRule(kw,L);msg=`Auto-rule saved: "${kw}" → ${L}. It is applied automatically next time (export settings to keep it in your settings file).`}else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
+ if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){const kw=ruleKw();if(kw){addRule(kw,L);msg=`Auto-rule saved: "${kw}" → ${L}. It is applied automatically next time (export settings to keep it in your settings file).`}else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
  draw();$("rm").textContent=msg;$("bl").value="";$("bl").blur()};
 
 function fillDD(){["dp","dr"].forEach(i=>{const e=$(i),cur=e.value||"Suspense",o=[...new Set(["Suspense",...led])];if(!o.includes(cur))o.push(cur);e.innerHTML=o.map(x=>`<option${x==cur?" selected":""}>${esc(x)}</option>`).join("");e.value=cur})}
@@ -1285,8 +1298,9 @@ nav("up");
 /* ---- ledger dropdown with "create new" ---- */
 const cbm=document.createElement("div");cbm.id="cbm";document.body.appendChild(cbm);let cbE=null;
 const cbHide=()=>{cbm.style.display="none";cbE=null};
-function cbShow(e,all){cbE=e;const u=e.dataset.cb=="u",src=u?[...new Set(data.map(x=>x.led).filter(Boolean))].sort():led,v=e.value.trim(),q=all?"":v.toLowerCase(),L=src.filter(l=>!q||l.toLowerCase().includes(q)).slice(0,80),ex=src.some(l=>l.toLowerCase()==v.toLowerCase());
- cbm.innerHTML=L.map(l=>`<div data-v="${esc(l)}">${esc(l)}</div>`).join("")+(!u&&v&&!ex?(led.length?`<div class="nw">ℹ <b>“${esc(v)}”</b> is not in the Tally master. It will be created automatically from the <b>Create ledgers</b> tab.</div>`:`<div class="nw">ℹ No Tally master is loaded, so <b>“${esc(v)}”</b> cannot be checked. If it does not exist in Tally, tick it in the <b>Create ledgers</b> tab.</div>`):"")||'<div class="mu">'+(u?"No ledgers used yet":"No Tally master loaded. New names can be ticked for creation in the Create ledgers tab.")+'</div>';
+const newL=()=>{const m=new Map();[...missL().filter(n=>led.length||isCl(n)),...(manual.map(m=>m.n)||[])].forEach(n=>{n=canon(n);if(n&&!inM(n)&&!m.has(n.toLowerCase()))m.set(n.toLowerCase(),n)});return[...m.values()].sort((a,b)=>a.localeCompare(b))};
+function cbShow(e,all){cbE=e;const u=e.dataset.cb=="u",src=u?[...new Set(data.map(x=>x.led).filter(Boolean))].sort():led,v=e.value.trim(),q=all?"":v.toLowerCase(),L=src.filter(l=>!q||l.toLowerCase().includes(q)).slice(0,80),PN=u?[]:newL().filter(l=>!q||l.toLowerCase().includes(q)).slice(0,40),ex=src.some(l=>l.toLowerCase()==v.toLowerCase())||PN.some(l=>l.toLowerCase()==v.toLowerCase());
+ cbm.innerHTML=L.map(l=>`<div data-v="${esc(l)}">${esc(l)}</div>`).join("")+PN.map(l=>`<div data-v="${esc(l)}">${esc(l)} <span style="color:#188038;font-size:12px">(to be created)</span></div>`).join("")+(!u&&v&&!ex?(led.length?`<div class="nw">ℹ <b>“${esc(v)}”</b> is not in the Tally master. It will be created automatically from the <b>Create ledgers</b> tab.</div>`:`<div class="nw">ℹ No Tally master is loaded, so <b>“${esc(v)}”</b> cannot be checked. If it does not exist in Tally, tick it in the <b>Create ledgers</b> tab.</div>`):"")||'<div class="mu">'+(u?"No ledgers used yet":"No Tally master loaded. New names can be ticked for creation in the Create ledgers tab.")+'</div>';
  const r=e.getBoundingClientRect();cbm.style.cssText=`display:block;left:${r.left}px;top:${r.bottom}px;min-width:${Math.max(r.width,230)}px`}
 cbm.onmousedown=ev=>{ev.preventDefault();const t=ev.target.closest("[data-v],[data-n]"),e=cbE;if(!t||!e)return;const nw=!!t.dataset.n;e.value=nw?e.value.trim():t.dataset.v;e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}));cbHide();if(nw&&led.length&&e.closest("#pv")){goCs=true;openCs()}};
 const isCb=e=>e.target.dataset&&e.target.dataset.cb;
@@ -1296,14 +1310,15 @@ document.addEventListener("input",e=>{if(isCb(e)&&e.isTrusted)cbShow(e.target,fa
 document.addEventListener("focusout",e=>{if(isCb(e))cbHide()});
 document.addEventListener("keydown",e=>{if(e.key=="Escape"||e.key=="Enter")cbHide()});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;cbHide()},true);
-document.addEventListener("change",e=>{const t=e.target;if(isCb(e)&&t.dataset.cb=="1"&&t.closest("#pv")&&led.length&&t.value.trim()&&bad(t.value)&&!csOpen)openCs()});
+document.addEventListener("change",e=>{const t=e.target;if(isCb(e)&&t.dataset.cb=="1"&&t.closest("#pv")&&led.length&&t.value.trim()&&bad(t.value)&&!isCl(canon(t.value))&&!csOpen)openCs()});
 /* ---- multi-select rows ---- */
 function selUp(){const n=[...selS].filter(i=>data[i]&&!data[i].del).length,v=vis.filter(([x])=>!x.del),a=$("sa");$("sn").textContent=n+" selected";{const b=$("xsel");if(b){b.disabled=!n;b.textContent=n?`Export selected only (${n})`:"Export selected only (XML)"}}a.checked=v.length>0&&v.every(([,i])=>selS.has(i));$("sbar").hidden=!(n>0&&!a.checked)/* show only when selection is partial */;{const nr=[...selS].filter(i=>data[i]&&rv(data[i])).length;$("cba").hidden=nr<2;$("cbn").textContent=nr}}
 function selBind(){document.querySelectorAll("#tb .sc").forEach(e=>e.onchange=()=>{const i=+e.dataset.s;e.checked?selS.add(i):selS.delete(i);selUp()});
  const a=$("sa");a.onchange=()=>{const w=$("tb").closest(".w"),st=w.scrollTop;vis.forEach(([x,i])=>{if(!x.del)a.checked?selS.add(i):selS.delete(i)});draw();w.scrollTop=st};selUp()}
 $("sx").onclick=()=>{selS.clear();draw()};
 $("cbb").onclick=()=>{const w=$("tb").closest(".w"),st=w.scrollTop;[...selS].forEach(i=>{const x=data[i];if(x&&rv(x)){x.ok=true;selS.delete(i)}});draw();w.scrollTop=st};
-$("sap").onclick=()=>{const L=canon($("sl").value.trim()),T=$("stt").value;if(!selS.size||(!L&&!T))return;const w=$("tb").closest(".w"),st=w.scrollTop;selS.forEach(i=>{const x=data[i];if(x&&!x.del){if(L)x.led=L;if(T)x.t=T}});if(L&&led.length&&bad(L))openCs();draw();w.scrollTop=st};
+$("sap").onclick=()=>{const L=canon($("sl").value.trim()),T=$("stt").value;if(!selS.size||(!L&&!T))return;const w=$("tb").closest(".w"),st=w.scrollTop;const ch=[],L2=L||(T=="Contra"?$("cash").value.trim():"");selS.forEach(i=>{const x=data[i];if(x&&!x.del){const was=x.t;if(T)x.t=T;if(L)x.led=L;else if(T=="Contra"&&was!="Contra")x.led=L2;if(x.t=="Contra")ch.push([x,i])}});
+ if(L2&&led.length&&bad(L2)&&!isCl(L2))openCs();const cm=$("lr").checked&&ch.length&&L2&&(T=="Contra"||ch.every(([x])=>x.t=="Contra"))?contraRule(ch,L2):"";draw();$("rm").textContent=cm;w.scrollTop=st};
 
 /* ---- dialogs, narration edit, export guard ---- */
 function ledXml(cr){return cr.map(n=>{const o=cl[n],ob=Math.abs(parseFloat(o.ob))||0;return `<TALLYMESSAGE xmlns:UDF="TallyUDF"><LEDGER NAME="${esc(n)}" ACTION="Create"><NAME.LIST><NAME>${esc(n)}</NAME></NAME.LIST><PARENT>${esc(o.grp.trim()||"Suspense A/c")}</PARENT>${o.bw?`<ISBILLWISEON>${o.bw}</ISBILLWISEON>`:""}${ob?`<OPENINGBALANCE>${o.dc=="Cr"?"":"-"}${ob.toFixed(2)}</OPENINGBALANCE>`:""}</LEDGER></TALLYMESSAGE>`}).join("\n");}
@@ -1378,7 +1393,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.26<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
+</script><p class="mu" style="text-align:center;margin:18px auto 0;max-width:760px;font-size:12px;line-height:1.5"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu" style="text-align:center;margin-top:18px">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Version <span id="appver"><!--VER-->1.0.27<!--/VER--></span></p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Built by Ajai R Krishnan</p><p class="mu" style="text-align:center;margin-top:4px;font-size:12px">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan-97975734a" target="_blank" rel="noopener" style="color:var(--ac)">LinkedIn</a> and I will try to include it in the next release.</p></main>
 
 <button id="hlpb" type="button" title="Help for this page" aria-label="Help for this page">?</button>
 <div id="hlpo" role="dialog" aria-modal="true" aria-labelledby="hlpt"><div class="card">
