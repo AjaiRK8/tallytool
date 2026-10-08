@@ -1464,7 +1464,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.34<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</script><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.35<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement","Select the bank statement. If this client already has a profile, load it below."],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview & export","Review every transaction against the statement, then export the Tally XML."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],st:["Send to Tally","Send ledgers and transactions straight into the running Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(t){h.textContent=t[0];if(sub&&sub.tagName=="P")sub.textContent=t[1]}};
@@ -1830,4 +1830,64 @@ up.addEventListener("drop",e=>{
 <script>/* intro page: shown first; "Skip" remembers the choice */
 (()=>{const g=$("introGo"),k=$("introSkip");if(!g)return;let sk=false;try{sk=localStorage.getItem("tintro")=="1"}catch(e){}k.checked=sk;
 k.onchange=()=>{try{localStorage.setItem("tintro",k.checked?"1":"0")}catch(e){}};g.onclick=()=>nav("up");{const c=$("introCu");if(c)c.onclick=e=>{e.preventDefault();const t=$("cuTab");if(t)t.click()}}if(!sk)nav("intro")})();
-</script></body></html>
+</script>
+<script>
+/* Progress autosave: saves the working session (statement rows, edited transactions, settings, page) to this browser's IndexedDB
+   a moment after every change, and offers to restore it on the next visit. Additive: reads existing state, changes none of it. */
+(()=>{
+const DB="tally_autosave",ST="kv",KEY="session",$=id=>document.getElementById(id);
+let db=null,tm=null,busy=false,lastJ="",stamp=null,built=null;
+const fmt=t=>new Date(t).toLocaleString([],{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+const open=()=>new Promise((ok,no)=>{if(!window.indexedDB)return no();const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(ST);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const tx=(m,f)=>new Promise((ok,no)=>{const t=db.transaction(ST,m),q=f(t.objectStore(ST));t.oncomplete=()=>ok(q&&q.result);t.onerror=t.onabort=()=>no(t.error)});
+const snap=()=>{
+ if(!data.length&&!rows.length)return null;
+ const m={},s={},c={};
+ F.forEach(([k])=>{const e=$("m_"+k);if(e)m[k]=e.value});
+ TX.forEach(i=>{const e=$(i);if(e)s[i]=e.value});
+ CK.forEach(i=>{const e=$(i);if(e)c[i]=e.checked});
+ return{name:(window.curSrc&&window.curSrc.name)||"",n:data.length,hdr:hdr,
+  rows:rows.map(r=>({a:Array.from(r),fl:r.fl,p:r.p,y:r.y,oc:r.oc,sr:r.sr,rn:r.rn})),
+  data:data,OPN:OPN,obAuto:obAuto,ob:$("ob").value,sel:[...selS],sk:typeof sk=="number"?sk:0,
+  m:m,text:s,checks:c,rules:$("rules").value,
+  ib:[...document.querySelectorAll(".ibr")].map(r=>[r.querySelector(".ik").value,r.querySelector(".il").value]),
+  cur:cur}};
+const chip=()=>{let b=$("asv");if(!b){b=document.createElement("button");b.id="asv";b.type="button";
+ b.style.cssText="position:fixed;right:14px;bottom:10px;z-index:30;padding:3px 9px;font-size:12px;font-weight:400;min-width:0;width:auto;color:var(--mu);background:var(--card);border:1px solid var(--bd);border-radius:999px;box-shadow:none;cursor:pointer";
+ b.title="Progress is saved in this browser. Click to delete the saved copy.";
+ b.onclick=async()=>{if(!confirm("Delete the autosaved progress from this browser?\n\nThe work on screen stays; it will be saved again on your next change."))return;lastJ="";try{await tx("readwrite",s=>s.delete(KEY))}catch(e){}b.textContent="Autosave cleared"};
+ document.body.appendChild(b)}return b};
+const fin=()=>data.length>0&&built===rows&&data.every(x=>x.del||x.ex);
+const save=async()=>{tm=null;if(!db||busy)return;let s;try{if(fin()){busy=true;lastJ="";await tx("readwrite",st=>st.delete(KEY));chip().textContent="✓ All transactions exported: no progress to save";const bn=$("asvBn");if(bn)bn.remove();return}s=snap();if(!s)return;const j=JSON.stringify(s);if(j===lastJ)return;busy=true;
+ await tx("readwrite",st=>st.put({t:Date.now(),j:j,name:s.name,n:s.n},KEY));lastJ=j;stamp=new Date();
+ chip().textContent="● Progress autosaved "+stamp.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});const bn=$("asvBn");if(bn)bn.remove()}
+ catch(e){const b=chip();b.textContent="⚠ Autosave failed (browser storage full or blocked)"}finally{busy=false}};
+const sched=()=>{if(!db)return;clearTimeout(tm);tm=setTimeout(save,1500)};
+$("go").addEventListener("click",()=>{built=rows},true);
+["input","change","click","keyup"].forEach(e=>document.addEventListener(e,sched,true));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="hidden"&&tm){clearTimeout(tm);save()}});
+addEventListener("pagehide",()=>{if(tm){clearTimeout(tm);save()}});
+if(typeof draw=="function"){const d0=draw;draw=function(){const r=d0.apply(this,arguments);sched();return r}}
+const restore=s=>{
+ hdr=s.hdr;rows=s.rows.map(x=>{const r=x.a;["fl","p","y","oc","sr","rn"].forEach(k=>{if(x[k]!==undefined&&x[k]!==null)r[k]=x[k]});return r});
+ $("map").innerHTML=F.map(([k,l])=>{const v=s.m[k]!=null?+s.m[k]:-1;return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==v?" selected":""}>${esc(x||"Col "+(j+1))}</option>`).join("")}</select></div>`}).join("");
+ $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
+ TX.forEach(i=>{if(s.text[i]!=null)setV(i,s.text[i])});CK.forEach(i=>{if(s.checks[i]!=null)$(i).checked=s.checks[i]});
+ $("rules").value=s.rules||"";$("ibl").innerHTML="";(s.ib||[]).forEach(x=>ibRow(x[0],x[1]));svIb();
+ data=s.data;built=rows;OPN=s.OPN;obAuto=!!s.obAuto;selS=new Set(s.sel||[]);$("ob").value=s.ob||"";
+ nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
+ $("setup").hidden=false;$("gob").hidden=false;
+ if(data.length){$("pv").hidden=false;calcBal();draw(s.sk||0)}
+ nav(["up","setup","pv"].includes(s.cur)&&(s.cur!="pv"||data.length)?s.cur:(data.length?"pv":"setup"));
+ $("msg").textContent="Restored your saved progress"+(s.name?" ("+s.name+")":"")+": "+rows.length+" statement rows, "+data.length+" transactions. Source-page preview needs the statement uploaded again."};
+const banner=m=>{const d=document.createElement("div");d.id="asvBn";
+ d.style.cssText="position:fixed;left:50%;bottom:44px;transform:translateX(-50%);z-index:60;max-width:92vw;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--tx);background:var(--card);border:1px solid var(--ac);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25)";
+ d.innerHTML='<span>Saved progress found: <b>'+esc(m.name||"statement")+'</b> · '+m.n+' transactions · '+fmt(m.t)+'</span>';
+ const r=document.createElement("button"),x=document.createElement("button");r.textContent="Restore";x.textContent="Discard";
+ r.onclick=async()=>{try{const rec=await tx("readonly",s=>s.get(KEY));restore(JSON.parse(rec.j));lastJ=rec.j;d.remove();chip().textContent="● Progress restored";sched()}catch(e){d.remove();alert("Could not restore the saved progress: "+e.message)}};
+ x.onclick=async()=>{try{await tx("readwrite",s=>s.delete(KEY))}catch(e){}d.remove()};
+ d.append(r,x);document.body.appendChild(d)};
+open().then(async d=>{db=d;const rec=await tx("readonly",s=>s.get(KEY));if(rec&&rec.j&&!(data.length||rows.length))banner(rec)}).catch(()=>{});
+})();
+</script>
+</body></html>
