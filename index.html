@@ -401,6 +401,7 @@ $("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.locale
  a.forEach((r,i)=>{r.rn=i+1});a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
  let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
  hdr=a[h].map(x=>String(x).trim());rows=a.slice(h+1);
+ {const L=hdr.map(x=>x.toLowerCase()),ix=n=>L.indexOf(n);window.ownCsv=(["date","type","narration","amount","ledger"].every(n=>ix(n)>=0)&&L.length<=6)?{t:ix("type"),l:ix("ledger"),d:ix("direction")}:null;if(window.ownCsv)pipeNote="Recognised this software's own CSV: type and ledger are kept as saved.";}
  if(IMG.test(f.name)||/\.pdf$/i.test(f.name))window.curSrc=null;else{window.curPdf=null;window.curSrc={a,h,name:f.name};rows.forEach((r,i)=>{r.sr=h+1+i})}
  $("map").innerHTML=F.map(([k,l,re])=>{const i=hdr.findIndex(x=>re.test(x));return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==i&&!(k=="amt"&&i<0)?" selected":""}>${x||"Col "+(j+1)}</option>`).join("")}</select></div>`}).join("");
  $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
@@ -423,6 +424,7 @@ $("lf").onchange=async e=>{const f=e.target.files[0];if(!f)return;let co="";try{
 const num=s=>{s=String(s||"").replace(/[,\s₹]/g,"");const m=s.match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):0};
 const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
 function pd(s){s=String(s).trim();let m;const p=(d,mo,y)=>{y=+y;d=+d;mo=+mo;if(y<100)y+=2000;if(mo<1||mo>12||d<1||d>new Date(y,mo,0).getDate())return null;return y+String(mo).padStart(2,"0")+String(d).padStart(2,"0")};
+ if((m=s.match(/^(\d{4})(\d{2})(\d{2})(?:\.0+)?$/))&&m[1]>=1990&&m[1]<=2100)return p(m[3],m[2],m[1]);
  if(m=s.match(/(?<!\d)(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?!\d)/))return p(m[3],m[2],m[1]);
  if(m=s.match(/(?<!\d)(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})(?!\d)/))return p(m[1],m[2],m[3]);
  if(m=s.match(/(?<!\d)(\d{1,2})(?:st|nd|rd|th)?[\s\-\/]([A-Za-z]{3})[a-z]*[\s\-\/,]+(\d{4}|\d{2})(?!\d)/)){const mo=MON[m[2].toLowerCase()];if(mo)return p(m[1],mo,m[3])}if(m=s.match(/(?<![A-Za-z])([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})(?!\d)/)){const mo=MON[m[1].toLowerCase()];if(mo)return p(m[2],mo,m[3])}
@@ -438,7 +440,8 @@ const has=(t,k)=>k.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean).som
 $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
  if(obAuto){$("ob").value="";obAuto=false}const kr=keyer(),rk=new Set(),ek=new Set(),ck=new Set();const MQ=[];let lk=null;data.forEach(x=>{if(x.man){MQ.push({x,after:lk});return}const k=kr(x);lk=k;if(x.del)rk.add(k);if(x.ex)ek.add(k);if(x.ok)ck.add(k)});data=[];OPN=null;selS.clear();let skip=0;const opn=r=>{if(OPN==null&&g("bal")>=0&&/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){const v=sbv(r[g("bal")]);if(v!=null)OPN=v}};
  for(const r of rows){const d=g("date")>=0?pd(r[g("date")]):null;if(!d){opn(r);skip++;continue}
-  let dr=g("dr")>=0?num(r[g("dr")]):0,cr=g("cr")>=0?num(r[g("cr")]):0;
+  let dr=g("dr")>=0?num(r[g("dr")]):0,cr=g("cr")>=0?num(r[g("cr")]):0;const OW=window.ownCsv;let oT=null,oF=null;
+  if(OW&&g("amt")>=0){const a=Math.abs(num(r[g("amt")])),ty=String(r[OW.t]||"").trim().toLowerCase();if(a&&/^(payment|receipt|contra)$/.test(ty)){oT=ty[0].toUpperCase()+ty.slice(1);dr=cr=0;if(ty=="payment")dr=a;else if(ty=="receipt")cr=a;else{const dv=OW.d>=0?String(r[OW.d]||"").trim().toLowerCase():"";if(dv){if(/^(in|cr|credit|receipt)/.test(dv))cr=a;else dr=a}else{dr=a;oF=["Contra direction is not in this file: check it, then Confirm"]}}}}
   if(!dr&&!cr&&g("amt")>=0){const a=num(r[g("amt")]);if(a<0||/\bdr\b/i.test(String(r[g("amt")])))dr=Math.abs(a);else cr=a}
   if(!dr&&!cr){if((r.fl||[]).some(t=>/Amount not read/.test(t))&&!/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){}else{opn(r);skip++;continue}}
   const nar=g("nar")>=0?String(r[g("nar")]).replace(/please do not share[\s\S]*$/i,"").trim():"",ref=g("ref")>=0?String(r[g("ref")]).trim():"",out=dr>0,amt=out?dr:cr,low=nar.toLowerCase();
@@ -446,7 +449,8 @@ $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\
   if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
   else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
   else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
-  data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt,fl:r.fl||[],pg:r.p,py:r.y,po:r.oc,sr:r.sr,rn:r.rn})}
+  if(oT){t=oT;const fl2=OW.l>=0?String(r[OW.l]||"").trim():"";if(fl2)l=fl2}
+  data.push({d,nar,ref,out,amt,t,led:l,sb:g("bal")>=0?sbv(r[g("bal")]):null,nk:nk(nar),ak:(out?"o":"i")+amt,fl:oF||r.fl||[],pg:r.p,py:r.y,po:r.oc,sr:r.sr,rn:r.rn})}
  {const k2=keyer();data.forEach(x=>{const k=k2(x);if(rk.has(k))x.del=true;if(ek.has(k))x.ex=true;if(ck.has(k))x.ok=true})}if(MQ.length)data=window.reinsMan(MQ,data,keyer);data.forEach(x=>x.led=canon(x.led));nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
  calcBal();$("pv").hidden=false;draw(skip)};
 let nc={},ac={},sk=0,vis=[],bdT=null;
@@ -612,7 +616,7 @@ async function preGuard(only){const A=data.filter((x,i)=>!x.del&&(!only||only.ha
 $("xml").onclick=async()=>{EXS=null;if(!(await preGuard()))return;if(!(await rvGuard()))return;if(await expGuard())doXml()};
 $("xsel").onclick=async()=>{if(!selS.size){await dlg("No transactions selected","<p>Tick the transactions you want to export first.</p>",[{t:"OK"}]);return}const only=new Set([...selS].filter(i=>data[i]&&!data[i].del));if(!(await preGuard(only)))return;if(!(await rvGuard(only)))return;EXS=new Set([canon($("bank").value.trim()),...[...only].map(i=>canon(data[i].led))]);let ok=false;try{ok=await expGuard()}finally{EXS=null}if(ok)doXml(only)};
 $("xs").onclick=async()=>{EXS=null;if(!(await preGuard())||!(await rvGuard())||!(await expGuard())||!doXml())return;const r=await saveSet();$("xw").insertAdjacentHTML("beforeend",`<div class="mu">Settings ${esc(r)}.</div>`)};
-$("csv").onclick=()=>dl("tally-preview.csv","Date,Type,Narration,Amount,Ledger\n"+data.filter(x=>!x.del).map(x=>[x.d,x.t,x.nar,x.amt,x.led].map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n"),"text/csv");
+$("csv").onclick=()=>dl("tally-preview.csv","Date,Type,Narration,Amount,Ledger,Direction\n"+data.filter(x=>!x.del).map(x=>[x.d,x.t,x.nar,x.amt,x.led,x.out?"Out":"In"].map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n"),"text/csv");
 
 let pc=null;const TX=["co","bank","dp","dr","cash","k1","k2"],CK=["c1","c2","c3","lr","xm"];
 function applyCols(){if(!pc||!hdr.length)return;for(const[k]of F){const el=$("m_"+k);if(!el)continue;const n=pc[k]||"";const o=[...el.options].find(o=>n&&o.text===n);el.value=o?o.value:(n?el.value:"-1")}}
@@ -1464,7 +1468,7 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.35<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</script><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.36<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement","Select the bank statement. If this client already has a profile, load it below."],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview & export","Review every transaction against the statement, then export the Tally XML."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],st:["Send to Tally","Send ledgers and transactions straight into the running Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(t){h.textContent=t[0];if(sub&&sub.tagName=="P")sub.textContent=t[1]}};
@@ -1851,7 +1855,7 @@ const snap=()=>{
   data:data,OPN:OPN,obAuto:obAuto,ob:$("ob").value,sel:[...selS],sk:typeof sk=="number"?sk:0,
   m:m,text:s,checks:c,rules:$("rules").value,
   ib:[...document.querySelectorAll(".ibr")].map(r=>[r.querySelector(".ik").value,r.querySelector(".il").value]),
-  cur:cur}};
+  cur:cur,own:window.ownCsv||null}};
 const chip=()=>{let b=$("asv");if(!b){b=document.createElement("button");b.id="asv";b.type="button";
  b.style.cssText="position:fixed;right:14px;bottom:10px;z-index:30;padding:3px 9px;font-size:12px;font-weight:400;min-width:0;width:auto;color:var(--mu);background:var(--card);border:1px solid var(--bd);border-radius:999px;box-shadow:none;cursor:pointer";
  b.title="Progress is saved in this browser. Click to delete the saved copy.";
@@ -1874,7 +1878,7 @@ const restore=s=>{
  $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
  TX.forEach(i=>{if(s.text[i]!=null)setV(i,s.text[i])});CK.forEach(i=>{if(s.checks[i]!=null)$(i).checked=s.checks[i]});
  $("rules").value=s.rules||"";$("ibl").innerHTML="";(s.ib||[]).forEach(x=>ibRow(x[0],x[1]));svIb();
- data=s.data;built=rows;OPN=s.OPN;obAuto=!!s.obAuto;selS=new Set(s.sel||[]);$("ob").value=s.ob||"";
+ data=s.data;built=rows;window.ownCsv=s.own||null;OPN=s.OPN;obAuto=!!s.obAuto;selS=new Set(s.sel||[]);$("ob").value=s.ob||"";
  nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
  $("setup").hidden=false;$("gob").hidden=false;
  if(data.length){$("pv").hidden=false;calcBal();draw(s.sk||0)}
