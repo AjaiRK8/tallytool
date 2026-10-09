@@ -15,7 +15,7 @@
 -->
 
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=1100, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bank Statement to Tally: Convert PDF/Excel Bank Statements to Tally XML</title>
 <meta name="description" content="Free tool to convert bank statements (PDF, scanned PDF, Excel, CSV) into Tally XML. Auto-assign ledgers, check running balances, import into Tally Prime. Runs in your browser.">
 <meta name="google-site-verification" content="kXxiJ_d8MDwPhu8_aAgBlD0J_KfpfVkAT7w2NubQfnw" />
@@ -1535,7 +1535,19 @@ document.addEventListener("focusout",()=>{xT=setTimeout(xHide,250)});
 addEventListener("scroll",e=>{if(e.target===cbm||(e.target.nodeType===1&&cbm.contains(e.target)))return;xHide()},true);addEventListener("resize",xHide);
 xb.onmousedown=e=>e.preventDefault();
 xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("input",{bubbles:true}));t.dispatchEvent(new Event("change",{bubbles:true}));xHide();t.focus()};
-</script><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.39<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</script><details id="seoGuide" style="margin:18px 0 0;font-size:13px;line-height:1.6"><summary style="cursor:pointer;font-weight:600;font-size:14px">How to import a bank statement into Tally</summary><div style="padding:10px 2px">
+<p>This free tool converts a bank statement into a Tally XML file, so you do not have to type each entry in Tally. It works with PDF, scanned PDF, Excel, CSV and photo statements, and everything is read on your own device.</p>
+<ol style="margin:6px 0 10px 20px;padding:0">
+<li><b>Upload the statement.</b> Use the original PDF, Excel or CSV from net banking where possible. It gives the most accurate dates, amounts and narrations.</li>
+<li><b>Set the company and bank ledger.</b> Optionally load your Tally ledger list for type-ahead and checks.</li>
+<li><b>Review the entries.</b> Each row is checked against the running balance of the statement. Rows that do not add up are flagged. Assign ledgers using your own rules.</li>
+<li><b>Create missing ledgers.</b> The tool lists ledgers that are not yet in Tally and gives a ledger-wise summary.</li>
+<li><b>Export the Tally XML.</b> In Tally, import the file through Import Data. Compare the entries with the original statement before finalising your books.</li>
+</ol>
+<p><b>Who is it for?</b> CA articleship trainees, small accounting practices and bookkeepers who enter bank statements into Tally often.</p>
+<p><b>Frequently asked questions</b></p>
+<p><b>Is it free?</b> Yes. <b>Is my statement uploaded to a server?</b> No. Files are read in your browser. Nothing is uploaded unless you choose the optional AI help. <b>Which banks work?</b> Known bank layouts are read with their own rules, and other statements use a general reader. Always verify the result.</p>
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.40<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement","Select the bank statement. If this client already has a profile, load it below."],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(t){h.textContent=t[0];if(sub&&sub.tagName=="P")sub.textContent=t[1]}};
