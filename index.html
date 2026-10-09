@@ -2081,4 +2081,44 @@ $("go").addEventListener("click",auto);
 })();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 (function(){const bk=(()=>{try{return +localStorage.getItem("cp_bk")||0}catch(e){return 0}})();const n=(()=>{try{return Object.keys(JSON.parse(localStorage.getItem("cp_profiles")||"{}")).length}catch(e){return 0}})();if(n&&Date.now()-bk>7*864e5){const i=document.getElementById("cpInfo");if(i)i.textContent=bk?"Last backup was over 7 days ago. Click Backup.":"No backup yet. Click Backup to keep a copy of your profiles."}})();
-</script></body></html>
+</script><style id="mnavCss">
+#mnb,#nvx,#nvbd{display:none}
+@media(max-width:760px){
+#tbar{padding-left:62px}
+#mnb{display:flex;align-items:center;justify-content:center;position:fixed;left:12px;top:6px;z-index:35;width:40px;height:36px;padding:0;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);box-shadow:none;cursor:pointer}
+#mnb svg{width:20px;height:20px;display:block}
+#nv{position:fixed;left:0;top:0;bottom:0;width:min(280px,82vw);flex-direction:column;flex-wrap:nowrap;align-items:stretch;overflow-y:auto;overscroll-behavior:contain;z-index:101;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-102%);visibility:hidden;box-shadow:none;transition:transform .26s ease,visibility 0s linear .26s}
+#nv small{margin:auto 0 0}
+#nv a#cuTab{margin-top:auto;margin-left:0}
+body.nvo #nv{transform:none;visibility:visible;box-shadow:6px 0 28px rgba(0,0,0,.28);transition:transform .26s ease,visibility 0s}
+#nvbd{display:block;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:opacity .26s ease,visibility 0s linear .26s}
+body.nvo #nvbd{opacity:1;visibility:visible;transition:opacity .26s ease,visibility 0s}
+#nvx{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:calc(min(280px,82vw) - 44px);z-index:102;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--mu);font-size:24px;line-height:32px;text-align:center;box-shadow:none;cursor:pointer}
+body.nvo #nvx{display:block}
+body.nvo{overflow:hidden}
+}
+@media(prefers-reduced-motion:reduce){#nv,#nvbd{transition:none!important}}
+</style>
+<script>
+(function(){
+var nv=document.getElementById("nv");if(!nv)return;
+var mq=window.matchMedia("(max-width:760px)"),B=document.body;
+var b=document.createElement("button");b.id="mnb";b.type="button";
+b.setAttribute("aria-label","Open menu");b.setAttribute("aria-controls","nv");b.setAttribute("aria-expanded","false");
+b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+var x=document.createElement("button");x.id="nvx";x.type="button";x.setAttribute("aria-label","Close menu");x.innerHTML="&times;";
+var bd=document.createElement("div");bd.id="nvbd";
+B.appendChild(b);B.appendChild(bd);B.appendChild(x);
+function open(){if(!mq.matches)return;B.classList.add("nvo");b.setAttribute("aria-expanded","true");
+var f=nv.querySelector("button.on:not(:disabled)")||nv.querySelector("button:not(:disabled)");if(f)setTimeout(function(){f.focus({preventScroll:true})},280)}
+function close(back){if(!B.classList.contains("nvo"))return;B.classList.remove("nvo");b.setAttribute("aria-expanded","false");if(back)b.focus({preventScroll:true})}
+b.addEventListener("click",open);x.addEventListener("click",function(){close(true)});bd.addEventListener("click",function(){close(true)});
+nv.addEventListener("click",function(e){if(e.target.closest("button,a"))close(false)});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close(true)});
+var m=function(){close(false)};if(mq.addEventListener)mq.addEventListener("change",m);else mq.addListener(m);
+var sx=null,sy=null;
+nv.addEventListener("touchstart",function(e){var t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+nv.addEventListener("touchend",function(e){if(sx===null)return;var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;if(dx<-60&&Math.abs(dy)<Math.abs(dx))close(true)},{passive:true});
+})();
+</script>
+</body></html>
