@@ -648,6 +648,54 @@ document.addEventListener("click",ev=>{const b=ev.target.closest&&ev.target.clos
 document.addEventListener("click",ev=>{const r=ev.target.closest&&ev.target.closest("#cls tr.tj");if(!r)return;const x=data[+r.dataset.ti];if(!x)return;nav("pv");draw();
  if(!vis.some(v=>v[0]===x)){["q","ft","mn","mx","rc","df","dt","lq","fx"].forEach(id=>$(id).value="");$("fu").checked=false;$("eo").checked=false;rf=null;draw()}
  const go=()=>{const c=document.querySelector('#tb input.sc[data-s="'+r.dataset.ti+'"]'),t=c&&c.closest("tr");if(!t)return;t.scrollIntoView({block:"center",behavior:"smooth"});t.style.transition="background .4s";t.style.background="#fff3a0";setTimeout(()=>{t.style.background=""},2500)};setTimeout(go,80);setTimeout(go,400)});
+/* ---- anomaly flags in the ledger-wise summary (display only; never blocks or changes an export) ---- */
+var anm={mult:2,only:false};try{const v=parseFloat(localStorage.getItem("tanm"));if(v>0)anm.mult=v}catch(e){}
+const anmFa=v=>Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}),anmFd=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");
+function anmCalc(){
+ const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim()),byL=new Map(),F=new Map(),LF=new Map();
+ const add=(x,t)=>{const a=F.get(x)||[];if(!a.includes(t))a.push(t);F.set(x,a)};
+ const dp=String($("dp").value||"").trim().toLowerCase(),dr=String($("dr").value||"").trim().toLowerCase();
+ const med=a=>{const s=[...a].sort((p,q)=>p-q),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+ act.forEach(x=>{const l=x.led&&canon(x.led);if(!l||l==bn)return;if(!byL.has(l))byL.set(l,[]);byL.get(l).push(x)});
+ byL.forEach((a,l)=>{
+  if(a.length>=5){const m=med(a.map(x=>x.amt)),lim=m*anm.mult;if(m>0)a.forEach(x=>{if(x.amt>lim)add(x,"Amount "+anmFa(x.amt)+" is above "+anm.mult+"x the ledger median ("+anmFa(m)+")")})}
+  if(a.length>=10){const o=a.filter(x=>x.out).length,i=a.length-o,mn=Math.min(o,i);if(mn>0&&mn<=a.length*0.1){const minOut=o<i;a.forEach(x=>{if(!!x.out==minOut)add(x,"Unusual side: this ledger is almost always "+(minOut?"receipts":"payments")+", but this is a "+(minOut?"payment":"receipt"))})}}
+  const lk=l.toLowerCase();if(/suspense/.test(lk)||lk==dp||lk==dr){const tot=a.reduce((s,x)=>s+x.amt,0);LF.set(l,a.length+" unclassified entr"+(a.length>1?"ies":"y")+" ("+anmFa(tot)+") sitting in "+l);a.forEach(x=>add(x,"Sitting in "+l+" (suspense / default ledger)"))}
+ });
+ const seen=new Map();
+ act.forEach(x=>{const k=[canon(x.led||""),x.d,(+x.amt).toFixed(2),x.out?1:0,String(x.nar||"").toLowerCase().replace(/\s+/g," ").trim(),String(x.ref||"").trim()].join("|");if(!seen.has(k))seen.set(k,[]);seen.get(k).push(x)});
+ seen.forEach(a=>{if(a.length>1)a.forEach(x=>add(x,"Possible duplicate: "+a.length+" entries with the same ledger, date, amount, narration and reference"))});
+ const rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
+ if(rules.length)act.forEach(x=>{if(x.t=="Contra"||!x.led)return;const low=String(x.nar||"").toLowerCase(),h=rules.find(r=>low.includes(r[0]));if(h&&h[1]&&String(canon(h[1])).toLowerCase()!=String(canon(x.led)).toLowerCase())add(x,"Narration has \u201c"+h[0]+"\u201d (your rule points to "+h[1]+") but the ledger is "+x.led)});
+ return{F,LF,byL,act}}
+function anmCols(R,fl){
+ const km=new Map();
+ fl.F.forEach((rs,x)=>{const k=anmFd(x.d)+"|"+(x.nar||"")+"|"+Math.round(Number(x.amt)*100)/100;km.set(k,(km.get(k)||[]).concat(rs.filter(z=>!(km.get(k)||[]).includes(z))))});
+ R[0].push("Flag");let nf=fl.F.size;
+ for(let i=1;i<R.length;i++){const r=R[i];if(!r.length)continue;while(r.length<9)r.push("");
+  if(r[0]){const n=String(r[0]).replace(/ \(bank\)$/,""),isB=/ \(bank\)$/.test(String(r[0])),a=fl.byL.get(n)||[],c=a.filter(x=>fl.F.has(x)).length;r[9]=isB?(nf?nf+" flagged entr"+(nf>1?"ies":"y"):""):[fl.LF.get(n)||"",c?c+" flagged entr"+(c>1?"ies":"y"):""].filter(Boolean).join("; ")}
+  else if(r[4]){const k=r[4]+"|"+r[5]+"|"+(r[7]!==""?r[7]:r[8]);r[9]=(km.get(k)||[]).join(" | ")}}}
+function anmDeco(){
+ const e=$("cls");if(!e||!e.firstChild)return;
+ let r;try{r=anmCalc()}catch(x){return}
+ const F=r.F,nf=r.act.filter(x=>F.has(x)).length;
+ const bar=e.querySelector(".fa");
+ if(bar&&!e.querySelector("#anmBar"))bar.insertAdjacentHTML("beforeend",`<span id="anmBar" style="display:inline-flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap"><label style="margin:0;font-size:12px;display:inline-flex;align-items:center;gap:4px" title="An entry is flagged when it is above this many times its ledger's median amount (ledgers with at least 5 entries)">Flag above <input id="anmMult" type="number" min="1" step="0.1" value="${anm.mult}" style="width:64px"> &times; median</label><label class="ck" style="margin:0;font-size:12px"><input type="checkbox" id="anmOnly"${anm.only?" checked":""}>Show only flagged</label></span>`);
+ const p=e.querySelector("p.mu");
+ if(p)p.insertAdjacentHTML("afterend",`<p id="anmNote" style="margin:0 0 8px;font-size:13px">${nf?`<b style="color:#d93025">&#9888; ${nf} entr${nf>1?"ies":"y"} flagged</b> (large amount, possible duplicate, narration/ledger mismatch, unusual side, or suspense). Hover a flag to see why. Flags are warnings only; nothing is blocked.`:`<span style="color:#188038">&#10003; No anomalies flagged.</span>`}</p>`);
+ e.querySelectorAll("tr.lh").forEach(tr=>{
+  const n=tr.dataset.ln,isB=!!tr.querySelector('span.b[title="Bank ledger"]'),a=r.byL.get(n)||[],fx=a.filter(x=>F.has(x)),lf=r.LF.get(n),flagged=isB?nf>0:(fx.length>0||!!lf);
+  if(!isB&&flagged){const why=[lf||""].concat([...new Set([].concat(...fx.map(x=>F.get(x))).map(z=>z.replace(/[0-9,.]+/g,"#")))].slice(0,3).map(z=>z)).filter(Boolean);const tip=[lf||""].concat(fx.slice(0,4).map(x=>anmFd(x.d)+" "+anmFa(x.amt)+": "+F.get(x).join("; "))).filter(Boolean).join("\n")+(fx.length>4?"\n...and "+(fx.length-4)+" more":"");
+   tr.firstElementChild.insertAdjacentHTML("beforeend",` <span title="${esc(tip)}" style="background:#d93025;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700">&#9888; ${fx.length||"!"}</span>`)}
+  if(anm.only&&!flagged){tr.style.display="none";const nx=tr.nextElementSibling;if(nx&&nx.classList.contains("lt"))nx.style.display="none"}});
+ e.querySelectorAll("tr.tj").forEach(tr=>{const x=data[+tr.dataset.ti];if(!x)return;
+  if(F.has(x)){tr.style.background="rgba(217,48,37,.10)";tr.firstElementChild.insertAdjacentHTML("afterbegin",`<span title="${esc(F.get(x).join("\n"))}" style="color:#d93025;font-weight:700">&#9888; </span>`)}
+  else if(anm.only)tr.style.display="none"});
+ if(typeof clXp=="function"&&!clXp.anm){const o=clXp,w=function(){let X=window.XLSX,orig=null,fl=null;try{fl=anmCalc()}catch(z){}
+   if(X&&X.utils&&fl){orig=X.utils.aoa_to_sheet;X.utils.aoa_to_sheet=function(R){try{anmCols(R,fl)}catch(z){}return orig.apply(this,arguments)}}
+   try{return o.apply(this,arguments)}finally{if(orig)X.utils.aoa_to_sheet=orig}};w.anm=1;clXp=w}}
+{const s=clSum;clSum=function(){const r=s.apply(this,arguments);try{anmDeco()}catch(e){}return r}}
+document.addEventListener("change",ev=>{const t=ev.target;if(!t||!t.id)return;if(t.id=="anmMult"){const v=parseFloat(t.value);if(v>0){anm.mult=v;try{localStorage.setItem("tanm",String(v))}catch(e){}clSum()}}else if(t.id=="anmOnly"){anm.only=t.checked;clSum()}});
 function csStat(){clSum();const t=csList.filter(isCl).length,r=csList.length-t;$("css").innerHTML=csList.length?`${t} of ${csList.length} ticked to be created`+(r?` · <b style="color:#d93025">${r} not ticked</b>: vouchers using them will be rejected by Tally unless they already exist`:""):""}
 function csRender(){manual.forEach(x=>{if(!cl[x.n])cl[x.n]={on:true,grp:x.g||"Suspense A/c",ob:x.ob||"",dc:x.dc||"Dr",bw:""}});const m=missL();["cfb","ctw","css","chp"].forEach(i=>{const e=$(i);if(e)e.style.display=m.length?"":"none"});{const e=$("cbr");if(e)e.style.display=m.length?"flex":"none"}csList=m;const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim());
  $("cst").innerHTML=m.length?`${m.length} ledger${m.length>1?"s":""} to create.`+(led.length?"":" No Tally master is loaded, so this lists <b>every</b> ledger the import uses and none are ticked: tick only the ones that don't exist in Tally yet (creating an existing ledger gives a duplicate error)."):"✓ No missing ledgers. Nothing to create: click Next to continue.";if(m.length&&!grp.length)$("cst").innerHTML+=` <br>No groups were found in the imported master, so Tally's standard groups are offered. Load an XML master export from Tally to use your own group list.`;
@@ -1567,7 +1615,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.43<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.44<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement","Select the bank statement. If this client already has a profile, load it below."],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
