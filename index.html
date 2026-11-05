@@ -154,7 +154,7 @@ tbody tr:hover td{background:rgba(26,86,219,.05)}
 .pn.cp.cl>.ph::before{transform:rotate(-90deg)}.pn.cp.cl>.ph{margin-bottom:0}
 .pn.cl.fp .fg>.fl:not(:first-child),.pn.cl.fp .fc,.pn.cl.bp>.fa{display:none}.pn.cl.mp>.fg,.pn.cl.mp>.fa{display:none}
 #pv.emp .w::after{content:"No transactions loaded yet. Upload a statement in step 1, then click Apply & preview.";display:block;padding:28px 12px;text-align:center;color:var(--mu)}
-details:has(#mpt2){font-size:12px;border-style:dashed!important}details:has(#mpt2)>summary b{font-weight:500;color:var(--mu)}
+details:has(#mpt2){font-size:13px}
 #adl{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 #adl>div{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:12px;max-width:440px;width:100%;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.35)}#adl p{margin:0 0 14px;line-height:1.5;white-space:pre-wrap}#adl .a{text-align:right}
 .ft2{text-align:center;margin:4px 0;font-size:12px}.ft2 a{color:var(--ac)}
@@ -189,12 +189,6 @@ details:has(#mpt2){font-size:12px;border-style:dashed!important}details:has(#mpt
 .cpr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.cps{flex:1;min-width:240px;display:flex;align-items:center;gap:6px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);padding-left:8px}
 .cps input{border:0;background:none;outline:none;flex:1}.cps:focus-within{border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 25%,transparent)}
 .cpb{width:auto;margin:0;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-#cpChips{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}.cpg{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;min-width:170px;background:var(--bg)}
-.cpg>b{display:block;font-size:12px;color:var(--mu);margin-bottom:6px;font-weight:600}.cpg .cc{display:flex;flex-direction:column;gap:6px}
-.cpc{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;text-align:left;line-height:1.3;transition:transform .15s,border-color .15s,box-shadow .15s}
-.cpc:hover{transform:translateY(-1px);border-color:var(--ac)}.cpc small{display:block}
-.cpc.on{border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 28%,transparent);font-weight:600}.cpc.on::before{content:"✓ ";color:var(--ac)}
-.cpc.ld{opacity:.7;cursor:progress}.cpc.ld::after{content:" ⏳"}
 .cpe{width:100%;padding:14px;border:1px dashed var(--bd);border-radius:10px;color:var(--mu);text-align:center}
 .cpx{background:none;color:var(--mu);border:0;text-decoration:underline;padding:4px 2px;font-size:12px;align-self:center}
 .pulse{animation:cpf 1s ease 3;outline:2px solid var(--ok)}
@@ -218,44 +212,357 @@ button.cpsv:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,76,12
 
   gtag('config', 'G-MJJTL7M9R5');
 </script>
-</head><body><nav id="nv"><div class="bh"><img src="data:image/png;base64,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" alt="Bank to Tally logo" width="40" height="40"><b>Bank → Tally</b></div><button data-n="intro">Home</button><button data-n="up">1 · Upload</button><button data-n="setup">2 · Settings</button><button data-n="pv">3 · Preview</button><button data-n="cs">4 · Create ledgers<span id="nvb" hidden></span></button><button data-n="xp">5 · Export</button><a class="dl exe-link" href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener" title="Download the Windows desktop app">&#11015; Windows app (.exe)<small>Desktop version</small></a><a id="cuTab" href="#" role="button" title="Send us a message">&#9993; Contact us</a></nav><main>
+<style id="umCss">html[data-um="single"] #cpBox,html[data-um="single"] #cpCard,html[data-um="single"] #cpSave,html[data-um="single"] #cpCopy,html[data-um="single"] #tcP,html[data-um="single"] #gob p{display:none!important}</style>
+<script>try{var _m=localStorage.getItem("tum");if(_m==="single"||_m==="multi")document.documentElement.dataset.um=_m}catch(e){}</script>
+<style id="proUi">
+/* ==========================================================================
+   v8 · PROFESSIONAL UI LAYER
+   Loaded after the earlier styles. Refines tokens, controls and layout without
+   changing any element id, so every existing script keeps working.
+   ========================================================================== */
+:root{
+  --bg:#f3f5f9;--card:#fff;--sub:#f8fafc;--sub2:#eef2f7;--inp:#fff;
+  --tx:#0f172a;--mu:#5b6678;--bd:#e2e8f0;--bd2:#cbd5e1;
+  --ac:#1d4ed8;--acb:#1d4ed8;--acb2:#1e3fae;--acs:rgba(29,78,216,.08);--acr:rgba(29,78,216,.22);
+  --danger:#c62828;--ok:#15803d;--warn:#b45309;
+  --sh:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);--sh2:0 12px 32px rgba(15,23,42,.14);
+  --xh-bg:#f1f5f9;--xh-bgh:#e8eef6;--xh-tx:#0f172a;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1117;--card:#151b23;--sub:#1a212b;--sub2:#222b37;--inp:#0f141b;
+  --tx:#e6eaf0;--mu:#97a3b6;--bd:#27303c;--bd2:#384454;
+  --ac:#7aa8ff;--acb:#3b6fe0;--acb2:#4f80ec;--acs:rgba(122,168,255,.12);--acr:rgba(122,168,255,.30);
+  --danger:#ff8a80;--ok:#4cc38a;--warn:#f0b34a;--sh:0 1px 2px rgba(0,0,0,.4);--sh2:0 12px 32px rgba(0,0,0,.5);
+  --xh-bg:#1a212b;--xh-bgh:#222b37;--xh-tx:#e6eaf0}}
+:root[data-theme="dark"]{
+  --bg:#0d1117;--card:#151b23;--sub:#1a212b;--sub2:#222b37;--inp:#0f141b;
+  --tx:#e6eaf0;--mu:#97a3b6;--bd:#27303c;--bd2:#384454;
+  --ac:#7aa8ff;--acb:#3b6fe0;--acb2:#4f80ec;--acs:rgba(122,168,255,.12);--acr:rgba(122,168,255,.30);
+  --danger:#ff8a80;--ok:#4cc38a;--warn:#f0b34a;--sh:0 1px 2px rgba(0,0,0,.4);--sh2:0 12px 32px rgba(0,0,0,.5);
+  --xh-bg:#1a212b;--xh-bgh:#222b37;--xh-tx:#e6eaf0}
+
+/* ---------- base ---------- */
+html body{font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;font-size:14px;line-height:1.55;background:var(--bg);color:var(--tx)}
+[hidden]{display:none!important}
+::selection{background:var(--acr)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:6px}
+a{color:var(--ac)}
+main{max-width:1200px;padding:0 24px 36px}
+main>h1{font-size:25px;font-weight:650;letter-spacing:-.018em;line-height:1.2;margin:0 0 4px}
+main>h1+p{margin:0 0 20px!important;font-size:14px!important;color:var(--mu)}
+label{font-size:12.5px;font-weight:550;color:var(--mu);margin-bottom:5px}
+.ck{font-weight:500;color:var(--tx)}
+input[type=checkbox],input[type=radio]{accent-color:var(--acb)}
+
+/* ---------- cards & panels ---------- */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--sh);padding:24px;margin-bottom:20px}
+.card>b:first-child{display:block;margin:0 0 6px;font-size:11.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.pn{border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:14px 0;background:var(--card)}
+.ph{font-size:11.5px;font-weight:650;letter-spacing:.07em;color:var(--mu)}
+.pu-sec{background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--sh);padding:22px}
+
+/* ---------- buttons ---------- */
+button{background:var(--acb);color:#fff;border:1px solid transparent;border-radius:8px;font-weight:550;letter-spacing:.005em;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+button:hover:not(:disabled){background:var(--acb2);filter:none}
+button:active:not(:disabled){transform:translateY(.5px)}
+button.s,label.s{background:var(--card);color:var(--tx);border:1px solid var(--bd2);font-weight:550}
+button.s:hover:not(:disabled),label.s:hover{background:var(--sub2);border-color:var(--bd2);filter:none}
+#bd,#cpDel{color:var(--danger)}
+#bd:hover:not(:disabled),#cpDel:hover:not(:disabled){background:rgba(198,40,40,.08);border-color:var(--danger)}
+button:disabled{opacity:.5}
+#tf{box-shadow:none!important;border:1px solid var(--acb)!important;font-weight:600!important}
+#hpb{width:40px;height:40px;line-height:38px;font-size:19px;font-weight:650;background:var(--card);color:var(--ac);border:1px solid var(--bd2);box-shadow:var(--sh2)}
+#hpb:hover:not(:disabled){background:var(--acs)}
+
+/* ---------- form controls ---------- */
+input,select,textarea{background:var(--inp);border:1px solid var(--bd2);border-radius:8px;padding:8px 10px;color:var(--tx);transition:border-color .15s,box-shadow .15s}
+input:hover:not(:disabled):not(:focus),select:hover:not(:disabled):not(:focus),textarea:hover:not(:disabled):not(:focus){border-color:var(--mu)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--acr)}
+td input,td select,td textarea{padding:5px 7px}
+input::placeholder,textarea::placeholder{color:var(--mu);opacity:.75}
+input:disabled,textarea:disabled,select:disabled{background:var(--sub);color:var(--mu)}
+
+/* ---------- expandable sections (quiet bars with a chevron, not heavy dark blocks) ---------- */
+:root details>summary,:root .pn.cp>.ph{background:var(--xh-bg);color:var(--xh-tx)!important;border:1px solid var(--bd);border-radius:9px;padding:9px 12px;font-size:13px;font-weight:550}
+:root details>summary:hover,:root .pn.cp>.ph:hover{background:var(--xh-bgh)}
+:root details>summary{list-style:none;display:flex;align-items:center;gap:9px;cursor:pointer}
+:root details>summary::-webkit-details-marker{display:none}
+:root details>summary::before{content:"";flex:none;width:14px;height:14px;background:currentColor;opacity:.65;-webkit-mask:var(--chv) center/contain no-repeat;mask:var(--chv) center/contain no-repeat;transition:transform .15s}
+:root details[open]>summary::before{transform:rotate(90deg)}
+:root details>summary b{font-weight:600}
+:root .pn.cp>.ph{border-radius:9px;text-transform:uppercase;letter-spacing:.06em;font-size:11.5px;font-weight:650}
+:root .pn.cp>.ph::before{opacity:.65}
+:root .pn.cp.cl>.ph{margin-bottom:0}
+:root{--chv:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E")}
+details[open]>summary{margin-bottom:10px}
+
+/* ---------- tables ---------- */
+thead th{background:var(--sub);color:var(--mu);font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--bd2)}
+th{background:var(--sub)}
+th,td{border-bottom:1px solid var(--bd)}
+tbody tr:hover td{background:var(--acs)}
+.w{border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+#raw,#ctw,#cls{border-radius:12px}
+
+#pv.card,#cs.card{padding:20px 16px}
+#pv th,#pv td{padding:5px 5px}
+#tb td.n,#tb td.n textarea{min-width:180px}
+#pv>b:first-child{display:inline;margin:0}
+#sum{font-size:13px}
+
+/* ---------- summary tiles ---------- */
+#kpi>div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;box-shadow:var(--sh)}
+#kpi small{font-size:11px;font-weight:600;letter-spacing:.07em;color:var(--mu)}
+#kpi b{font-size:22px;font-weight:650;letter-spacing:-.01em}
+#kpi .k-ok{border-color:color-mix(in srgb,var(--ok) 55%,var(--bd))}
+#kpi .k-bad{border-color:color-mix(in srgb,var(--danger) 55%,var(--bd))}
+
+/* ---------- sidebar ---------- */
+@media(min-width:761px){body{padding-left:224px}html #nv{width:224px}}
+html #nv{padding:18px 12px 14px;gap:2px;background:var(--card);border-right:1px solid var(--bd);box-shadow:none}
+#nv .lg,#nv .bh{display:flex;align-items:center;gap:11px;margin:0 0 10px;padding:2px 8px 16px;border-bottom:1px solid var(--bd)}
+#nv .lg img,#nv .bh img{width:34px;height:34px;border-radius:9px;flex:none}
+#nv .lg b,#nv .bh b{margin:0;font-size:15px;font-weight:650;letter-spacing:-.01em}
+html #nv button{display:flex;align-items:center;gap:11px;padding:8px 10px;border:1px solid transparent;border-radius:9px;background:none;color:var(--mu);font-size:13.5px;font-weight:500;text-align:left;line-height:1.3}
+html #nv button:hover:not(.on):not(:disabled){background:var(--sub2);color:var(--tx)}
+html #nv button.on{background:var(--acs);color:var(--ac);font-weight:650}
+html #nv button:disabled{opacity:.5}
+html #nv button .pu-n{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bd2);background:var(--card);color:var(--mu);font-size:11.5px;font-weight:650;font-style:normal;line-height:1}
+html #nv button.on .pu-n{background:var(--acb);border-color:var(--acb);color:#fff}
+html #nv button.dn:not(.on) .pu-n:not(.hm){background:var(--ok);border-color:var(--ok);color:#fff;font-size:0}
+html #nv button.dn .pu-n:not(.hm)::before{content:"";width:11px;height:11px;background:#fff;-webkit-mask:var(--ck) center/contain no-repeat;mask:var(--ck) center/contain no-repeat}
+html #nv button:not(.dn) .pu-n::before,html #nv button.dn.on .pu-n::before{display:none}
+html #nv button.dn.on .pu-n{font-size:11.5px}
+html #nv button .pu-n.hm{border-color:transparent;background:none;color:inherit}
+html #nv button .pu-n.hm::before{display:block;content:"";width:17px;height:17px;background:currentColor;-webkit-mask:var(--hm) center/contain no-repeat;mask:var(--hm) center/contain no-repeat}
+html #nv button.on .pu-n.hm{background:none;color:var(--ac)}
+html #nv button.dn::after{display:none}
+html #nv button:disabled::after{width:13px;height:13px;opacity:.7}
+html #nv button.on:not(.dn)::after{display:none}
+#nvb{margin-left:auto;font-size:11px;padding:1px 7px;border-radius:99px}
+html #nv a#cuTab,html #nv a#apTab,html #nv a.dl{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:0;border:1px solid transparent;border-radius:9px;background:none;color:var(--mu);font-size:13.5px;font-weight:500;text-decoration:none}
+html #nv a#cuTab{margin-top:auto}
+html #nv a#cuTab:hover,html #nv a#apTab:hover,html #nv a.dl:hover{background:var(--sub2);color:var(--tx)}
+html #nv a.dl{border:1px dashed var(--bd2);color:var(--ac);margin:8px 0 6px;flex-wrap:wrap}
+html #nv a.dl small{width:100%;margin:-2px 0 0 28px;font-size:11.5px;color:var(--mu)}
+html #nv a#cuTab .ic,html #nv a#apTab .ic,html #nv a.dl .ic{margin:0;width:16px;height:16px;flex:none}
+@media(max-width:760px){html #nv a#cuTab{margin-top:0}}
+
+/* ---------- top bar ---------- */
+#tbar{margin:0 -24px 24px;padding:10px 68px 10px 24px;min-height:54px;gap:8px;background:var(--card);border-bottom:1px solid var(--bd)}
+.tc{border:1px solid var(--bd);background:var(--sub);border-radius:8px;padding:4px 11px;font-size:12.5px;color:var(--mu)}
+.tc b{color:var(--tx);font-weight:600}
+.tc.e{background:transparent;border-style:dashed}
+@media(max-width:760px){main{padding:0 14px 28px}#tbar{margin:0 -14px 16px;padding:9px 14px 9px 62px}}
+
+/* ---------- upload page ---------- */
+#up{background:transparent;border:0;box-shadow:none;padding:0}
+.pu-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+@media(min-width:1120px){html:not([data-um="single"]) .pu-grid{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}}
+html[data-um="single"] .pu-side{display:none}
+.pu-grid+#rxBox{margin-top:20px}
+.pu-sh{display:flex;gap:12px;align-items:flex-start;margin:0 0 16px}
+.pu-ico{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--acs);color:var(--ac)}
+.pu-ico .ic{width:19px;height:19px;margin:0}
+.pu-sh h3{margin:0;font-size:15.5px;font-weight:650;letter-spacing:-.01em;line-height:1.3}
+.pu-sh p{margin:2px 0 0;font-size:13px;color:var(--mu);line-height:1.45}
+.pu-dz{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 18px 22px;text-align:center;border:1.5px dashed var(--bd2);border-radius:12px;background:var(--sub);transition:border-color .15s,background .15s}
+.pu-dz:hover,#up.dz .pu-dz{border-color:var(--ac);background:var(--acs)}
+.pu-dzt b{display:block;font-size:15px;font-weight:650}
+.pu-dzt span{font-size:13px;color:var(--mu)}
+#f,#up.dz #f{width:auto;max-width:100%;padding:2px;border:0;border-radius:8px;background:transparent;color:var(--mu);font-size:13px;cursor:pointer}
+#f:hover,#up.dz #f{border:0;background:transparent}
+input[type=file]::file-selector-button{background:var(--sub2);color:var(--tx);border:1px solid var(--bd2);border-radius:7px;padding:5px 12px;margin-right:10px;font:inherit;font-weight:550;cursor:pointer}
+input[type=file]:hover::file-selector-button{background:var(--bd)}
+#f::file-selector-button{background:var(--acb);color:#fff;border:0;border-radius:8px;padding:9px 16px;margin-right:12px;font:inherit;font-weight:600;cursor:pointer;transition:background .15s}
+#f:hover::file-selector-button{background:var(--acb2)}
+#dzh{margin:2px 0 0!important;font-size:12px;color:var(--mu)}
+.pu-note{margin:14px 0 0!important;padding:11px 14px!important;border:1px solid color-mix(in srgb,var(--ac) 28%,var(--bd))!important;border-left:3px solid var(--ac)!important;border-radius:10px!important;background:var(--acs)!important;font-size:12.5px!important;line-height:1.55;color:var(--tx)}
+.pu-note .ic{color:var(--ac)}
+#pww{margin-top:14px!important;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:var(--sub)}
+#prg{margin:14px 0 0;background:var(--sub);border-radius:12px}
+#msg{margin:12px 0 0;font-size:12.5px;color:var(--mu)}
+.pu-gob{margin-top:14px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--ok) 40%,var(--bd));border-radius:12px;background:color-mix(in srgb,var(--ok) 7%,var(--card))}
+.pu-gob p{margin:0 0 10px;font-size:13px}
+details.pu-dtl{margin-top:14px;background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+details.pu-dtl>summary{background:transparent!important;border:0!important;border-radius:0!important;padding:11px 14px!important}
+details.pu-dtl>summary:hover{background:var(--sub)!important}
+details.pu-dtl[open]>summary{margin:0;border-bottom:1px solid var(--bd)!important}
+details.pu-dtl>div{padding:14px 16px}
+
+/* ---------- client profile panel (multi mode) ---------- */
+#cpBox{margin:0}
+#cpBox .cph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#cpBox .cph>b{display:inline-flex;align-items:center;gap:10px;font-size:15.5px;font-weight:650;letter-spacing:-.01em}
+#cpBox .cph>b .ic{width:19px;height:19px;margin:0;color:var(--ac)}
+.cpp{display:block;flex:1 0 100%;margin-top:2px;padding:7px 12px;border:1px solid var(--bd);border-radius:9px;background:var(--sub);color:var(--mu);font-size:12.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpp.on{border-color:color-mix(in srgb,var(--ok) 40%,var(--bd));background:color-mix(in srgb,var(--ok) 8%,var(--card));color:var(--ok)}
+.cpnote{display:block;margin:10px 0 0;font-size:12.5px;line-height:1.5;color:var(--mu)}
+#cpBox .cpr{flex-wrap:nowrap;margin-top:14px}
+@media(max-width:560px){#cpBox .cpr{flex-wrap:wrap}#cpBox .cps{flex:1 1 100%}}
+.cps{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border:1px solid var(--bd2);border-radius:8px;background:var(--inp);padding-left:11px;color:var(--mu)}
+.cps .ic{margin:0}
+.cps input{border:0;background:none;box-shadow:none!important;padding:9px 10px 9px 0}
+.cps:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px var(--acr)}
+.cpb{padding:8px 13px;font-size:13.5px}
+.cpft{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)}
+.cpft .sp{flex:1}
+.cpb.g,label.cpb.g{background:transparent;border:1px solid transparent;color:var(--mu);padding:5px 9px;font-size:12.5px;font-weight:550;border-radius:7px}
+.cpb.g:hover:not(:disabled),label.cpb.g:hover{background:var(--sub2);color:var(--tx);border-color:transparent;filter:none}
+#cpBox #cpDel{color:var(--danger);border-color:transparent;background:transparent}
+#cpBox #cpDel:hover:not(:disabled){background:rgba(198,40,40,.08);border-color:transparent}
+#cpInfo{display:block;margin-top:12px!important;font-size:12.5px;color:var(--mu)}
+#cpBox details{margin-top:8px!important}
+.cpe{padding:20px 16px;border:1px dashed var(--bd2);border-radius:12px;background:var(--sub);color:var(--mu);text-align:center;font-size:13px;line-height:1.5}
+.cpx{background:none;border:0;color:var(--mu);text-decoration:underline;padding:4px 2px;font-size:12px}
+
+/* ---------- reopen exported file ---------- */
+#rxBox .cph>b{display:inline-flex;align-items:center;gap:10px;font-size:15.5px;font-weight:650;letter-spacing:-.01em}
+#rxBox .cph>b .ic{width:19px;height:19px;margin:0;color:var(--ac)}
+#rxBox>small{display:block;margin-top:6px;font-size:12.5px;color:var(--mu)}
+#rxBox .cpr{margin-top:14px}
+#rxBox details{margin-top:12px!important}
+
+/* ---------- settings: grouped sections ---------- */
+.pu-blk{margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid var(--bd)}
+.pu-blk.pu-last{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.pu-blk>.g{margin-top:0!important}
+.pu-bh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.pu-bh b,.pu-blk.pu-tally>b:first-child{font-size:15.5px;font-weight:650;letter-spacing:-.01em;color:var(--tx)}
+.pu-blk.pu-tally>b:first-child{display:inline-flex;align-items:center;gap:8px}
+.pu-blk.pu-tally>b:first-child .ic{color:var(--ac);margin:0}
+.pu-blk.pu-tally>.g{margin-top:14px!important}
+.pu-bh .mu,.pu-blk.pu-tally>b+.mu{font-size:13px}
+.pu-foot{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px;padding-top:18px;border-top:1px solid var(--bd)}
+.pu-foot small{margin:0!important}
+
+/* ---------- settings: profile save card & misc ---------- */
+#cpCard{margin-top:20px;padding:14px 16px;border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:12px;background:var(--sub)}
+#cpCard.on{border-left-color:var(--ok)}
+#cpCard .cpi{width:40px;height:40px;border-radius:10px;background:var(--acs);color:var(--ac)}
+#cpCard .cpv i{border-radius:7px;background:var(--card);font-size:12px}
+#cpCard .cpv i.w{border-color:var(--warn);color:var(--warn)}
+button.cpsv{background:var(--acb);box-shadow:none;padding:9px 16px;font-weight:600;border-radius:8px}
+button.cpsv:hover{background:var(--acb2);transform:none;box-shadow:none}
+button.cpsv.ok{background:var(--ok)}
+#lsn{border:1px solid var(--bd)!important;border-top:3px solid var(--ac)!important;border-radius:12px!important;padding:20px!important;background:var(--card)}
+#lsn>div:first-child{text-align:left!important;text-decoration:none!important;color:var(--tx)!important;font-size:16px!important;font-weight:650!important}
+
+/* ---------- intro page ---------- */
+main #intro{padding:30px}
+main #intro .ih{font-size:27px;letter-spacing:-.02em;margin:0 0 8px}
+main #intro .il{font-size:15px;color:var(--mu);max-width:72ch}
+main #intro .ig{gap:12px}
+main #intro .ib{background:var(--sub);border-radius:12px;padding:14px 16px}
+main #intro .ib i{background:var(--acb)}
+main #intro .vd video{border-radius:12px}
+
+/* ---------- dialogs (prefixed with html to outrank the dialogs' own late <style> blocks) ---------- */
+html #adl>div,html #hpm,html #ctm,html #umm,html #apm{border-radius:16px;box-shadow:var(--sh2);border:1px solid var(--bd)}
+html #apm{max-width:500px;padding:22px 24px}
+html #apx,html #ctx,html #hpx{background:var(--sub2);color:var(--tx);border:1px solid var(--bd)}
+html #apx:hover,html #ctx:hover,html #hpx:hover{background:var(--bd)}
+html #umm{max-width:500px;padding:26px}
+html #umm>b{font-size:19px;font-weight:650;letter-spacing:-.015em}
+html #umm p{font-size:13.5px}
+html #umm button.umc{display:grid;grid-template-columns:44px 1fr;column-gap:14px;align-items:center;padding:14px 16px;margin:10px 0;border:1.5px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);font-size:14.5px;font-weight:650;transition:border-color .15s,background .15s,box-shadow .15s}
+html #umm button.umc::before{content:"";grid-row:1/3;width:44px;height:44px;border-radius:12px;background-color:var(--acs);background-position:center;background-repeat:no-repeat;background-size:22px}
+html #umm button.umc[data-m="single"]::before{background-image:var(--u1)}
+html #umm button.umc[data-m="multi"]::before{background-image:var(--u2)}
+html #umm button.umc small{grid-column:2;margin-top:2px;font-size:12.5px;line-height:1.45}
+html #umm button.umc:hover,html #umm button.umc:focus{border-color:var(--ac);background:var(--acs);box-shadow:0 0 0 3px var(--acr);outline:none}
+#umo,#hpo,#cto,#adl,#apo{backdrop-filter:blur(2px)}
+
+/* ---------- icons ---------- */
+
+/* ---------- client profile browser: bounded, grouped, searchable (never floods the page) ---------- */
+#cpChips{margin-top:14px}
+.cpl-bar{display:flex;align-items:center;gap:2px;margin:0 0 8px;font-size:12.5px;color:var(--mu)}
+.cpl-bar b{color:var(--tx);font-weight:650}
+.cpl-bar .sp{flex:1}
+.cpl-bar .cpx{background:none;border:0;color:var(--ac);text-decoration:none;font-size:12.5px;font-weight:550;padding:3px 8px;border-radius:6px}
+.cpl-bar .cpx:hover:not(:disabled){background:var(--acs)}
+.cpl{position:relative;max-height:min(288px,42vh);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--bd);border-radius:12px;background:var(--card);scrollbar-width:thin;scrollbar-color:var(--bd2) transparent}
+.cpg+.cpg{border-top:1px solid var(--bd)}
+.cpgh{display:flex;align-items:center;gap:9px;width:100%;position:sticky;top:0;z-index:1;margin:0;padding:9px 12px;border:0;border-radius:0;background:var(--sub);color:var(--tx);text-align:left;font-size:13px;font-weight:650;line-height:1.3}
+.cpgh:hover:not(:disabled){background:var(--sub2)}
+.cpgh::before{content:"";flex:none;width:13px;height:13px;background:var(--mu);-webkit-mask:var(--chv) center/contain no-repeat;mask:var(--chv) center/contain no-repeat;transition:transform .15s}
+.cpgh[aria-expanded="true"]::before{transform:rotate(90deg)}
+.cpgh .cn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cpgh.hon .cn::after{content:"";display:inline-block;width:7px;height:7px;margin-left:8px;border-radius:50%;background:var(--ok);vertical-align:middle}
+.cpgh .cnt{flex:none;min-width:22px;padding:1px 7px;border-radius:99px;background:var(--sub2);border:1px solid var(--bd);color:var(--mu);font-size:11.5px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.cpgh:hover .cnt{background:var(--card)}
+.cc{display:flex;flex-direction:column}
+.cpc{position:relative;display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:9px 14px 9px 36px;border:0;border-radius:0;background:var(--card);color:var(--tx);text-align:left;font-size:13.5px;font-weight:500;line-height:1.35;transition:background .12s}
+.cpc:hover:not(.ld):not(:disabled){background:var(--sub2);filter:none}
+.cpc .bk{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cpc small{display:block;flex:none;font-size:12px;font-weight:400;color:var(--mu);font-variant-numeric:tabular-nums}
+.cpc.on{background:var(--acs);font-weight:650;box-shadow:inset 3px 0 0 var(--ac)}
+.cpc.on::before{content:"";position:absolute;left:13px;top:50%;width:14px;height:14px;margin-top:-7px;background:var(--ac);-webkit-mask:var(--ck) center/contain no-repeat;mask:var(--ck) center/contain no-repeat}
+.cpc.ld{opacity:.75;cursor:progress}
+.cpc.ld::after{content:"Loading…";font-size:12px;font-weight:400;color:var(--mu)}
+#cpChips>.cpx{display:inline-block;margin-top:8px}
+
+.ic.upl{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='16 16 12 12 8 16'/%3E%3Cline x1='12' y1='12' x2='12' y2='21'/%3E%3Cpath d='M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3'/%3E%3C/svg%3E")}.ic.mail{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'/%3E%3Cpolyline points='22,6 12,13 2,6'/%3E%3C/svg%3E")}.ic.sliders{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='4' y1='21' x2='4' y2='14'/%3E%3Cline x1='4' y1='10' x2='4' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12' y2='3'/%3E%3Cline x1='20' y1='21' x2='20' y2='16'/%3E%3Cline x1='20' y1='12' x2='20' y2='3'/%3E%3Cline x1='1' y1='14' x2='7' y2='14'/%3E%3Cline x1='9' y1='8' x2='15' y2='8'/%3E%3Cline x1='17' y1='16' x2='23' y2='16'/%3E%3C/svg%3E")}.ic.dl{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' y1='15' x2='12' y2='3'/%3E%3C/svg%3E")}:root{--ck:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");--hm:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E");--u1:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b6fe0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");--u2:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b6fe0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8'/%3E%3C/svg%3E")}
+
+</style></head><body><nav id="nv"><div class="bh"><img src="data:image/png;base64,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" alt="Bank to Tally logo" width="40" height="40"><b>Bank → Tally</b></div><button data-n="intro"><i class="pu-n hm"></i><span>Home</span></button><button data-n="up"><i class="pu-n">1</i><span>Upload</span></button><button data-n="setup"><i class="pu-n">2</i><span>Settings</span></button><button data-n="pv"><i class="pu-n">3</i><span>Preview</span></button><button data-n="cs"><i class="pu-n">4</i><span>Create ledgers</span><span id="nvb" hidden></span></button><button data-n="xp"><i class="pu-n">5</i><span>Export</span></button><a class="dl exe-link" href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener" title="Download the Windows desktop app"><i class="ic dl"></i>Windows app (.exe)<small>Desktop version</small></a><a id="cuTab" href="#" role="button" title="Send us a message"><i class="ic mail"></i>Contact us</a><a id="apTab" href="#" role="button" title="Theme, intro page and export log settings"><i class="ic sliders"></i>App preferences</a></nav><main>
 <h1>Bank Statement → Tally Import</h1><p class="mu" style="margin:-6px 0 14px;font-size:13px">Designed for CA articleship trainees, small accounting practices and bookkeepers.</p>
-<style>#intro .ih{font-size:22px;margin:0 0 6px}#intro .il{font-size:14px;line-height:1.55;margin:0 0 14px}#intro .ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:10px 0 14px}#intro .ib{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}#intro .ib b{display:block;margin-bottom:3px;font-size:13px}#intro .ib i{font-style:normal;display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;font-weight:700;margin-right:6px}#intro ul{margin:6px 0 14px 20px;padding:0;font-size:13px;line-height:1.6}#intro .ia{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}#intro .ia label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:12px}</style><div class="card" id="intro"><h2 class="ih">Bank Statement &rarr; Tally</h2><p class="il">Turns bank statements into Tally entries without retyping. It reads each transaction, checks it against the running balance and assigns ledgers from your own rules. You review everything, then export an XML file to import into Tally.</p><style>#intro .vd{margin:0 0 16px}#intro .vd b{display:block;font-size:13px;margin-bottom:6px}#intro .vd video{display:block;width:100%;max-width:760px;border:1px solid var(--bd);border-radius:10px;background:#000}#intro .vd small{display:block;margin-top:5px}</style><div class="vd"><b>Watch: how to use it</b><video controls preload="metadata" playsinline><source src="https://raw.githubusercontent.com/AjaiRK8/tallytool/main/howto.mp4" type="video/mp4">Your browser cannot play this video. <a href="https://drive.google.com/file/d/1U70hs002YSMWlvGiGyD8o-0CgI9D7NVe/view?usp=sharing" target="_blank" rel="noopener">Open it on Google Drive</a>.</video><small class="mu">A quick walkthrough of the steps below. <a href="https://drive.google.com/file/d/1U70hs002YSMWlvGiGyD8o-0CgI9D7NVe/view?usp=sharing" target="_blank" rel="noopener">Video not loading? Watch it on Google Drive.</a></small></div><b style="font-size:13px">How it works</b><div class="ig"><div class="ib"><b><i>1</i>Upload</b>Add the bank statement: PDF, scanned PDF, photos, Excel, CSV or text.</div><div class="ib"><b><i>2</i>Settings</b>Set the company and bank ledger. Load your Tally ledgers for type-ahead and checks.</div><div class="ib"><b><i>3</i>Preview</b>Check every row, set ledgers and confirm. CSV download is here.</div><div class="ib"><b><i>4</i>Create ledgers</b>Create ledgers missing in Tally and see a ledger-wise summary.</div><div class="ib"><b><i>5</i>Export</b>Export the Tally XML file, then import it in Tally.</div></div><b style="font-size:13px">Good to know</b><ul><li>Every row is checked against the statement balance, and rows that do not add up are flagged.</li><li>Known bank layouts are read with their own rules. Other statements use a general reader.</li><li>Files are read on this device. Nothing is uploaded unless you choose the optional AI help.</li><li>Always compare the entries with the original statement before importing into Tally.</li><li>You can change the theme using the bulb at the top right.</li><li>Have an idea for a new feature, or found a bug? Please share it through <a href="#" id="introCu">Contact us</a>. Your feedback helps improve every release.</li></ul><div class="ia"><button type="button" id="introGo">Get started</button><label><input type="checkbox" id="introSkip"> Skip this page next time</label></div></div><div class="card" id="up"><label>1. Upload statement (PDF / Excel / CSV / photos: select every page of the statement together)</label><input type="file" id="f" multiple accept=".pdf,.csv,.tsv,.txt,.xls,.xlsx,.xlsm,.xlsb,.jpg,.jpeg,.png,.webp,.bmp"><small class="mu" id="dzh" style="display:block;margin-top:4px">Or drag &amp; drop your statement file here.</small><div id="orgn" style="margin-top:8px;padding:8px 10px;border:1px solid var(--ac);border-left-width:4px;border-radius:6px;background:rgba(26,86,219,.07);font-size:13px"><i class="ic bulb"></i> <b>For the best result, upload the original file from your bank</b> (the PDF, Excel or CSV you downloaded from net banking or the bank app), not a scanned, photographed, screenshotted, edited or redacted copy. Original files hold the exact dates, amounts and narrations. Scanned or redacted copies have to be read by OCR, which can misread dates and narrations.</div><div id="pww" hidden style="margin-top:8px"><label><i class="ic lock"></i> This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
+<style>#intro .ih{font-size:22px;margin:0 0 6px}#intro .il{font-size:14px;line-height:1.55;margin:0 0 14px}#intro .ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:10px 0 14px}#intro .ib{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}#intro .ib b{display:block;margin-bottom:3px;font-size:13px}#intro .ib i{font-style:normal;display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;font-weight:700;margin-right:6px}#intro ul{margin:6px 0 14px 20px;padding:0;font-size:13px;line-height:1.6}#intro .ia{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}#intro .ia label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:12px}</style><div class="card" id="intro"><h2 class="ih">Bank Statement &rarr; Tally</h2><p class="il">Turns bank statements into Tally entries without retyping. It reads each transaction, checks it against the running balance and assigns ledgers from your own rules. You review everything, then export an XML file to import into Tally.</p><style>#intro .vd{margin:0 0 16px}#intro .vd video{display:block;width:100%;max-width:420px;border:1px solid var(--bd);border-radius:10px;background:#000}#intro .vd #hvBox{margin-top:8px}#intro .vd small{display:block;margin-top:5px}</style><div class="vd"><button type="button" class="s" id="hvBtn">&#9654; Watch: how to use it (video)</button><div id="hvBox" hidden></div><small class="mu">A quick walkthrough of the steps below. Loads only when you press the button. <a href="https://drive.google.com/file/d/1U70hs002YSMWlvGiGyD8o-0CgI9D7NVe/view?usp=sharing" target="_blank" rel="noopener">Or watch it on Google Drive.</a></small></div><script>(function(){var b=document.getElementById("hvBtn"),x=document.getElementById("hvBox");if(!b||!x)return;var L=b.innerHTML;b.onclick=function(){if(x.hidden){x.innerHTML='<video controls autoplay playsinline><source src="https://raw.githubusercontent.com/AjaiRK8/tallytool/main/howto.mp4" type="video/mp4">Your browser cannot play this video.</video>';x.hidden=false;b.textContent="\u2715 Hide video"}else{var v=x.querySelector("video");if(v)v.pause();x.innerHTML="";x.hidden=true;b.innerHTML=L}}})();</script><b style="font-size:13px">How it works</b><div class="ig"><div class="ib"><b><i>1</i>Upload</b>Add the bank statement: PDF, scanned PDF, photos, Excel, CSV or text.</div><div class="ib"><b><i>2</i>Settings</b>Set the company and bank ledger. Load your Tally ledgers for type-ahead and checks.</div><div class="ib"><b><i>3</i>Preview</b>Check every row, set ledgers and confirm. CSV download is here.</div><div class="ib"><b><i>4</i>Create ledgers</b>Create ledgers missing in Tally and see a ledger-wise summary.</div><div class="ib"><b><i>5</i>Export</b>Export the Tally XML file, then import it in Tally.</div></div><b style="font-size:13px">Good to know</b><ul><li>Every row is checked against the statement balance, and rows that do not add up are flagged.</li><li>Known bank layouts are read with their own rules. Other statements use a general reader.</li><li>Files are read on this device. Nothing is uploaded unless you choose the optional AI help.</li><li>Always compare the entries with the original statement before importing into Tally.</li><li>You can change the theme using the bulb at the top right.</li><li>Have an idea for a new feature, or found a bug? Please share it through <a href="#" id="introCu">Contact us</a>. Your feedback helps improve every release.</li></ul><div class="ia"><button type="button" id="introGo">Get started</button><label><input type="checkbox" id="introSkip"> Skip this page next time</label></div></div><div class="card" id="up">
+<div class="pu-grid">
+<div class="pu-sec pu-main">
+<div class="pu-sh"><span class="pu-ico"><i class="ic upl"></i></span><div><h3>Statement file</h3><p>PDF, Excel, CSV or photos. Select every page of the statement together.</p></div></div>
+<div class="pu-dz"><div class="pu-dzt"><b>Drag &amp; drop your statement here</b><span>or choose a file from this computer</span></div><input type="file" id="f" multiple accept=".pdf,.csv,.tsv,.txt,.xls,.xlsx,.xlsm,.xlsb,.jpg,.jpeg,.png,.webp,.bmp"><small class="mu" id="dzh">PDF · scanned PDF · Excel · CSV · JPG / PNG</small></div>
+<div id="pww" hidden><label><i class="ic lock"></i> This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
 <div id="prg" hidden role="progressbar" aria-live="polite"></div>
-<details style="margin-top:8px;padding:10px;border:1px solid var(--bd);border-radius:8px"><summary style="cursor:pointer;font-size:13px"><b>Statement not reading properly? Convert it to CSV yourself with Claude / ChatGPT etc.</b></summary><div style="margin-top:8px;font-size:13px"><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV it gives you and check it against the statement.</li><li>Upload that CSV file in step 1 above.</li></ol><textarea id="mpt2" readonly rows="9" style="width:100%;font-size:12px"></textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt2',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in. Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid var(--danger);border-radius:6px;background:rgba(217,48,37,.08)"><b><i class="ic warn"></i> Data security</b><br><span id="mds2"></span></div></div></details>
-<div id="cpBox" style="margin:8px 0 10px;padding:12px;border:1px solid var(--bd);border-radius:10px">
+<p class="mu" id="msg">Everything runs in your browser; your statement is never uploaded.</p>
+<p class="mu exe-link" style="margin:6px 0 0;font-size:13px">&#128187; Prefer a desktop app? <a href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener">Download the Windows version (.exe)</a>. If Windows shows &ldquo;Windows protected your PC&rdquo;, click <b>More info</b> then <b>Run anyway</b>.</p>
+<div id="gob" hidden class="pu-gob"><p>Statement processed. If this client already has a profile, select it in the Client profile box now to load its rules, ledgers and column mapping. Then continue.</p><button type="button" id="gob2">Continue to Settings →</button></div>
+<div id="orgn" class="pu-note"><i class="ic bulb"></i> <b>For the best result, upload the original file from your bank</b> (the PDF, Excel or CSV you downloaded from net banking or the bank app), not a scanned, photographed, screenshotted, edited or redacted copy. Original files hold the exact dates, amounts and narrations. Scanned or redacted copies have to be read by OCR, which can misread dates and narrations.</div>
+<details class="pu-dtl"><summary><b>Statement not reading properly? Convert it to CSV yourself with Claude / ChatGPT etc.</b></summary><div style="font-size:13px"><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV it gives you and check it against the statement.</li><li>Upload that CSV file in step 1 above.</li></ol><textarea id="mpt2" readonly rows="9" style="width:100%;font-size:12px"></textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt2',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in. Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid var(--danger);border-radius:6px;background:rgba(217,48,37,.08)"><b><i class="ic warn"></i> Data security</b><br><span id="mds2"></span></div></div></details>
+</div>
+<div class="pu-side">
+<div id="cpBox" class="pu-sec">
 <div class="cph"><b><i class="ic users"></i> Client profile</b><span id="cpPill" class="cpp">○ No profile selected</span></div>
-<small class="mu" style="display:block;margin-top:2px">Saved automatically in this browser on this computer (not uploaded anywhere): settings, rules and ledger master per client &amp; bank. Use <b>Backup</b> regularly: clearing browser data erases profiles.</small>
+<small class="mu cpnote">Saved automatically in this browser on this computer (not uploaded anywhere): settings, rules and ledger master per client &amp; bank. Use <b>Backup</b> regularly: clearing browser data erases profiles.</small>
 <div class="cpr"><div class="cps"><span><i class="ic search"></i></span><input id="cpSel" list="cpList" autocomplete="off" placeholder="Search a client or bank… (empty = no profile)"></div><datalist id="cpList"></datalist>
 <button class="s cpb" type="button" id="cpNew" title="Start a new profile from the Settings page">＋ New profile</button>
-<button class="s cpb" type="button" id="cpBack" title="Download a backup of every profile"><i class="ic save"></i> Backup</button>
-<button class="s cpb" type="button" id="cpDir" title="Choose the folder where backups are saved automatically (Chrome / Edge)"><i class="ic folder"></i> Backup folder</button>
-<label class="s cpb" title="Load profiles from a backup file"><i class="ic folder"></i> Restore<input type="file" id="cpRest" accept=".json" hidden></label>
-<button class="s cpb" type="button" id="cpDel" title="Delete the profile named in the box"><i class="ic trash"></i> Delete</button></div>
+
+
+
+</div>
 <div id="cpChips"></div>
-<small class="mu" id="cpInfo" style="display:block;margin-top:8px">Pick a profile card to load its rules, ledgers and column mapping. Without a profile, nothing is saved automatically.</small><small class="mu" id="cpFb" style="display:block;margin-top:4px"></small>
-<details style="margin-top:6px"><summary>How profiles work</summary><small class="mu" style="display:block;margin-top:4px">Name profiles “Client - Bank” (e.g. ABC Traders - HDFC-1234); the part before the first “ - ” is the client, and cards are grouped by client. Click <b>＋ New profile</b>, set things up in Settings, then click “Save as client profile”. After that, every change you make is saved automatically to the selected profile.</small></details>
+<small class="mu" id="cpInfo" style="display:block;margin-top:8px">Pick a profile to load its rules, ledgers and column mapping. Without a profile, nothing is saved automatically.</small><small class="mu" id="cpFb" style="display:block;margin-top:4px"></small><div class="cpft"><button class="s cpb g" type="button" id="cpBack" title="Download a backup of every profile"><i class="ic save"></i> Backup</button><button class="s cpb g" type="button" id="cpDir" title="Choose the folder where backups are saved automatically (Chrome / Edge)"><i class="ic folder"></i> Backup folder</button><label class="s cpb g" title="Load profiles from a backup file"><i class="ic folder"></i> Restore<input type="file" id="cpRest" accept=".json" hidden></label><span class="sp"></span><button class="s cpb g" type="button" id="cpDel" title="Delete the profile named in the box"><i class="ic trash"></i> Delete</button></div>
+<details style="margin-top:6px"><summary>How profiles work</summary><small class="mu" style="display:block;margin-top:4px">Name profiles “Client - Bank” (e.g. ABC Traders - HDFC-1234); the part before the first “ - ” is the client, and profiles are grouped by client. Click <b>＋ New profile</b>, set things up in Settings, then click “Save as client profile”. After that, every change you make is saved automatically to the selected profile.</small></details>
 <details style="margin-top:6px"><summary>Shared rules &amp; starter rules</summary>
 <label id="cpClN" style="margin-top:6px">Client shared rules (all banks of the selected client)</label><textarea id="cpCl" rows="3" placeholder="keyword=Ledger name" disabled></textarea><small class="mu">One per line: keyword=Ledger name. Applies to every profile of the same client; the bank's own rules win over these.</small>
 <label class="ck" style="margin-top:8px"><input type="checkbox" id="cpOn" checked>Use starter rules (every client)</label><textarea id="cpSt" rows="5" placeholder="keyword=Ledger name"></textarea><small class="mu">Used only when neither the bank's own rules nor the client's shared rules match. Order of priority: bank rules, client shared rules, starter rules. Shared and starter rules are not written into the settings file.</small></details></div>
-<input type="file" id="pf" accept=".json" hidden><p class="mu" id="msg">Everything runs in your browser; your statement is never uploaded.</p>
-<p class="mu exe-link" style="margin:6px 0 0;font-size:13px">&#128187; Prefer a desktop app? <a href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener">Download the Windows version (.exe)</a>. If Windows shows &ldquo;Windows protected your PC&rdquo;, click <b>More info</b> then <b>Run anyway</b>.</p>
-<div id="gob" hidden style="margin-top:10px;padding:10px;border:1px solid var(--bd);border-radius:8px"><p class="mu" style="margin:0 0 8px">Statement processed. If this client already has a profile, select it in the Client profile box above now to load its rules, ledgers and column mapping. Then continue.</p><button type="button" id="gob2">Continue to Settings →</button></div></div>
+</div>
+</div>
+<div id="rxBox" class="pu-sec">
+<div class="cph"><b><i class="ic folder"></i> Reopen an exported file</b></div>
+<small class="mu">Open a Tally XML this tool exported earlier to audit the transactions, change ledgers and export again. Every XML you export is also kept in the log below, so you can reopen it from there.</small>
+<div class="cpr"><label class="s cpb" title="Choose one or more exported Tally XML files"><i class="ic folder"></i> Open exported XML<input type="file" id="rxF" accept=".xml" multiple hidden></label>
+<label class="ck" style="margin:0"><input type="checkbox" id="rxM">Keep the new-ledger entries from the file</label></div>
+<details id="rxL" style="margin-top:8px"><summary style="cursor:pointer;font-size:13px"><b>Export log</b> <span class="mu" id="rxN"></span></summary><div id="rxT" style="margin-top:8px"></div></details></div>
+<input type="file" id="pf" accept=".json" hidden>
+</div>
 
 <div class="card" id="setup" hidden>
 <b>2. Settings</b>
-<div style="margin:8px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--bd)"><b><i class="ic link"></i> Tally ledger master</b> <span class="mu">(enables type-ahead and flags unknown names in red)</span>
+<div class="pu-blk pu-tally"><b><i class="ic link"></i> Tally ledger master</b> <span class="mu">(enables type-ahead and flags unknown names in red)</span>
 <div class="g" style="margin-top:6px;align-items:end"><div><label>Load exported ledger list (XML / CSV / XLSX)</label><input type="file" id="lf" accept=".xml,.csv,.xls,.xlsx"></div></div>
 <p class="mu" id="lm" style="margin:6px 0 0">Export in Tally: Display More Reports → List of Accounts → Alt+E.</p><details style="margin:8px 0"><summary style="cursor:pointer;font-size:13px"><b>Step-by-step: export ledgers from Tally and load them here</b></summary><div style="font-size:13px;margin-top:6px"><p style="margin:8px 0 2px"><b>A. Export the ledgers from Tally as an XML file</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Open the company in Tally that this bank statement belongs to.</li><li>From the <b>Gateway of Tally</b>, press <b>Alt+E</b> (Export) and select <b>Masters</b>. (Tally.ERP 9: <b>Gateway of Tally &rarr; Export of Data &rarr; Masters</b>.)</li><li>On the export screen, set <b>Format</b> to <b>XML (Data Interchange)</b> and, under the masters to export, select <b>Ledgers</b> (or <b>All Masters</b>).</li><li>Choose the <b>export location</b> and <b>file name</b>, then confirm the export.</li><li>Tally saves an <b>.xml</b> file in that folder. Note where it was saved.</li></ol><p style="margin:8px 0 2px"><b>B. Load the file into this tool</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Go to the <b>Settings</b> page.</li><li>Under <b>Load exported ledger list (XML / CSV / XLSX)</b>, select <b>Choose file</b> and pick the exported XML file.</li><li>The number of ledgers loaded and the company name appear below the button. The company name is filled in automatically, and the ledger and group fields can now suggest your Tally ledgers.</li><li>Review the <b>bank ledger</b> and other ledger settings, then continue to the upload step.</li></ol><p style="margin:8px 0 0">Prefer Excel or CSV? In Tally, press <b>Alt+E</b> (Export), choose <b>Masters</b>, set the format to <b>Excel</b> or <b>CSV</b>, and load that file in the same way.</p></div></details><small id="lc"></small><small id="gc"></small><datalist id="ll"></datalist></div>
-<div class="g" style="margin-top:8px">
+<div class="pu-blk"><div class="pu-bh"><b>Company &amp; bank</b><span class="mu">Names must match Tally exactly</span></div>
+<div class="g">
 <div><label>Company name (as in Tally)</label><input id="co" placeholder="My Company"></div>
 <div><label>Bank ledger name</label><input id="bank" class="need" data-cb="1" value="" placeholder="-set bank ledger name here-"></div>
 <div><label>Default ledger (Dr entries / payments)</label><select id="dp"><option>Suspense</option></select></div>
 <div><label>Default ledger (Cr entries / receipts)</label><select id="dr"><option>Suspense</option></select></div>
-</div>
-<div class="g" style="margin-top:8px" id="map"></div>
-<div class="w" id="raw" style="margin-top:8px;max-height:200px"></div>
-<b style="display:block;margin-top:10px">Contra entries</b>
+</div></div>
+<div class="pu-blk"><div class="pu-bh"><b>Statement columns</b><span class="mu">Check that each column of your file is matched correctly</span></div>
+<div class="g" id="map"></div>
+<div class="w" id="raw" style="margin-top:12px;max-height:200px"></div></div>
+<div class="pu-blk"><div class="pu-bh"><b>Contra entries</b><span class="mu">Cash and self-transfer rows booked as Contra</span></div>
 <div class="g">
 <div><label class="ck"><input type="checkbox" id="c1" checked>Cash withdrawals → Contra</label><input id="k1" value="atm wdl,cash wdl,cash withdrawal"></div>
 <div><label class="ck"><input type="checkbox" id="c2" checked>Cash deposits → Contra</label><input id="k2" value="cash dep,cdm,cash deposit"></div>
@@ -263,12 +570,13 @@ button.cpsv:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,76,12
 </div>
 <label class="ck" style="margin-top:8px"><input type="checkbox" id="c3" checked>Interbank / self transfers → Contra (one row per other bank account)</label>
 <div id="ibl"></div><button class="s" id="ibadd" style="margin-top:6px">+ Add bank account</button>
-<datalist id="lg"></datalist>
-<label style="margin-top:8px">Auto-ledger rules — one per line: keyword=Ledger name</label>
-<textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea>
+<datalist id="lg"></datalist></div>
+<div class="pu-blk pu-last"><div class="pu-bh"><b>Auto-ledger rules</b><span class="mu">Assign ledgers automatically from the narration</span></div>
+<label>Auto-ledger rules — one per line: keyword=Ledger name</label>
+<textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea></div>
 <div id="cpCard"><div class="cpi"><i class="ic layers"></i></div><div class="cpm"><div class="cpt" id="cpcT"></div><small class="mu" id="cpcS"></small><div class="cpv" id="cpcV"></div></div>
 <div class="cpa"><button id="cpSave" type="button" class="cpsv"><i class="ic save"></i> Save as client profile</button><button type="button" class="cpx" id="cpCopy" hidden>Save as a new profile…</button></div></div>
-<div style="margin-top:10px"><button id="go">Apply &amp; preview</button><small class="mu" style="margin-left:8px">Apply &amp; preview shows the transactions with these settings.</small></div></div>
+<div class="pu-foot"><button id="go">Apply &amp; preview</button><small class="mu" style="margin-left:8px">Apply &amp; preview shows the transactions with these settings.</small></div></div>
 
 <div class="card" id="pv" hidden>
 <b>3. Preview</b> <span class="mu" id="sum"></span><div id="tt" style="margin:2px 0;font-size:13px"></div><div id="uw" class="mu"></div><div id="bc" class="mu"></div><div id="ew" style="margin:4px 0"></div><div id="rm" class="mu"></div><div id="dw"></div>
@@ -1615,11 +1923,11 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.51<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
-(function(){const H={up:["Upload statement","Select the bank statement. If this client already has a profile, load it below."],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.52<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+(function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
-const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
-const nv=document.getElementById("nv");if(nv){new MutationObserver(upd).observe(nv,{subtree:true,attributes:true,attributeFilter:["class"]});upd()}
+const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
+const nv=document.getElementById("nv");if(nv){new MutationObserver(upd).observe(nv,{subtree:true,attributes:true,attributeFilter:["class"]});upd();document.addEventListener("umchange",upd)}
 const tb=document.getElementById("tb"),tag=()=>tb.querySelectorAll("select[data-t]").forEach(s=>{s.dataset.v=s.value});
 if(tb){new MutationObserver(tag).observe(tb,{childList:true,subtree:true});tb.addEventListener("change",tag);tag()}})();
 </script><script>/* v4: display-only helpers (read existing elements, never change data/handlers) */
@@ -1633,7 +1941,7 @@ const top=()=>{const p=$("cpPill");set("tcP",p?p.textContent.replace(/^[\W_]+/,"
 ["input","change"].forEach(e=>document.addEventListener(e,top,true));const pl=$("cpPill");if(pl)new MutationObserver(top).observe(pl,{childList:true,characterData:true,subtree:true});top();setInterval(top,1500);
 const R=document.documentElement,dk=()=>R.dataset.theme?R.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;
 try{const t=localStorage.getItem("tth");if(t)R.dataset.theme=t}catch(e){}
-const bulb=()=>{const l=!dk(),b=$("thm");b.classList.toggle("on",l);b.title=l?"Light is on (light theme). Click to switch it off.":"Light is off (dark theme). Click to switch it on."};$("thm").onclick=()=>{const t=dk()?"light":"dark";R.dataset.theme=t;try{localStorage.setItem("tth",t)}catch(e){}bulb();const b=$("thm");b.classList.remove("sw");void b.offsetWidth;b.classList.add("sw")};bulb();try{matchMedia("(prefers-color-scheme:dark)").addEventListener("change",bulb)}catch(e){}
+const bulb=()=>{const l=!dk(),b=$("thm");b.classList.toggle("on",l);b.title=l?"Light is on (light theme). Click to switch it off.":"Light is off (dark theme). Click to switch it on."};$("thm").onclick=()=>{const t=dk()?"light":"dark";R.dataset.theme=t;try{localStorage.setItem("tth",t)}catch(e){}bulb();const b=$("thm");b.classList.remove("sw");void b.offsetWidth;b.classList.add("sw")};bulb();try{matchMedia("(prefers-color-scheme:dark)").addEventListener("change",bulb)}catch(e){}try{new MutationObserver(bulb).observe(R,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}
 /* stepper: completed steps get a tick (locked steps get a lock via CSS) */
 const nv=$("nv"),stp=()=>{const B=[...nv.querySelectorAll("button[data-n]")],o=B.findIndex(b=>b.classList.contains("on"));B.forEach((b,i)=>b.classList.toggle("dn",o>=0&&i<o&&!b.disabled))};
 if(nv){new MutationObserver(stp).observe(nv,{subtree:true,attributes:true,attributeFilter:["class","disabled"]});stp()}
@@ -1720,10 +2028,15 @@ xp:{t:"Step 5 · Export",s:"Export the Tally XML.",
 };
 const o=document.getElementById("hlpo"),$$=id=>document.getElementById(id);
 function pg(){try{return (typeof cur!=="undefined"&&H[cur])?cur:"up"}catch(e){return "up"}}
-function render(){const k=pg(),d=H[k];$$("hlpt").textContent=d.t;$$("hlps").textContent=d.s;$$("hlpc").innerHTML=d.b;
+function render(){const k=pg(),d=H[k];$$("hlpt").textContent=d.t;$$("hlps").textContent=d.s;$$("hlpc").innerHTML=HV+d.b;try{window.umFilter($$("hlpc"))}catch(e){}
  const g=$$("hlpg");if(d.n){g.hidden=false;g.textContent=d.nl;g.onclick=()=>{const bt=document.querySelector('#nv button[data-n="'+d.n+'"]');if(bt&&!bt.disabled){close();bt.click()}else{g.textContent="Finish this step first";setTimeout(()=>{g.textContent=d.nl},1800)}}}else g.hidden=true}
+const VBL="&#9654; Watch how-to video",HV='<div class="hv" style="margin:0 0 12px"><button type="button" class="s hvb">'+VBL+'</button> <small class="mu"><a href="https://drive.google.com/file/d/1U70hs002YSMWlvGiGyD8o-0CgI9D7NVe/view?usp=sharing" target="_blank" rel="noopener">Or open on Google Drive</a></small><div class="hvx" hidden></div></div>';
+function hvStop(){const v=document.getElementById("hlpc").querySelector("video");if(v)v.pause()}
+document.getElementById("hlpc").addEventListener("click",e=>{const b=e.target.closest(".hvb");if(!b)return;const x=b.parentNode.querySelector(".hvx");
+ if(x.hidden){x.innerHTML='<video controls autoplay playsinline style="display:block;width:100%;max-width:420px;margin-top:8px;border:1px solid var(--bd);border-radius:10px;background:#000"><source src="https://raw.githubusercontent.com/AjaiRK8/tallytool/main/howto.mp4" type="video/mp4">Your browser cannot play this video.</video>';x.hidden=false;b.textContent="\u2715 Hide video"}
+ else{hvStop();x.innerHTML="";x.hidden=true;b.innerHTML=VBL}});
 function open(){render();o.classList.add("show")}
-function close(){o.classList.remove("show")}
+function close(){try{hvStop()}catch(e){}o.classList.remove("show")}
 $$("hlpb").onclick=open;$$("hlpx").onclick=close;$$("hlpd").onclick=close;
 o.addEventListener("click",e=>{if(e.target===o)close()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
@@ -2071,12 +2384,21 @@ function pillUpd(fl){cardUpd();const p=$("cpPill");if(!act){p.className="cpp";p.
  p.className="cpp on"+(fl?" fl":"");p.textContent="● Auto-saving to “"+act+"”"+(stamp?" · saved "+stamp.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"}):"");
  if(fl)setTimeout(()=>p.classList.remove("fl"),1300)}
 function pillAll(fl){pillUpd(fl);cardUpd()}
-function chips(){const el=$("cpChips"),ks=Object.keys(P).sort((a,b)=>a.localeCompare(b)),q=box.value.trim().toLowerCase(),f=q&&find(box.value)!==act&&!find(box.value)?ks.filter(k=>k.toLowerCase().includes(q)):ks;
+const GO={};/* client groups the user opened / closed: client name -> true | false */
+function chips(){const el=$("cpChips"),ks=Object.keys(P).sort((a,b)=>a.localeCompare(b)),q=box.value.trim().toLowerCase(),sr=!!q&&!find(box.value),f=sr?ks.filter(k=>k.toLowerCase().includes(q)):ks;
  if(!ks.length){el.innerHTML='<div class="cpe">No profiles yet. Click <b>＋ New profile</b>, set up Settings once and choose “Save as client profile”; next time it is one click.</div>';pillUpd();return}
  if(!f.length){el.innerHTML='<div class="cpe">No profile matches “'+esc(box.value)+'”.</div>';pillUpd();return}
- const g={};f.forEach(k=>(g[cl(k)]=g[cl(k)]||[]).push(k));
- el.innerHTML=Object.keys(g).map(c=>'<div class="cpg"><b>'+esc(c)+'</b><div class="cc">'+g[c].map(k=>{const n=nOf(k),bk=k.includes(" - ")?k.slice(k.indexOf(" - ")+3):k;return'<button type="button" class="cpc'+(k===act?" on":"")+(k===lN?" ld":"")+'" data-k="'+esc(k)+'">'+esc(bk)+'<small class="mu">'+n.r+" rule"+(n.r==1?"":"s")+" · "+n.l+" ledger"+(n.l==1?"":"s")+"</small></button>"}).join("")+"</div></div>").join("")+(act?'<button type="button" class="cpx" id="cpNo">✕ Work without a profile</button>':"");
- el.querySelectorAll(".cpc").forEach(b=>b.onclick=()=>{if(ldg)return;box.value=b.dataset.k;pick()});const no=$("cpNo");if(no)no.onclick=()=>{box.value="";pick()};pillUpd()}
+ const sc0=el.querySelector(".cpl"),top0=sc0?sc0.scrollTop:0,g={};f.forEach(k=>(g[cl(k)]=g[cl(k)]||[]).push(k));
+ const cs=Object.keys(g),many=ks.length>8,ac=act?cl(act):"",open=c=>sr||(c in GO?GO[c]:(!many||c===ac)),bl=(n,w)=>"<b>"+n+"</b> "+w+(n==1?"":"s"),pl=(n,w)=>n+" "+w+(n==1?"":"s");
+ const row=k=>{const n=nOf(k),bk=k.includes(" - ")?k.slice(k.indexOf(" - ")+3):k;return'<button type="button" class="cpc'+(k===act?" on":"")+(k===lN?" ld":"")+'" data-k="'+esc(k)+'" title="'+esc(k)+'"><span class="bk">'+esc(bk)+'</span><small>'+pl(n.r,"rule")+" · "+pl(n.l,"ledger")+"</small></button>"};
+ const grp=c=>{const o=open(c);return'<section class="cpg"><button type="button" class="cpgh'+(c===ac?" hon":"")+'" data-c="'+esc(c)+'" aria-expanded="'+o+'"><span class="cn">'+esc(c)+'</span><span class="cnt">'+g[c].length+"</span></button>"+(o?'<div class="cc">'+g[c].map(row).join("")+"</div>":"")+"</section>"};
+ el.innerHTML='<div class="cpl-bar"><span>'+(sr?"<b>"+f.length+"</b> of "+pl(ks.length,"profile"):bl(ks.length,"saved profile")+" · "+bl(cs.length,"client"))+'</span><span class="sp"></span>'+(cs.length>1&&!sr?'<button type="button" class="cpx" id="cpEx">Expand all</button><button type="button" class="cpx" id="cpCo">Collapse all</button>':"")+'</div><div class="cpl">'+cs.map(grp).join("")+"</div>"+(act?'<button type="button" class="cpx" id="cpNo">✕ Work without a profile</button>':"");
+ el.querySelectorAll(".cpc").forEach(b=>b.onclick=()=>{if(ldg)return;box.value=b.dataset.k;pick()});
+ el.querySelectorAll(".cpgh").forEach(b=>b.onclick=()=>{const c=b.dataset.c;GO[c]=!open(c);chips()});
+ const ex=$("cpEx"),co=$("cpCo");if(ex)ex.onclick=()=>{cs.forEach(c=>GO[c]=true);chips()};if(co)co.onclick=()=>{cs.forEach(c=>GO[c]=false);chips()};
+ const no=$("cpNo");if(no)no.onclick=()=>{box.value="";pick()};
+ const sc=el.querySelector(".cpl");if(sc){sc.scrollTop=top0;const on=sc.querySelector(".cpc.on");if(on&&!sr&&(on.offsetTop<sc.scrollTop||on.offsetTop+on.offsetHeight>sc.scrollTop+sc.clientHeight))sc.scrollTop=Math.max(0,on.offsetTop-Math.round(sc.clientHeight/3))}
+ pillUpd()}
 const lines=t=>(t||"").split("\n").filter(x=>x.includes("=")&&x.split("=")[0].trim());
 const cl=n=>n.split(" - ")[0].trim();
 const find=v=>{v=v.trim().toLowerCase();return Object.keys(P).find(k=>k.toLowerCase()==v)||""};
@@ -2147,6 +2469,8 @@ $("go").addEventListener("click",auto);
 {const a=setL;setL=function(){const r=a.apply(this,arguments);auto();return r}}
 {const a=setG;setG=function(){const r=a.apply(this,arguments);auto();return r}}
 {const a=addRule;addRule=function(){const r=a.apply(this,arguments);auto();return r}}
+window.cpAuto={has:n=>!!find(n),active:()=>act,use:async n=>{const k=find(n);if(!k)return false;if(act===k)return true;await load(k);return act===k},create:n=>{if(act)return true;const k=find(n);if(k){act=k;render();return true}if(save(n)){note("Saved profile: "+n);return true}return false}};
+render();
 })();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 (function(){const bk=(()=>{try{return +localStorage.getItem("cp_bk")||0}catch(e){return 0}})();const n=(()=>{try{return Object.keys(JSON.parse(localStorage.getItem("cp_profiles")||"{}")).length}catch(e){return 0}})();if(n&&Date.now()-bk>7*864e5){const i=document.getElementById("cpInfo");if(i)i.textContent=bk?"Last backup was over 7 days ago. Click Backup.":"No backup yet. Click Backup to keep a copy of your profiles."}})();
@@ -2188,6 +2512,336 @@ var m=function(){close(false)};if(mq.addEventListener)mq.addEventListener("chang
 var sx=null,sy=null;
 nv.addEventListener("touchstart",function(e){var t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
 nv.addEventListener("touchend",function(e){if(sx===null)return;var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;if(dx<-60&&Math.abs(dy)<Math.abs(dx))close(true)},{passive:true});
+})();
+</script>
+<style id="rxCss">
+#rxBar{border-color:var(--ac);background:rgba(26,86,219,.07);margin:6px 0 10px}
+#rxBar .rxn{font-size:12px;color:var(--mu);margin-top:6px}
+#rxBar .fa{flex-wrap:wrap}
+.rxe{background:#e8a200!important;color:#222!important}
+#rxT table{font-size:12px}#rxT td,#rxT th{white-space:nowrap}#rxT td.n{white-space:normal;min-width:120px}
+#rxT .rxa{display:flex;gap:4px;flex-wrap:wrap}#rxT .rxa button{padding:3px 9px;font-size:12px}
+</style>
+<script>
+/* ===== REOPEN EXPORTED FILES: audit, edit ledgers, export again, keep a log =====
+   - "Open exported XML" (Upload step) reads a Tally XML this tool exported and rebuilds the transactions in the Preview.
+   - Rows are normal `data` entries marked man:true (so "Apply & preview" keeps them), lg:1 (reopened) and o:{...} (baseline).
+     Edited rows are shown as "Edited"; a row is "changed" when it differs from its baseline `o`.
+   - Every XML file export is logged in IndexedDB (db tally_exports: store m = details, store x = the XML text) so it can be reopened
+     from the Export log without a file dialog. Re-exporting moves the baseline forward, so "edited" always means "since the last export".
+   - Hooks: draw, doXml, dl. Nothing else in the app is changed. */
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const fa=v=>Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}),
+ dmy=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1"),
+ when=t=>new Date(t).toLocaleString([],{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}),
+ r2=v=>Math.round(Number(v)*100)/100;
+const LBL={led:"Ledger",nar:"Narration",t:"Type",d:"Date",amt:"Amount",out:"Direction",ref:"Ref / voucher no"};
+const val=(k,v)=>k=="d"?dmy(v):k=="amt"?fa(v):k=="out"?(v?"Payment out (Dr)":"Receipt in (Cr)"):String(v==null?"":v);
+const sn=x=>({d:x.d,nar:x.nar,ref:x.ref||"",out:!!x.out,amt:x.amt,t:x.t,led:x.led||""});
+function diff(x){const o=x.o;if(!o)return[];const r=[];
+ for(const k of ["led","nar","t","d","amt","out","ref"]){const a=k=="out"?!!o.out:(o[k]==null?"":o[k]),b=k=="out"?!!x.out:(k=="ref"?(x.ref||""):(x[k]==null?"":x[k]));
+  const same=k=="amt"?Math.abs(a-b)<.005:k=="led"?String(a).trim().toLowerCase()===String(b).trim().toLowerCase():String(a).trim()===String(b).trim();
+  if(!same)r.push([k,a,b])}
+ return r}
+const chg=x=>!!x.o&&(x.del?!x.od:diff(x).length>0);
+
+/* ---------- storage (IndexedDB) ---------- */
+let db=null;
+const rq=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}),
+ done=t=>new Promise((ok,no)=>{t.oncomplete=()=>ok();t.onerror=t.onabort=()=>no(t.error)});
+const openDb=()=>new Promise((ok,no)=>{if(!window.indexedDB)return no(new Error("IndexedDB not available"));
+ const r=indexedDB.open("tally_exports",1);r.onupgradeneeded=()=>{r.result.createObjectStore("m",{keyPath:"id"});r.result.createObjectStore("x")};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+async function dbPut(m,xml){const t=db.transaction(["m","x"],"readwrite");t.objectStore("m").put(m);t.objectStore("x").put(xml,m.id);await done(t)}
+async function dbList(){if(!db)return[];const a=await rq(db.transaction("m").objectStore("m").getAll());return a.sort((p,q)=>q.t-p.t)}
+const dbXml=id=>rq(db.transaction("x").objectStore("x").get(id));
+async function dbDel(id){const t=db.transaction(["m","x"],"readwrite");t.objectStore("m").delete(id);t.objectStore("x").delete(id);await done(t)}
+const keepN=()=>{try{const n=parseInt(localStorage.getItem("rxKeep"),10);return n>0?n:100}catch(e){return 100}};
+async function dbPrune(){const a=await dbList();for(const r of a.slice(keepN()))await dbDel(r.id)}
+async function dbClear(){const t=db.transaction(["m","x"],"readwrite");t.objectStore("m").clear();t.objectStore("x").clear();await done(t)}
+async function clearLog(){const n=(await dbList()).length;if(!n)return;
+ const r=await dlg("Clear the entire export log?","<p>This removes all <b>"+n+"</b> logged export"+(n>1?"s":"")+" and their saved copies and change lists from this computer.</p><p class=\"mu\">Files you downloaded are not touched. This cannot be undone.</p>",[{t:"Clear entire log"},{t:"Cancel",s:1}]);
+ if(r.i==0){await dbClear();listUpd()}}
+
+/* ---------- read an exported Tally XML ---------- */
+function parse(text){
+ const clean=text.replace(/^\uFEFF/,"").replace(/&#(\d+);/g,(m,n)=>{n=+n;return n<32&&n!=9&&n!=10&&n!=13?"":m}).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"");
+ const doc=new DOMParser().parseFromString(clean,"text/xml");
+ if(doc.getElementsByTagName("parsererror").length)throw new Error("this is not a valid XML file");
+ const g=(e,t)=>{const n=e.getElementsByTagName(t)[0];return n?(n.textContent||"").trim():""};
+ const co=g(doc,"SVCURRENTCOMPANY"),raw=[];let skipped=0;
+ [...doc.getElementsByTagName("VOUCHER")].forEach(e=>{
+  const t=e.getAttribute("VCHTYPE")||g(e,"VOUCHERTYPENAME"),d=g(e,"DATE").replace(/\D/g,""),
+   ents=[...e.getElementsByTagName("ALLLEDGERENTRIES.LIST")].concat([...e.getElementsByTagName("LEDGERENTRIES.LIST")]).map(z=>({n:g(z,"LEDGERNAME"),p:/^yes$/i.test(g(z,"ISDEEMEDPOSITIVE")),a:Math.abs(parseFloat(g(z,"AMOUNT")))}));
+  if(!/^(Payment|Receipt|Contra)$/.test(t)||d.length!=8||ents.length!=2||!(ents[0].a>0)||!ents[0].n||!ents[1].n){skipped++;return}
+  const party=g(e,"PARTYLEDGERNAME").toLowerCase();
+  raw.push({t,d,ref:g(e,"VOUCHERNUMBER"),nar:g(e,"NARRATION"),ents,pi:ents.findIndex(z=>z.n.toLowerCase()==party)})});
+ const cnt={};raw.forEach(r=>{if(r.pi>=0){const b=r.ents[1-r.pi].n;cnt[b]=(cnt[b]||0)+1}});
+ const bank=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||"";
+ const v=[];
+ raw.forEach(r=>{let pi=r.pi;if(pi<0&&bank)pi=r.ents.findIndex(z=>z.n.toLowerCase()!=bank.toLowerCase());if(pi<0){skipped++;return}
+  const p=r.ents[pi];v.push({t:r.t,d:r.d,ref:r.ref,nar:r.nar,out:p.p,amt:r2(p.a),led:p.n,bank:r.ents[1-pi].n})});
+ const m=[...doc.getElementsByTagName("LEDGER")].map(e=>{const ob=parseFloat(g(e,"OPENINGBALANCE"));return{n:e.getAttribute("NAME")||g(e,"NAME"),grp:g(e,"PARENT"),ob:isNaN(ob)||!ob?"":String(Math.abs(ob)),dc:ob>0?"Cr":"Dr",bw:g(e,"ISBILLWISEON")}}).filter(z=>z.n);
+ return{co,v,m,skipped,bank}}
+
+/* ---------- put the rows on screen ---------- */
+const setF=(id,v)=>{const e=$(id);if(!e||v==null||e.value===v)return;e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}))};
+async function load(items){
+ const vs=[],ms=[],banks={};let co="",skipped=0;const bad=[];
+ for(const it of items){let p;
+  try{p=parse(it.text)}catch(e){bad.push(it.name+": "+e.message);continue}
+  if(!p.v.length){bad.push(it.name+": no Payment / Receipt / Contra vouchers found. Only XML files exported by this tool can be opened.");continue}
+  p.v.forEach(v=>{v.src=it.name;vs.push(v);banks[v.bank]=(banks[v.bank]||0)+1});p.m.forEach(m=>ms.push(m));skipped+=p.skipped;if(!co)co=p.co}
+ if(!vs.length){await dlg("Nothing to open","<p>"+(bad.map(esc).join("<br>")||"No vouchers were found.")+"</p>",[{t:"OK"}]);return}
+ const bnames=Object.keys(banks).sort((a,b)=>banks[b]-banks[a]),bank=bnames[0];
+ let replace=true;
+ if(data.length){const r=await dlg("Open the exported file","<p>"+data.length+" transaction"+(data.length>1?"s are":" is")+" already on screen.</p><p class=\"mu\">Replace them, or add the reopened vouchers below them?</p>",[{t:"Replace them"},{t:"Add to them"},{t:"Cancel",s:1}]);
+  if(r.i==2)return;replace=r.i==0}
+ const curB=$("bank").value.trim(),curC=$("co").value.trim();
+ let useFile=true;
+ const dB=curB&&bank&&curB.toLowerCase()!=bank.toLowerCase(),dC=curC&&co&&curC.toLowerCase()!=co.toLowerCase();
+ if(dB||dC){const r=await dlg("Settings differ from the file","<p>"+(dB?"Bank ledger: file has <b>"+esc(bank)+"</b>, Settings has <b>"+esc(curB)+"</b>.<br>":"")+(dC?"Company: file has <b>"+esc(co)+"</b>, Settings has <b>"+esc(curC)+"</b>.<br>":"")+"</p><p class=\"mu\">The exported XML uses the bank ledger and company from Settings. If a client profile is selected, changing these also updates that profile.</p>",[{t:"Use the file's values"},{t:"Keep Settings"}]);
+  useFile=r.i==0}
+ if(replace){data=[];rows=[];hdr=[];OPN=null;obAuto=false;selS.clear();window.curSrc=null;window.curPdf=null;window.ownCsv=null;$("ob").value=""}
+ if(useFile||!curB)setF("bank",bank);if(useFile||!curC)setF("co",co);
+ const R=vs.map(v=>{const x={d:v.d,nar:v.nar,ref:v.ref,out:v.out,amt:v.amt,t:v.t,led:canon(v.led),sb:null,nk:nk(v.nar),ak:(v.out?"o":"i")+v.amt,fl:[],man:true,lg:1,src:v.src,ex:true};x.o=sn(x);return x});
+ if(items.length>1)R.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+ R.forEach(x=>data.push(x));
+ if($("rxM").checked){try{ms.forEach(m=>{const n=canon(m.n),o=clGet(n);o.on=true;o.grp=m.grp||"Suspense A/c";o.ob=m.ob;o.dc=m.dc;o.bw=m.bw})}catch(e){}}
+ nc={};ac={};data.forEach(x=>{nc[x.nk]=(nc[x.nk]||0)+1;ac[x.ak]=(ac[x.ak]||0)+1});
+ try{lpUpd()}catch(e){}
+ $("setup").hidden=false;$("pv").hidden=false;
+ if(!$("m_date"))$("map").innerHTML=F.map(([k,l])=>"<div><label>"+l+" column</label><select id=\"m_"+k+"\"><option value=\"-1\">— none —</option></select></div>").join("");
+ calcBal();$("cf").click();nav("pv");
+ const notes=[];if(skipped)notes.push(skipped+" voucher"+(skipped>1?"s":"")+" in the file could not be read (not a plain bank voucher made by this tool) and were left out.");
+ if(bnames.length>1)notes.push("The files use different bank ledgers ("+bnames.map(esc).join(", ")+"). The export uses the one bank ledger in Settings.");
+ if(bad.length)notes.push(bad.map(esc).join(" "));
+ $("rm").innerHTML=notes.length?"<span style=\"color:#d93025\">"+notes.join("<br>")+"</span>":""}
+
+/* ---------- decorate the preview + info bar ---------- */
+function sync(){data.forEach(x=>{if(x.o&&!x.del)x.ex=!chg(x)})}
+function decorate(){document.querySelectorAll("#tb tr").forEach(tr=>{const c=tr.querySelector(".sc");if(!c)return;const x=data[+c.dataset.s];if(!x||!x.o)return;
+ const td=tr.children[1];if(!td)return;
+ td.querySelectorAll("span.rxe").forEach(e=>e.remove());tr.style.background="";
+ if(x.lg){const b=td.querySelector("span.b[title^=\"Added manually\"],span.b[title^=\"Loaded from an earlier\"]");if(b){b.textContent="Reopened";b.title="Loaded from an earlier export: "+x.src}}
+ const d=diff(x);if(d.length&&!x.del){const s=document.createElement("span");s.className="b rxe";s.style.marginRight="4px";s.textContent="Edited";s.title=d.map(([k,a,b2])=>LBL[k]+": "+val(k,a)+" → "+val(k,b2)).join("\n");td.insertBefore(s,td.firstChild);tr.style.background="rgba(232,162,0,.10)"}})}
+const idxChanged=()=>{const a=[];data.forEach((x,i)=>{if(x.del)return;if((x.o&&diff(x).length)||(x.man&&!x.o))a.push(i)});return a};
+function bar(){let b=$("rxBar");
+ if(!b){b=document.createElement("div");b.id="rxBar";b.className="pn";$("ew").parentNode.insertBefore(b,$("ew"));
+  b.addEventListener("click",ev=>{const t=ev.target.closest("button[data-rx]");if(!t)return;const a=t.dataset.rx;
+   if(a=="sh"){$("fx").value="n";draw()}
+   else if(a=="se"){const ix=idxChanged();selS.clear();ix.forEach(i=>selS.add(i));draw();$("rm").textContent=ix.length?ix.length+" edited / added row"+(ix.length>1?"s":"")+" selected. Use \"Export selected only\" to export just these.":"Nothing has been edited yet."}
+   else if(a=="csv")report();
+   else if(a=="log"){nav("up");$("rxL").open=true;$("rxBox").scrollIntoView({block:"start"})}})}
+ const L=data.filter(x=>x.lg);
+ if(!L.length){b.style.display="none";return}
+ const E=data.filter(x=>x.o&&!x.del&&diff(x).length),D=data.filter(x=>x.o&&x.del&&!x.od),N=data.filter(x=>x.man&&!x.o&&!x.del),
+  src=[...new Set(L.map(x=>x.src))],nm=src.slice(0,2).map(esc).join(", ")+(src.length>2?" +"+(src.length-2)+" more":"");
+ b.style.display="";
+ b.innerHTML="<div class=\"fa\"><span><b>Reopened from an earlier export</b> · "+nm+" · "+L.length+" voucher"+(L.length>1?"s":"")+" · "+
+  (E.length?"<b style=\"color:#b57a00\">"+E.length+" edited</b>":"no edits yet")+(N.length?" · "+N.length+" added":"")+(D.length?" · "+D.length+" removed":"")+"</span>"+
+  "<span style=\"margin-left:auto;display:flex;gap:6px;flex-wrap:wrap\"><button type=\"button\" class=\"s\" data-rx=\"sh\" title=\"Show only rows not yet exported since you edited them\">Show edited only</button><button type=\"button\" class=\"s\" data-rx=\"se\">Select edited rows</button><button type=\"button\" class=\"s\" data-rx=\"csv\" title=\"Download what changed since the file was opened or last exported\">Change report (CSV)</button><button type=\"button\" class=\"s\" data-rx=\"log\">Export log</button></span></div>"+
+  "<div class=\"rxn\">Edit ledgers or narrations in the table, then export again. If the earlier file was already imported into Tally, importing again adds the vouchers a second time: delete the earlier ones in Tally first, or export only the edited rows.</div>"}
+function chList(A,only){const out=[],sess=data.some(x=>x.lg||x.o);
+ A.forEach(([x])=>{if(x.o)diff(x).forEach(([k,a,b])=>out.push({s:"Edited",d:x.d,nar:x.nar,amt:x.amt,k:LBL[k],a:val(k,a),b:val(k,b)}));else if(sess&&x.man)out.push({s:"Added",d:x.d,nar:x.nar,amt:x.amt,k:"",a:"",b:""})});
+ if(!only)data.forEach(x=>{if(x.o&&x.del&&!x.od)out.push({s:"Removed",d:x.d,nar:x.nar,amt:x.amt,k:"",a:"",b:""})});
+ return out}
+function report(){const A=data.map((x,i)=>[x,i]).filter(([x])=>!x.del),ch=chList(A,false);
+ if(!ch.length){dlg("Change report","<p>Nothing has changed since the file was opened or last exported.</p>",[{t:"OK"}]);return}
+ csvOut("tally-change-report.csv",ch)}
+function csvOut(name,ch){const q=c=>"\""+String(c).replace(/"/g,"\"\"")+"\"";
+ const t="\ufeff"+["Status,Date,Narration,Amount,Field,Was,Now"].concat(ch.map(c=>[c.s,dmy(c.d),c.nar,c.amt.toFixed(2),c.k,c.a,c.b].map(q).join(","))).join("\r\n");
+ rawDl(name,t,"text/csv;charset=utf-8")}
+
+/* ---------- export log ---------- */
+let rawDl=window.dl,pend=null;
+{const oX=window.doXml;window.doXml=function(only){pend={only};try{return oX.apply(this,arguments)}finally{pend=null}}}
+window.dl=function(n,t,m){let hit=false;const oc=URL.createObjectURL;URL.createObjectURL=function(){hit=true;return oc.apply(this,arguments)};let r;
+ try{r=rawDl.apply(this,arguments)}finally{URL.createObjectURL=oc}
+ if(hit&&/^tally-import(-selected)?\.xml$/i.test(String(n))&&typeof t==="string"){try{record(n,t,pend&&pend.only)}catch(e){console.error(e)}}
+ return r};
+function record(n,xml,only){
+ const A=data.map((x,i)=>[x,i]).filter(([x,i])=>!x.del&&(!only||only.has(i)));if(!A.length)return;
+ const sess=data.some(x=>x.lg||x.o),ch=chList(A,only);
+ if(sess){A.forEach(([x])=>{if(x.o||x.man){x.o=sn(x);x.src=x.src||"added after reopening"}});if(!only)data.forEach(x=>{if(x.o&&x.del)x.od=1})}
+ const ds=A.map(([x])=>x.d).sort(),sum=f=>r2(A.filter(([x])=>f(x)).reduce((s,[x])=>s+Math.round(x.amt*100),0)/100);
+ const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:Date.now(),file:n,co:$("co").value.trim(),bank:$("bank").value.trim(),n:A.length,dr:sum(x=>x.out),cr:sum(x=>!x.out),from:ds[0],to:ds[ds.length-1],src:[...new Set(A.map(([x])=>x.src).filter(Boolean))],nch:ch.length,ch:ch.slice(0,500),sel:!!only};
+ if(!db)return;
+ dbPut(m,xml).then(dbPrune).then(listUpd).catch(e=>console.error("Export log:",e))}
+async function listUpd(){const el=$("rxT");if(!el)return;
+ if(!db){el.innerHTML="<small class=\"mu\">The export log is not available in this browser, but you can still open any exported XML file with the button above.</small>";$("rxN").textContent="";return}
+ const a=await dbList();$("rxN").textContent=a.length?"· "+a.length+" export"+(a.length>1?"s":""):"· no exports yet";
+ el.innerHTML=a.length?"<div class=\"w\" style=\"max-height:300px\"><table><thead><tr><th>When</th><th>File</th><th>Company / bank</th><th class=\"r\">Vouchers</th><th class=\"r\">Debit</th><th class=\"r\">Credit</th><th>Dates</th><th>Edits</th><th></th></tr></thead><tbody>"+
+  a.map(r=>"<tr><td>"+esc(when(r.t))+"</td><td>"+esc(r.file)+(r.sel?" <span class=\"b\">selected rows</span>":"")+"</td><td class=\"n\">"+esc([r.co,r.bank].filter(Boolean).join(" / "))+"</td><td class=\"r\">"+r.n+"</td><td class=\"r\">"+fa(r.dr)+"</td><td class=\"r\">"+fa(r.cr)+"</td><td>"+(r.from?dmy(r.from)+" to "+dmy(r.to):"")+"</td><td>"+(r.nch?"<b>"+r.nch+"</b>":"–")+"</td><td><div class=\"rxa\"><button type=\"button\" data-rl=\"o\" data-id=\""+r.id+"\">Open</button>"+(r.nch?"<button type=\"button\" class=\"s\" data-rl=\"c\" data-id=\""+r.id+"\">Changes</button>":"")+"<button type=\"button\" class=\"s\" data-rl=\"s\" data-id=\""+r.id+"\">Save copy</button><button type=\"button\" class=\"s\" data-rl=\"d\" data-id=\""+r.id+"\">Delete</button></div></td></tr>").join("")+"</tbody></table></div>"+
+  "<div style=\"margin-top:6px\"><button type=\"button\" class=\"s\" data-rl=\"l\" style=\"padding:4px 12px;font-size:12px\">Download log (CSV)</button> <button type=\"button\" class=\"s\" data-rl=\"x\" style=\"padding:4px 12px;font-size:12px\">Clear entire log</button></div>":
+  "<small class=\"mu\">Every Tally XML you export is listed here, with a copy you can reopen. Nothing exported yet.</small>"}
+async function logCsv(){const a=await dbList(),q=c=>"\""+String(c==null?"":c).replace(/"/g,"\"\"")+"\"";
+ const L=["When,File,Company,Bank,Vouchers,Debit,Credit,From,To,Source files,Changes"].concat(a.map(r=>[when(r.t),r.file,r.co,r.bank,r.n,r.dr.toFixed(2),r.cr.toFixed(2),r.from?dmy(r.from):"",r.to?dmy(r.to):"",(r.src||[]).join("; "),r.nch].map(q).join(",")));
+ rawDl("tally-export-log.csv","\ufeff"+L.join("\r\n"),"text/csv;charset=utf-8")}
+async function logAct(a,id){const m=(await dbList()).find(r=>r.id==id);if(!m)return;
+ if(a=="o"){const x=await dbXml(id);if(x==null){dlg("Not found","<p>The saved copy of this export is missing.</p>",[{t:"OK"}]);return}await load([{name:m.file+" ("+when(m.t)+")",text:x}])}
+ else if(a=="s"){const x=await dbXml(id);if(x!=null)rawDl(m.file,x,"text/xml")}
+ else if(a=="c"){const rows=(m.ch||[]).slice(0,200).map(c=>"<tr><td>"+esc(c.s)+"</td><td>"+dmy(c.d)+"</td><td class=\"n\">"+esc(c.nar)+"</td><td class=\"r\">"+fa(c.amt)+"</td><td>"+esc(c.k)+"</td><td class=\"n\">"+esc(c.a)+"</td><td class=\"n\">"+esc(c.b)+"</td></tr>").join("");
+  const r=await dlg("Changes in "+esc(m.file),"<p class=\"mu\">"+esc(when(m.t))+" · "+m.nch+" change"+(m.nch>1?"s":"")+" compared with the reopened file"+(m.nch>200?" (first 200 shown"+(m.nch>500?"; the log keeps the first 500":"")+")":"")+"</p><div class=\"w\" style=\"max-height:50vh\"><table style=\"font-size:12px\"><thead><tr><th>Status</th><th>Date</th><th>Narration</th><th class=\"r\">Amount</th><th>Field</th><th>Was</th><th>Now</th></tr></thead><tbody>"+rows+"</tbody></table></div>",[{t:"Close"},{t:"Download CSV",s:1}]);
+  if(r.i==1)csvOut("tally-change-report.csv",m.ch||[])}
+ else if(a=="d"){const r=await dlg("Delete this log entry?","<p>"+esc(m.file)+" · "+esc(when(m.t))+"</p><p class=\"mu\">The saved copy and its change list are removed from this computer. Files you downloaded are not touched.</p>",[{t:"Delete"},{t:"Cancel",s:1}]);if(r.i==0){await dbDel(id);listUpd()}}}
+
+/* ---------- wiring ---------- */
+{const d0=draw;draw=function(){try{sync()}catch(e){}const r=d0.apply(this,arguments);try{decorate();bar()}catch(e){console.error(e)}return r}}
+const refreshUi=()=>{try{sync();decorate();bar()}catch(e){console.error(e)}};
+document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#tb"))setTimeout(refreshUi,0)});
+$("rxF").onchange=async e=>{const fs=[...e.target.files];e.target.value="";if(!fs.length)return;const it=[];for(const f of fs)it.push({name:f.name,text:await f.text()});await load(it)};
+$("rxT").addEventListener("click",e=>{const b=e.target.closest("button[data-rl]");if(!b)return;const a=b.dataset.rl;if(a=="l")logCsv();else if(a=="x")clearLog().catch(x=>dlg("Could not do that","<p>"+esc(x&&x.message||String(x))+"</p>",[{t:"OK"}]));else logAct(a,b.dataset.id).catch(x=>dlg("Could not do that","<p>"+esc(x&&x.message||String(x))+"</p>",[{t:"OK"}]))});
+openDb().then(d=>{db=d;return listUpd()}).catch(()=>{db=null;listUpd()});
+window.rxLog={count:async()=>db?(await dbList()).length:0,prune:async()=>{if(db){await dbPrune();await listUpd()}},clear:()=>clearLog()};
+})();
+</script>
+<style id="apCss">
+#nv a#apTab{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:8px;color:var(--tx);text-decoration:none;font-weight:500;cursor:pointer;border:1px solid var(--bd)}
+#nv a#apTab:hover{background:var(--bg)}
+#apo{position:fixed;inset:0;z-index:98;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
+#apo.on{display:flex}
+#apm{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:12px;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+#apm .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+#apm .ch b{font-size:16px}
+#apx{background:var(--bd);color:var(--tx);width:30px;height:30px;min-width:0;padding:0;border-radius:50%;font-size:18px;line-height:28px}
+#apm .apr{padding:10px 0;border-top:1px solid var(--bd)}
+#apm .apr:first-of-type{border-top:0}
+#apm .apr label{display:block;margin-bottom:4px;font-weight:600;font-size:13px}
+#apm .apr label.ck{display:flex;align-items:center;gap:8px;margin:0}
+#apm .apr select{max-width:100%}
+#apm .apr small{display:block;margin-top:4px}
+#apm .apr .apb{margin-top:8px}
+</style>
+<div id="apo" role="dialog" aria-modal="true" aria-labelledby="apt"><div id="apm">
+<div class="ch"><b id="apt">App preferences</b><button type="button" id="apx" aria-label="Close">&times;</button></div>
+<div class="apr"><label for="apTheme">Theme</label><select id="apTheme"><option value="auto">Match my device</option><option value="light">Light</option><option value="dark">Dark</option></select><small class="mu">The bulb at the top right switches it too.</small></div>
+<div class="apr"><label for="apUm">Use of this app</label><select id="apUm"><option value="single">Single user</option><option value="multi">Multiple users</option></select><small class="mu">Single user saves your settings automatically in one profile and hides client profiles. Multiple users shows them. Switching never deletes saved profiles.</small></div>
+<div class="apr"><label class="ck"><input type="checkbox" id="apIntro"> Show the intro page when the app opens</label></div>
+<div class="apr"><label for="apKeep">Export log: keep the last</label><select id="apKeep"><option value="10">10 exports</option><option value="25">25 exports</option><option value="50">50 exports</option><option value="100">100 exports</option><option value="200">200 exports</option></select><small class="mu" id="apCount"></small><div class="apb"><button type="button" class="s" id="apClear">Clear export log</button></div></div>
+<div class="apr"><label>Backup</label><small class="mu" id="apBkInfo"></small><div class="apb" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" id="apBk">Back up now</button><button type="button" class="s" id="apRs">Restore from backup</button><button type="button" class="s" id="apBd" hidden>Choose backup folder</button></div><small class="mu">Saved settings live only in this browser, and clearing browser data erases them. A reminder pops up every 7 days until you back up.</small></div>
+<div class="apr"><button type="button" class="s" id="apReset">Reset all preferences</button><small class="mu">Puts the theme, intro page and export log size back to their defaults. Client profiles, ledgers, rules and the export log itself are not touched.</small></div>
+</div></div>
+<style id="umCss2">
+#umo{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px}
+#umo.on{display:flex}
+#umm{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:12px;max-width:460px;width:100%;max-height:92vh;overflow-y:auto;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+#umm>b{display:block;font-size:17px;margin-bottom:4px}
+#umm p{margin:4px 0 8px;font-size:13px;color:var(--mu)}
+#umm button.umc{display:block;width:100%;text-align:left;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin:8px 0;cursor:pointer;font:inherit;font-weight:600}
+#umm button.umc:hover,#umm button.umc:focus{border-color:var(--ac);outline:none}
+#umm button.umc small{display:block;margin-top:3px;color:var(--mu);font-size:12px;font-weight:400}
+</style>
+<div id="umo" role="dialog" aria-modal="true" aria-labelledby="umt"><div id="umm">
+<b id="umt">How will you use this app?</b>
+<p>Pick one to set the app up for you. You can change it any time in &#9881; App preferences.</p>
+<button type="button" class="umc" data-m="single">Single user<small>Just me. Your settings are saved and loaded automatically; client profiles are hidden.</small></button>
+<button type="button" class="umc" data-m="multi">Multiple users<small>A firm or several clients. Shows client profiles: saved bank settings, rules and ledgers for each client.</small></button>
+<p style="margin:6px 0 0">Switching later never deletes saved profiles. It only hides or shows them.</p>
+</div></div>
+<script>
+/* Usage mode (first-run question): "single" hides client profiles, "multi" shows them. Stored in localStorage key tum. */
+(function(){
+"use strict";
+const K="tum",R=document.documentElement,o=document.getElementById("umo");
+if(!o)return;
+const G=k=>{try{return localStorage.getItem(k)}catch(e){return null}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},D=k=>{try{localStorage.removeItem(k)}catch(e){}};
+let mode=G(K);if(mode!=="single"&&mode!=="multi")mode=null;
+const apply=()=>{if(mode)R.dataset.um=mode;else R.removeAttribute("data-um")};
+window.umGet=()=>mode;
+window.umSet=m=>{mode=(m==="single"||m==="multi")?m:null;if(mode)S(K,mode);else D(K);apply();document.dispatchEvent(new Event("umchange"))};
+window.umFilter=el=>{if(mode!=="single"||!el)return;el.querySelectorAll("li,.tp").forEach(e=>{if(/profile/i.test(e.textContent))e.remove()})};
+window.umAsk=()=>{o.classList.add("on");setTimeout(()=>{const b=o.querySelector("button");if(b)b.focus()},30)};
+o.querySelectorAll("button[data-m]").forEach(b=>b.onclick=()=>{window.umSet(b.dataset.m);o.classList.remove("on")});
+apply();if(!mode)setTimeout(window.umAsk,400);
+})();
+</script>
+<script>
+/* Single-user mode: keep the user's settings in one hidden profile. It is created the first time Apply & preview is used,
+   updated automatically by the existing auto-apply code, and loaded again when the next statement has been processed. */
+(function(){
+"use strict";
+const NAME="My profile",$=id=>document.getElementById(id);
+const single=()=>window.umGet&&window.umGet()==="single",api=()=>window.cpAuto;
+async function autoLoad(){
+ if(!single()||!api()||api().active())return;
+ if(typeof data!=="undefined"&&data.length){try{api().create(NAME)}catch(e){console.error(e)}return}/* restored session: keep it, just resume auto-saving to the profile */
+ if(!api().has(NAME))return;
+ const ok=await api().use(NAME);
+ if(ok){const m=$("msg");if(m)m.textContent=m.textContent.replace(" \u00b7 Client profile: "+NAME," \u00b7 Your saved settings were loaded")}}
+function autoSave(){
+ if(!single()||!api()||api().active())return;
+ if(typeof data==="undefined"||!data.length)return;
+ api().create(NAME)}
+const g=$("gob");
+if(g)new MutationObserver(()=>{if(!g.hidden)autoLoad().catch(e=>console.error(e))}).observe(g,{attributes:true,attributeFilter:["hidden"]});
+const go=$("go");
+if(go)go.addEventListener("click",()=>{setTimeout(autoSave,500);setTimeout(autoSave,2500)});
+})();
+</script>
+<script>
+/* App preferences: theme, intro page, export-log size, reset. Stored in this browser (localStorage keys tth, tintro, rxKeep). */
+(function(){
+"use strict";
+const $=id=>document.getElementById(id),o=$("apo"),lk=$("apTab"),R=document.documentElement;
+if(!o||!lk)return;
+const G=k=>{try{return localStorage.getItem(k)}catch(e){return null}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},D=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const KEEP=["10","25","50","100","200"],keepNow=()=>{const n=String(parseInt(G("rxKeep"),10));return KEEP.includes(n)?n:"100"};
+let prevKeep="100";
+async function cnt(){const e=$("apCount");let n=0;try{n=window.rxLog?await window.rxLog.count():0}catch(x){}
+ e.textContent=n?n+" export"+(n>1?"s":"")+" stored in this browser.":"No exports stored yet."}
+function fill(){const t=G("tth");$("apTheme").value=(t=="light"||t=="dark")?t:"auto";$("apIntro").checked=G("tintro")!="1";$("apUm").value=window.umGet?(window.umGet()||"single"):"single";prevKeep=keepNow();$("apKeep").value=prevKeep;cnt()}
+const open=()=>{fill();o.classList.add("on");setTimeout(()=>$("apx").focus(),30)},close=()=>{o.classList.remove("on");lk.focus()};
+lk.onclick=e=>{e.preventDefault();open()};
+$("apx").onclick=close;
+o.addEventListener("mousedown",e=>{if(e.target===o)close()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&o.classList.contains("on")&&!document.querySelector('div[style*="z-index:100"]'))close()});
+$("apUm").onchange=e=>{if(window.umSet)window.umSet(e.target.value)};document.addEventListener("umchange",()=>{if(window.umGet)$("apUm").value=window.umGet()||"single"});
+$("apTheme").onchange=e=>{const v=e.target.value;if(v=="auto"){D("tth");R.removeAttribute("data-theme")}else{S("tth",v);R.dataset.theme=v}};
+$("apIntro").onchange=e=>{S("tintro",e.target.checked?"0":"1");const k=$("introSkip");if(k)k.checked=!e.target.checked};
+$("apKeep").onchange=async e=>{const n=parseInt(e.target.value,10);
+ try{const c=window.rxLog?await window.rxLog.count():0;
+  if(c>n){const r=await dlg("Keep only the last "+n+" exports?","<p>"+(c-n)+" older export"+(c-n>1?"s":"")+" will be deleted from the log now, with their saved copies.</p><p class=\"mu\">Files you downloaded are not touched.</p>",[{t:"Delete older"},{t:"Cancel",s:1}]);
+   if(r.i!=0){e.target.value=prevKeep;return}}
+  S("rxKeep",String(n));prevKeep=String(n);if(window.rxLog)await window.rxLog.prune()}catch(x){console.error(x)}
+ cnt()};
+$("apClear").onclick=async()=>{try{if(window.rxLog)await window.rxLog.clear()}catch(x){console.error(x)}cnt()};
+$("apReset").onclick=async()=>{const r=await dlg("Reset all preferences?","<p>This sets:</p><ul style=\"margin:4px 0 8px 20px;padding:0\"><li>Theme: match my device</li><li>Intro page: shown when the app opens</li><li>Export log: keep the last 100</li><li>Use of this app: ask again (single or multiple users)</li></ul><p class=\"mu\">Client profiles, ledgers, rules and the export log are not touched.</p>",[{t:"Reset"},{t:"Cancel",s:1}]);
+ if(r.i!=0)return;D("tth");D("tintro");D("rxKeep");if(window.umSet)window.umSet(null);R.removeAttribute("data-theme");const k=$("introSkip");if(k)k.checked=false;fill();if(window.umAsk)window.umAsk()};
+})();
+</script>
+<script>
+/* Backup: available in single and multiple user mode (App preferences) + a reminder popup when the last backup is over 7 days old.
+   Uses the existing profile backup/restore buttons (cpBack, cpRest, cpDir) so backup files stay identical. Keys: cp_bk (last backup), bk_snz (snooze). */
+(function(){
+"use strict";
+const $=id=>document.getElementById(id),DAY=864e5;
+const G=k=>{try{return localStorage.getItem(k)}catch(e){return null}},S=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const nProf=()=>{try{return Object.keys(JSON.parse(G("cp_profiles")||"{}")).length}catch(e){return 0}},lastBk=()=>+G("cp_bk")||0;
+const fmt=t=>t?new Date(t).toLocaleString([],{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"never";
+const what=()=>window.umGet&&window.umGet()==="multi"?"client profiles, rules and ledgers":"settings, rules and ledgers";
+function info(){const e=$("apBkInfo");if(!e)return;const n=nProf();
+ e.textContent=n?("Last backup: "+fmt(lastBk())+(lastBk()?"":". Nothing has been backed up yet.")):"Nothing to back up yet. Your settings are saved after you use Apply & preview."}
+async function backup(){
+ if(!nProf()){await dlg("Nothing to back up yet","<p>Your settings are saved after you use <b>Apply &amp; preview</b> once. Back up after that.</p>",[{t:"OK"}]);return false}
+ const b=$("cpBack");if(!b)return false;b.click();setTimeout(info,300);return true}
+if($("apBk"))$("apBk").onclick=backup;
+if($("apRs"))$("apRs").onclick=()=>{const r=$("cpRest");if(r)r.click()};
+if($("apBd")){$("apBd").hidden=!window.showDirectoryPicker||!$("cpDir");$("apBd").onclick=()=>{const d=$("cpDir");if(d)d.click()}}
+const tab=$("apTab");if(tab)tab.addEventListener("click",info);
+setInterval(()=>{const o=$("apo");if(o&&o.classList.contains("on"))info()},4000);
+async function remind(){
+ const r=await dlg("Time to back up your settings","<p>Your saved "+what()+" are stored only in this browser. If the browser data is cleared, they are lost.</p><p class=\"mu\">Last backup: "+fmt(lastBk())+"</p>",[{t:"Back up now"},{t:"Remind me tomorrow",s:1}]);
+ if(r.i==0){await backup()}else{S("bk_snz",String(Date.now()+DAY))}}
+let tries=0;
+function check(){
+ if(!nProf())return;
+ const now=Date.now();if(now-lastBk()<7*DAY||(+G("bk_snz")||0)>now)return;
+ const um=$("umo"),ap=$("apo");
+ if((um&&um.classList.contains("on"))||(ap&&ap.classList.contains("on"))||document.querySelector('div[style*="z-index:100"]')){if(++tries<10)setTimeout(check,2500);return}
+ remind().catch(e=>console.error(e))}
+setTimeout(check,3500);
 })();
 </script>
 </body></html>
