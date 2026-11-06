@@ -843,7 +843,7 @@ $("go").onclick=()=>{const g=k=>+$("m_"+k).value,rules=$("rules").value.split("\
   if(!dr&&!cr&&g("amt")>=0){const a=num(r[g("amt")]);if(a<0||/\bdr\b/i.test(String(r[g("amt")])))dr=Math.abs(a);else cr=a}
   if(!dr&&!cr){if((r.fl||[]).some(t=>/Amount not read/.test(t))&&!/opening\s*bal|b\/f|brought forward/i.test(r.join(" "))){}else{opn(r);skip++;continue}}
   const nar=g("nar")>=0?String(r[g("nar")]).replace(/please do not share[\s\S]*$/i,"").trim():"",ref=g("ref")>=0?String(r[g("ref")]).trim():"",out=dr>0,amt=out?dr:cr,low=nar.toLowerCase();
-  let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const hit=rules.find(x=>low.includes(x[0]));if(hit)l=hit[1];
+  let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const hit=rules.find(x=>kwHit(low,x[0]));if(hit)l=hit[1];
   if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
   else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
   else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
@@ -988,7 +988,7 @@ function anmCalc(){
  act.forEach(x=>{const k=[canon(x.led||""),x.d,(+x.amt).toFixed(2),x.out?1:0,String(x.nar||"").toLowerCase().replace(/\s+/g," ").trim(),String(x.ref||"").trim()].join("|");if(!seen.has(k))seen.set(k,[]);seen.get(k).push(x)});
  seen.forEach(a=>{if(a.length>1)a.forEach(x=>add(x,"Possible duplicate: "+a.length+" entries with the same ledger, date, amount, narration and reference"))});
  const rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
- if(rules.length)act.forEach(x=>{if(x.t=="Contra"||!x.led)return;const low=String(x.nar||"").toLowerCase(),h=rules.find(r=>low.includes(r[0]));if(h&&h[1]&&String(canon(h[1])).toLowerCase()!=String(canon(x.led)).toLowerCase())add(x,"Narration has \u201c"+h[0]+"\u201d (your rule points to "+h[1]+") but the ledger is "+x.led)});
+ if(rules.length)act.forEach(x=>{if(x.t=="Contra"||!x.led)return;const low=String(x.nar||"").toLowerCase(),h=rules.find(r=>kwHit(low,r[0]));if(h&&h[1]&&String(canon(h[1])).toLowerCase()!=String(canon(x.led)).toLowerCase())add(x,"Narration has \u201c"+h[0]+"\u201d (your rule points to "+h[1]+") but the ledger is "+x.led)});
  return{F,LF,byL,act}}
 function anmCols(R,fl){
  const km=new Map();
@@ -1803,11 +1803,13 @@ try{localStorage.removeItem("rl");localStorage.removeItem("ib")}catch(e){}
 
 
 function ruleKw(rs){rs=rs||vis;const q=$("q").value.trim().toLowerCase();if(q.length>=3)return q.includes("=")?null:q;if(rs.length<2)return null;
+ /* party word first: words (letters only, generic/bank/number words already stripped by nk) common to every shown row and literally present in each narration. Avoids rules like "txn00" from running ref numbers. */
+ {const pw=rs.map(([x])=>new Set(pkOf(x.nar).split(" ").filter(w=>w.length>=3&&/^[a-z]+$/.test(w)))),cw=[...pw[0]].filter(w=>pw.every(s=>s.has(w))&&rs.every(([x])=>x.nar.toLowerCase().includes(w))).sort((a,b)=>b.length-a.length);if(cw.length)return cw[0]}
  const lc=(a,b)=>{let best="";const m=Array.from({length:b.length+1},()=>new Uint16Array(a.length+1));for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)if(b[i-1]==a[j-1]){m[i][j]=m[i-1][j-1]+1;if(m[i][j]>best.length)best=a.slice(j-m[i][j],j)}return best};
  let c=rs[0][0].nar.toLowerCase();for(const[x]of rs.slice(1)){c=lc(c,x.nar.toLowerCase());if(c.length<4)break}
- c=c.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,"");return c.length>=4&&/[a-z]/.test(c)&&!c.includes("=")?c:null}
+ c=c.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,"");return c.replace(/[0-9]/g,"").length>=4&&!c.includes("=")?c:null}
 function addRule(kw,L,onlyShown){const ls=$("rules").value.split("\n").filter(x=>x.trim()),i=ls.findIndex(l=>l.split("=")[0].trim().toLowerCase()==kw),nl=kw+"="+L;if(i>=0)ls[i]=nl;else ls.unshift(nl);$("rules").value=ls.join("\n");
- if(!onlyShown)data.forEach(x=>{if(x.t!="Contra"&&x.nar.toLowerCase().includes(kw)&&(x.led==$("dp").value||x.led==$("dr").value))x.led=L})}
+ if(!onlyShown)data.forEach(x=>{if(x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)&&(x.led==$("dp").value||x.led==$("dr").value))x.led=L})}
 /* Contra auto-rule: Cash ledger -> cash withdrawal/deposit keywords; any other ledger -> interbank row */
 function contraRule(rs,L){const rows=rs.filter(([x])=>x&&!x.del&&x.t=="Contra");if(!rows.length||!L)return "";
  const kw=ruleKw(rows);if(!kw)return "No common keyword found in these rows, so no Contra auto-rule was saved. Type a word in the narration search first.";
@@ -1819,13 +1821,47 @@ function contraRule(rs,L){const rows=rs.filter(([x])=>x&&!x.del&&x.t=="Contra");
  if(!r)r=[...document.querySelectorAll(".ibr")].find(z=>!z.querySelector(".il").value.trim()&&!z.querySelector(".ik").value.trim());
  if(r){addKw(r.querySelector(".ik"),kw);r.querySelector(".il").value=L}else ibRow(kw,L);$("c3").checked=true;svIb();
  return `Contra auto-rule saved: "${kw}" → ${L} as an interbank transfer. Applied automatically next time (it is saved automatically to the selected client profile).`}
-$("ba").onclick=async()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="";
+/* Auto-rule matching: a short plain keyword (under 5 letters/digits, e.g. "jio") must match as a WHOLE WORD so it does not fire inside other words ("amujio traders"). Longer keywords, or ones containing spaces/symbols, match anywhere in the narration. */
+function kwWhole(k){return k.length<5&&/^[a-z0-9]+$/.test(k)}
+function kwHit(low,k){if(!k)return false;if(!kwWhole(k))return low.includes(k);let i=low.indexOf(k);while(i>=0){const a=i?low[i-1]:" ",b=low[i+k.length]||" ";if(!/[a-z0-9]/.test(a)&&!/[a-z0-9]/.test(b))return true;i=low.indexOf(k,i+1)}return false}
+/* Review popup after "Create preview": lists saved rules that were just auto-applied, with the common narration text and sample transactions, so the user can accept or reject each one. Rows of a rule that belong to a different party than the rest are split out, unticked and flagged. Rejected rows go back to the default ledger. */
+function ruleReview(txt){
+ const rules=txt.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
+ if(!rules.length)return null;
+ const G=new Map(),dflt=x=>String(canon(x.t=="Receipt"?$("dr").value:$("dp").value)).toLowerCase(),lc=s=>String(canon(s||"")).toLowerCase();
+ data.forEach(x=>{if(x.del||x.man||x.ex||x.t=="Contra")return;const h=rules.find(r=>kwHit(x.nar.toLowerCase(),r[0]));if(!h||!h[1])return;if(lc(x.led)!=lc(h[1])||lc(x.led)==dflt(x))return;const id=h[0]+"\u0000"+h[1];(G.get(id)||G.set(id,{k:h[0],l:h[1],rows:[]}).get(id)).rows.push(x)});
+ const items=[];G.forEach(g=>{const c=new Map();g.rows.forEach(x=>{const p=pkOf(x.nar);c.set(p,(c.get(p)||0)+1)});const top=[...c.entries()].sort((a,b)=>b[1]-a[1])[0][0],main=g.rows.filter(x=>pkOf(x.nar)==top),oth=g.rows.filter(x=>pkOf(x.nar)!=top);items.push({k:g.k,l:g.l,rows:main,warn:false});if(oth.length)items.push({k:g.k,l:g.l,rows:oth,warn:true})});
+ return items.length?items:null}
+function ruleReviewShow(items){
+ const sk=s=>esc(s.length>48?s.slice(0,48)+"…":s),off=new Set(items.map((g,i)=>g.warn?i:-1).filter(i=>i>=0));
+ const li=items.map((g,i)=>{const smp=[...new Set(g.rows.map(x=>x.nar))].slice(0,3).map(s=>`<div class="mu" style="font-size:12px;margin-left:24px">${sk(s)}</div>`).join("");
+  return `<label style="display:block;padding:7px 8px;border:1px solid ${g.warn?"#d93025":"#9994"};border-radius:6px;margin-bottom:6px"><input type="checkbox" class="rvk" data-i="${i}"${g.warn?"":" checked"}> Narration contains <b>"${esc(g.k)}"</b> → <b>${esc(g.l)}</b> · ${g.rows.length} transaction${g.rows.length==1?"":"s"}${g.warn?` <span style="color:#d93025">⚠ these look like a different party from the rest of this rule. Check before accepting.</span>`:""}${smp}</label>`}).join("");
+ const ch=e=>{const t=e.target;if(t&&t.classList&&t.classList.contains("rvk")){if(t.checked)off.delete(+t.dataset.i);else off.add(+t.dataset.i)}};
+ document.addEventListener("change",ch);
+ return dlg("Review auto-rules before they are applied",`<p>Your saved rules matched these transactions. Untick any rule you do not want; those rows go back to the default ledger.</p><div>${li}</div>`,[{t:"Apply selected rules"},{t:"Apply none",s:1}]).then(r=>{document.removeEventListener("change",ch);const none=!r||r.i!==0;let n=0;
+  items.forEach((g,i)=>{if(none||off.has(i))g.rows.forEach(x=>{x.led=x.t=="Receipt"?$("dr").value:$("dp").value;n++})});
+  draw();$("rm").textContent=n?n+" transaction"+(n==1?"":"s")+" kept on the default ledger because the auto-rule was not accepted. The rule is still saved.":""})}
+/* Warnings shown before an auto-rule is saved: generic/number-like keyword, other parties containing the keyword, overlap with existing rules */
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("#rmShow");if(!a)return;e.preventDefault();rf=null;$("q").value=a.dataset.kw;draw()});
+function ruleWarn(kw,rs,L){const w=[],sh=new Set(rs.filter(([x])=>!x.del).map(([x])=>pkOf(x.nar))),
+ all=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)),oth=all.filter(x=>!sh.has(pkOf(x.nar))),
+ lt=kw.replace(/[^a-z]/g,""),dg=kw.replace(/[^0-9]/g,"").length,
+ GEN=/^(upi|neft|imps|rtgs|txn|payment|paymt|pmt|paid|pay|transfer|bill|chq|cheque|dep|clg|clearing|ach|ecs|nach|ref|trf|tfr|dr|cr|debit|credit|bank|online|mobile|banking|inv|invoice|cash|self|to|from|by|mmt|inb|ib)$/;
+ if(lt.length<3||dg>=lt.length||GEN.test(lt))w.push(`<b>"${esc(kw)}"</b> looks like a generic word or reference number, not a party name. It may match many unrelated transactions.`);
+ if(oth.length){const ex=[...new Set(oth.map(x=>x.nar))].slice(0,3).map(s=>esc(s.length>45?s.slice(0,45)+"…":s)).join("; ");w.push(`<b>${oth.length} other transaction${oth.length>1?"s":""} of a different party</b> also contain "${esc(kw)}" (e.g. ${ex}) and would get <b>${esc(L)}</b> in future imports.`)}
+ $("rules").value.split("\n").forEach(l=>{const p=l.split("="),k=(p[0]||"").trim().toLowerCase(),led=p.slice(1).join("=").trim();if(k&&p.length>1&&k!=kw&&(k.includes(kw)||kw.includes(k))&&led.toLowerCase()!=L.trim().toLowerCase())w.push(`Overlaps with the existing rule <b>"${esc(k)}" → ${esc(led)}</b>. Only one of the two rules will win for narrations containing both.`)});
+ return w}
+$("ba").onclick=async()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="",rmHtml="";
  if(rf&&rf.k=="p"){const m=new Map();let n=0;vis.forEach(([x])=>{if(x.del)return;n++;const a=m.get(x.nk)||m.set(x.nk,{n:0,s:x.nar}).get(x.nk);a.n++});
   if(m.size>1){const li=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,8).map(a=>`<li>${a.n} × ${esc(a.s.length>50?a.s.slice(0,50)+"…":a.s)}</li>`).join("");
    const r=await dlg("Apply to several narration styles?",`<p>This party filter has <b>${m.size} different narration styles</b>, ${n} transactions in all. Ledger <b>${esc(L)}</b> will be set on every one of them.</p><ul style="margin:6px 0 6px 18px">${li}${m.size>8?"<li>…</li>":""}</ul><p class="mu">Cheque and bank-transfer entries are sometimes kept in different ledgers. To handle one style at a time, cancel and use the N× badge instead.</p>`,[{t:"Apply to all "+n},{t:"Cancel",s:1}]);if(!r||r.i!==0)return}}
 vis.forEach(([x])=>{if(!x.del)x.led=L});
- if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){const kw=ruleKw();if(kw){addRule(kw,L,true);msg=`Auto-rule saved: "${kw}" → ${L}. It is applied automatically next time (it is saved automatically to the selected client profile).`}else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
- setAdj();/* re-arm: the P× confirm dialog above is async, so the earlier click-time flag has already expired */draw();$("rm").textContent=msg;$("bl").value="";$("bl").blur()};
+ if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){const kw=ruleKw();if(kw){const w=ruleWarn(kw,vis,L);let ok=true;
+  if(w.length){const r=await dlg("Check this auto-rule before saving",`<p>Rule to be saved: when the narration contains <b>"${esc(kw)}"</b> → ledger <b>${esc(L)}</b></p><p><b>Warning:</b></p><ul style="margin:6px 0 6px 18px">${w.map(t=>`<li>${t}</li>`).join("")}</ul><p class="mu">The ledger has already been applied to the rows shown. Only the saved rule is affected by your choice.</p>`,[{t:"Save rule anyway"},{t:"Don't save rule",s:1}]);ok=!!r&&r.i===0}
+  if(ok){addRule(kw,L,true);const nm=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)).length;rmHtml=`<b>Auto-rule saved:</b> narration contains <b>"${esc(kw)}"</b> → <b>${esc(L)}</b>. It matches ${kwWhole(kw)?"as a whole word":"as text"} in ${nm} transaction${nm==1?"":"s"} of this statement and is applied automatically next time (saved to the selected client profile). <a href="#" id="rmShow" data-kw="${esc(kw)}">Show the rows this rule matches</a>`}
+  else msg="Auto-rule NOT saved. The ledger was applied to the shown rows only."}
+ else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
+ setAdj();/* re-arm: the P× confirm dialog above is async, so the earlier click-time flag has already expired */draw();if(rmHtml)$("rm").innerHTML=rmHtml;else $("rm").textContent=msg;$("bl").value="";$("bl").blur()};
 
 function fillDD(){["dp","dr"].forEach(i=>{const e=$(i),cur=e.value||"Suspense",o=[...new Set(["Suspense",...ledPool()])];if(!o.includes(cur))o.push(cur);e.innerHTML=o.map(x=>`<option${x==cur?" selected":""}>${esc(x)}</option>`).join("");e.value=cur})}
 function setV(i,v){const e=$(i);if(e.tagName=="SELECT"&&![...e.options].some(o=>o.value==v)){const o=document.createElement("option");o.textContent=v;e.appendChild(o)}e.value=v}
@@ -1965,7 +2001,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.61<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.62<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -2128,7 +2164,7 @@ const dmy=s=>String(s).replace(/(\d{4})(\d\d)(\d\d)/,"$3-$2-$1");
 function remap(fn){const n=[];selS.forEach(i=>{const j=fn(i);if(j!=null)n.push(j)});selS.clear();n.forEach(j=>selS.add(j))}
 function refresh(){nc={};ac={};data.forEach(y=>{nc[y.nk]=(nc[y.nk]||0)+1;ac[y.ak]=(ac[y.ak]||0)+1});calcBal();lpUpd()}
 function autoMap(nar,out){const low=nar.toLowerCase(),rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
- let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const h=rules.find(x=>low.includes(x[0]));if(h)l=h[1];
+ let t=out?"Payment":"Receipt",l=out?$("dp").value:$("dr").value;const h=rules.find(x=>kwHit(low,x[0]));if(h)l=h[1];
  if($("c1").checked&&out&&has(low,$("k1").value)){t="Contra";l=$("cash").value}
  else if($("c2").checked&&!out&&has(low,$("k2").value)){t="Contra";l=$("cash").value}
  else if($("c3").checked&&ibMatch(low)){t="Contra";l=ibMatch(low)}
@@ -2514,7 +2550,7 @@ const og=$("go").onclick;
 $("go").onclick=function(e){const ta=$("rules"),keep=ta.value;
  const extra=[...(act?lines(CR[cl(act)]):[]),...(on.checked?lines(st.value):[])];
  if(extra.length)ta.value=keep.replace(/\s+$/,"")+"\n"+extra.join("\n");
- try{return og.call(this,e)}finally{ta.value=keep}};
+ try{const r=og.call(this,e);try{const rr=ruleReview(ta.value);if(rr)setTimeout(()=>ruleReviewShow(rr),120)}catch(x){console.error(x)}return r}finally{ta.value=keep}};
 /* ---- auto-apply: every change goes straight into the selected client profile ---- */
 const quiet=n=>{P[n]=buildSet().t;return sv(K,P)};
 function auto(){if(ldg||!act||!P[act])return;clearTimeout(aT);aT=setTimeout(()=>{if(ldg||!act||!P[act])return;if(quiet(act))note("Saved automatically to profile: "+act)},300)}
