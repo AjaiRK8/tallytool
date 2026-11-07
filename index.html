@@ -11,7 +11,7 @@
    5. Removed: anything deleted
   Compare against the previous version of this file; list only real differences.
   Keep entries one line each. Also bump the VERSION comment below.
-  VERSION: v9
+  VERSION: v11
 -->
 
 <html lang="en"><head><meta charset="utf-8">
@@ -575,7 +575,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}</style></head><b
 <div id="ibl"></div><button class="s" id="ibadd" style="margin-top:6px">+ Add bank account</button>
 <datalist id="lg"></datalist></div>
 <div class="pu-blk pu-last"><div class="pu-bh"><b>Auto-ledger rules</b><span class="mu">Assign ledgers automatically from the narration</span></div>
-<label>Auto-ledger rules — one per line: keyword=Ledger name</label>
+<label>Auto-ledger rules — one per line: keyword=Ledger name <span class="mu" style="font-weight:400">(rules saved from the P× / N× filter look like p:party name=Ledger: they match exactly what that filter shows)</span></label>
 <textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea><small class="mu" id="rsgHint" style="display:block;margin-top:4px"></small></div>
 <div id="cpCard"><div class="cpi"><i class="ic layers"></i></div><div class="cpm"><div class="cpt" id="cpcT"></div><small class="mu" id="cpcS"></small><div class="cpv" id="cpcV"></div></div>
 <div class="cpa"><button id="cpSave" type="button" class="cpsv"><i class="ic save"></i> Save as client profile</button><button type="button" class="cpx" id="cpCopy" hidden>Save as a new profile…</button></div></div>
@@ -987,7 +987,7 @@ function anmCalc(){
  act.forEach(x=>{const k=[canon(x.led||""),x.d,(+x.amt).toFixed(2),x.out?1:0,String(x.nar||"").toLowerCase().replace(/\s+/g," ").trim(),String(x.ref||"").trim()].join("|");if(!seen.has(k))seen.set(k,[]);seen.get(k).push(x)});
  seen.forEach(a=>{if(a.length>1)a.forEach(x=>add(x,"Possible duplicate: "+a.length+" entries with the same ledger, date, amount, narration and reference"))});
  const rules=$("rules").value.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
- if(rules.length)act.forEach(x=>{if(x.t=="Contra"||!x.led)return;const low=String(x.nar||"").toLowerCase(),h=rules.find(r=>kwHit(low,r[0]));if(h&&h[1]&&String(canon(h[1])).toLowerCase()!=String(canon(x.led)).toLowerCase())add(x,"Narration has \u201c"+h[0]+"\u201d (your rule points to "+h[1]+") but the ledger is "+x.led)});
+ if(rules.length)act.forEach(x=>{if(x.t=="Contra"||!x.led)return;const low=String(x.nar||"").toLowerCase(),h=rules.find(r=>kwHit(low,r[0]));if(h&&h[1]&&String(canon(h[1])).toLowerCase()!=String(canon(x.led)).toLowerCase())add(x,ruleHas(h[0])+" (your rule points to "+h[1]+") but the ledger is "+x.led)});
  return{F,LF,byL,act}}
 function anmCols(R,fl){
  const km=new Map();
@@ -1822,7 +1822,26 @@ function contraRule(rs,L){const rows=rs.filter(([x])=>x&&!x.del&&x.t=="Contra");
  return `Contra auto-rule saved: "${kw}" → ${L} as an interbank transfer. Applied automatically next time (it is saved automatically to the selected client profile).`}
 /* Auto-rule matching: a short plain keyword (under 5 letters/digits, e.g. "jio") must match as a WHOLE WORD so it does not fire inside other words ("amujio traders"). Longer keywords, or ones containing spaces/symbols, match anywhere in the narration. */
 function kwWhole(k){return k.length<5&&/^[a-z0-9]+$/.test(k)}
-function kwHit(low,k){if(!k)return false;if(!kwWhole(k))return low.includes(k);let i=low.indexOf(k);while(i>=0){const a=i?low[i-1]:" ",b=low[i+k.length]||" ";if(!/[a-z0-9]/.test(a)&&!/[a-z0-9]/.test(b))return true;i=low.indexOf(k,i+1)}return false}
+const NKC=new Map();function nkOf(n){let v=NKC.get(n);if(v===undefined){v=nk(String(n||""));NKC.set(n,v)}return v}
+/* v10: party / narration-style rules. "p:<key>" matches exactly what the P× filter shows (pkOf), "n:<key>" exactly what the N× filter shows (nk). Same key code as the filters, so a rule and its filter can never disagree. */
+const KEYR=/^([pn]):(.+)$/;
+function ruleDesc(k){const m=KEYR.exec(k);return m?(m[1]=="p"?'narration is of party <b>"'+esc(m[2])+'"</b> (any payment mode, same as the P× filter)':'narration has the same style as <b>"'+esc(m[2])+'"</b> (same as the N× filter)'):'narration contains <b>"'+esc(k)+'"</b>'}
+function ruleHas(k){const m=KEYR.exec(k);return m?(m[1]=="p"?"Same party as \u201c":"Same narration style as \u201c")+m[2]+"\u201d":"Narration has \u201c"+k+"\u201d"}
+let ruleWhy="";
+/* v10: keyword for the auto-rule, built the same way the filter picked the rows.
+   P× / N× filter -> p:/n: key of that filter. ₹× filter -> party key only when all shown rows are one party (an amount is not a party). Typed search word -> that word. No filter -> party key when all shown rows are one party, else the old common-word search. */
+function ruleKwF(rs){ruleWhy="";rs=rs||vis;const live=rs.filter(([x])=>x&&!x.del&&x.t!="Contra"),key=(t,v)=>(!v||v.length<3||v.includes("="))?null:t+":"+v;
+ if(rf&&(rf.k=="p"||rf.k=="n")){const k=key(rf.k,rf.v);if(!k)ruleWhy="This party/narration has no usable name (only bank words or numbers), so no auto-rule was saved. Type a word in the narration search first.";return k}
+ const q=$("q").value.trim().toLowerCase();if(q.length>=3)return q.includes("=")?null:q;
+ const ps=new Set(live.map(([x])=>pkOf(x.nar)));
+ if(rf&&rf.k=="a"){if(live.length&&ps.size==1){const k=key("p",[...ps][0]);if(k)return k}ruleWhy="The same-amount (₹×) filter shows transactions of different parties, so no auto-rule was saved. Use the P× or N× badge, or type the party name in the narration search.";return null}
+ if(!rf&&live.length>=2&&ps.size==1){const k=key("p",[...ps][0]);if(k)return k}
+ return ruleKw(rs)}
+function ruleWarnKey(kw,rs,L){const w=[],sh=new Set(rs.filter(([x])=>x&&!x.del).map(([x])=>x)),all=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)),hid=all.filter(x=>!sh.has(x));
+ if(hid.length)w.push(`This rule covers <b>${all.length} transaction${all.length>1?"s":""} of this ${kw[0]=="p"?"party":"narration style"} in the whole statement</b>, but only ${all.length-hid.length} ${all.length-hid.length==1?"is":"are"} shown now (your other filters hide ${hid.length}). All of them will get <b>${esc(L)}</b> when rules are applied.`);
+ const done=new Set();$("rules").value.split("\n").forEach(l=>{const p=l.split("="),k=(p[0]||"").trim().toLowerCase(),led=p.slice(1).join("=").trim();if(!k||p.length<2||k==kw||done.has(k)||led.toLowerCase()==String(L).trim().toLowerCase())return;if(rs.some(([x])=>x&&!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),k))){done.add(k);w.push(`The existing rule <b>${esc(k)} → ${esc(led)}</b> also matches these transactions. The new rule is placed above it, so it wins for them. The old rule still applies to other transactions.`)}});
+ return w}
+function kwHit(low,k){if(!k)return false;const km=KEYR.exec(k);if(km)return (km[1]=="p"?pkOf(low):nkOf(low))==km[2];if(!kwWhole(k))return low.includes(k);let i=low.indexOf(k);while(i>=0){const a=i?low[i-1]:" ",b=low[i+k.length]||" ";if(!/[a-z0-9]/.test(a)&&!/[a-z0-9]/.test(b))return true;i=low.indexOf(k,i+1)}return false}
 /* Review popup after "Create preview": lists saved rules that were just auto-applied, with the common narration text and sample transactions, so the user can accept or reject each one. Rows of a rule that belong to a different party than the rest are split out, unticked and flagged. Rejected rows go back to the default ledger. */
 function ruleReview(txt){
  const rules=txt.split("\n").map(l=>l.split("=")).filter(x=>x.length>1&&x[0].trim()).map(x=>[x[0].trim().toLowerCase(),x.slice(1).join("=").trim()]);
@@ -1834,15 +1853,15 @@ function ruleReview(txt){
 function ruleReviewShow(items){
  const sk=s=>esc(s.length>48?s.slice(0,48)+"…":s),off=new Set(items.map((g,i)=>g.warn?i:-1).filter(i=>i>=0));
  const li=items.map((g,i)=>{const smp=[...new Set(g.rows.map(x=>x.nar))].slice(0,3).map(s=>`<div class="mu" style="font-size:12px;margin-left:24px">${sk(s)}</div>`).join("");
-  return `<label style="display:block;padding:7px 8px;border:1px solid ${g.warn?"#d93025":"#9994"};border-radius:6px;margin-bottom:6px"><input type="checkbox" class="rvk" data-i="${i}"${g.warn?"":" checked"}> Narration contains <b>"${esc(g.k)}"</b> → <b>${esc(g.l)}</b> · ${g.rows.length} transaction${g.rows.length==1?"":"s"}${g.warn?` <span style="color:#d93025">⚠ these look like a different party from the rest of this rule. Check before accepting.</span>`:""}${smp}</label>`}).join("");
+  return `<label style="display:block;padding:7px 8px;border:1px solid ${g.warn?"#d93025":"#9994"};border-radius:6px;margin-bottom:6px"><input type="checkbox" class="rvk" data-i="${i}"${g.warn?"":" checked"}> ${ruleDesc(g.k).replace(/^./,c=>c.toUpperCase())} → <b>${esc(g.l)}</b> · ${g.rows.length} transaction${g.rows.length==1?"":"s"}${g.warn?` <span style="color:#d93025">⚠ these look like a different party from the rest of this rule. Check before accepting.</span>`:""}${smp}</label>`}).join("");
  const ch=e=>{const t=e.target;if(t&&t.classList&&t.classList.contains("rvk")){if(t.checked)off.delete(+t.dataset.i);else off.add(+t.dataset.i)}};
  document.addEventListener("change",ch);
  return dlg("Review auto-rules before they are applied",`<p>Your saved rules matched these transactions. Untick any rule you do not want; those rows go back to the default ledger.</p><div>${li}</div>`,[{t:"Apply selected rules"},{t:"Apply none",s:1}]).then(r=>{document.removeEventListener("change",ch);const none=!r||r.i!==0;let n=0;
   items.forEach((g,i)=>{if(none||off.has(i))g.rows.forEach(x=>{x.led=x.t=="Receipt"?$("dr").value:$("dp").value;n++})});
   draw();$("rm").textContent=n?n+" transaction"+(n==1?"":"s")+" kept on the default ledger because the auto-rule was not accepted. The rule is still saved.":""})}
 /* Warnings shown before an auto-rule is saved: generic/number-like keyword, other parties containing the keyword, overlap with existing rules */
-document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("#rmShow");if(!a)return;e.preventDefault();rf=null;$("q").value=a.dataset.kw;draw()});
-function ruleWarn(kw,rs,L){const w=[],sh=new Set(rs.filter(([x])=>!x.del).map(([x])=>pkOf(x.nar))),
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("#rmShow");if(!a)return;e.preventDefault();const km=KEYR.exec(a.dataset.kw);if(km){const x=data.find(y=>!y.del&&y.t!="Contra"&&kwHit(y.nar.toLowerCase(),a.dataset.kw));$("q").value="";rf={k:km[1],v:km[2],l:x?(x.nar.length>28?x.nar.slice(0,28)+"…":x.nar):km[2]};draw();return}rf=null;$("q").value=a.dataset.kw;draw()});
+function ruleWarn(kw,rs,L){if(KEYR.test(kw))return ruleWarnKey(kw,rs,L);const w=[],sh=new Set(rs.filter(([x])=>!x.del).map(([x])=>pkOf(x.nar))),
  all=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)),oth=all.filter(x=>!sh.has(pkOf(x.nar))),
  lt=kw.replace(/[^a-z]/g,""),dg=kw.replace(/[^0-9]/g,"").length,
  GEN=/^(upi|neft|imps|rtgs|txn|payment|paymt|pmt|paid|pay|transfer|bill|chq|cheque|dep|clg|clearing|ach|ecs|nach|ref|trf|tfr|dr|cr|debit|credit|bank|online|mobile|banking|inv|invoice|cash|self|to|from|by|mmt|inb|ib)$/;
@@ -1852,8 +1871,38 @@ function ruleWarn(kw,rs,L){const w=[],sh=new Set(rs.filter(([x])=>!x.del).map(([
  return w}
 /* Own keyword for an auto-rule: asked from the "Check this auto-rule before saving" popup. Returns the new keyword (lower case) or null when the user goes back. */
 function ruleSame(kw,L){let m="";$("rules").value.split("\n").forEach(l=>{const p=l.split("="),k=(p[0]||"").trim().toLowerCase(),ld=p.slice(1).join("=").trim();if(k&&p.length>1&&k==kw&&ld.toLowerCase()!=String(L).trim().toLowerCase())m=`A rule for <b>"${esc(k)}"</b> already exists (→ <b>${esc(ld)}</b>). Saving will replace it with <b>${esc(L)}</b>.`});return m}
+/* v11: small auto-hiding notice after an auto-rule is saved from the preview filter: shows keyword = ledger, with Edit and Cancel. Hover pauses the timer. */
+(function(){const c=document.createElement("style");c.textContent="#rtoast{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:250;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:min(560px,calc(100vw - 20px));padding:9px 12px;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-left:4px solid var(--ok,#188038);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;line-height:1.35}#rtoast button{padding:3px 10px;font-size:12px}#rtoast .rtx{overflow-wrap:anywhere}";document.head.appendChild(c)})();
+function ruleFind(kw){const ls=$("rules").value.split("\n"),i=ls.findIndex(l=>l.split("=")[0].trim().toLowerCase()==kw);return i<0?null:{i,line:ls[i]}}
+function rulesWrite(ls){const t=$("rules");t.value=ls.join("\n");t.dispatchEvent(new Event("input",{bubbles:true}))}
+function ruleUndo(kw,pv){const ls=$("rules").value.split("\n"),i=ls.findIndex(l=>l.split("=")[0].trim().toLowerCase()==kw);if(i<0)return;if(pv)ls[i]=pv.line;else ls.splice(i,1);rulesWrite(ls)}
+function ruleToast(kw,L,pv,rows){
+ const old=document.getElementById("rtoast");if(old)old.remove();clearTimeout(ruleToast.t);
+ const m=KEYR.exec(kw),shown=m?m[2]:kw,el=document.createElement("div");el.id="rtoast";el.setAttribute("role","status");
+ el.innerHTML=`<span class="rtx">\u201c<b>${esc(shown)}</b>\u201d = \u201c<b>${esc(L)}</b>\u201d saved as auto-rule${m?" ("+(m[1]=="p"?"party":"narration style")+")":""}</span><button type="button" class="s" data-a="e">Edit</button><button type="button" class="s" data-a="c">Cancel</button>`;
+ document.body.appendChild(el);
+ const hide=()=>{clearTimeout(ruleToast.t);el.remove()},arm=()=>{clearTimeout(ruleToast.t);ruleToast.t=setTimeout(hide,5000)};
+ el.onmouseenter=()=>clearTimeout(ruleToast.t);el.onmouseleave=arm;arm();
+ el.querySelector('[data-a="c"]').onclick=()=>{hide();ruleUndo(kw,pv);$("rm").textContent="Auto-rule cancelled. The ledger stays on the rows that were already changed."};
+ el.querySelector('[data-a="e"]').onclick=()=>{hide();ruleToastEdit(kw,L,pv,rows)}}
+async function ruleToastEdit(kw,L,pv,rows){
+ const m=KEYR.exec(kw),plain=m?m[2]:kw;let pk=plain,pl=L,note="";
+ for(;;){
+  let vk=pk,vl=pl;const on=e=>{if(e.target&&e.target.id=="rek")vk=e.target.value;if(e.target&&e.target.id=="rel")vl=e.target.value};document.addEventListener("input",on);
+  const r=await dlg("Edit auto-rule",`<p>When the ${m?(m[1]=="p"?"narration is of party":"narration has the same style as"):"narration contains"} the keyword below \u2192 use the ledger below.</p>${note?`<p style="color:#d93025;margin:6px 0">${note}</p>`:""}<label>Keyword</label><input id="rek" type="text" value="${esc(pk)}" autocomplete="off" spellcheck="false" style="width:100%;box-sizing:border-box"><label style="margin-top:8px">Ledger</label><input id="rel" type="text" value="${esc(pl)}" list="lg" autocomplete="off" style="width:100%;box-sizing:border-box">${m?`<p class="mu" style="font-size:12px;margin:8px 0 0">Keep the keyword as it is to stay exactly in step with the ${m[1]=="p"?"P\u00d7":"N\u00d7"} filter. Changing it makes a plain "narration contains" rule.</p>`:""}`,[{t:"Save"},{t:"Back",s:1}]);
+  document.removeEventListener("input",on);
+  if(!r||r.i!==0){ruleToast(kw,L,pv,rows);return}
+  pk=vk;pl=vl;const nkw=vk.trim().toLowerCase().replace(/\s+/g," "),NL=canon(vl.trim());
+  if(!nkw){note="Type a keyword.";continue}if(nkw.includes("=")){note="The keyword cannot contain \u201c=\u201d.";continue}if(!NL){note="Type a ledger.";continue}
+  const same=nkw==plain.toLowerCase(),fk=same?kw:nkw;
+  if(!same&&!rows.some(x=>kwHit(x.nar.toLowerCase(),nkw))){note=`None of the ${rows.length} transaction${rows.length==1?"":"s"} you applied the ledger to contain <b>"${esc(nkw)}"</b>${kwWhole(nkw)?" as a whole word":""}. Use a word from their narration.`;continue}
+  if(fk==kw&&NL==L){ruleToast(kw,L,pv,rows);return}
+  if(fk!=kw){const sm=ruleSame(fk,NL);if(sm){const q=await dlg("Replace existing rule?",`<p>${sm}</p>`,[{t:"Replace"},{t:"Back",s:1}]);if(!q||q.i!==0){note="";continue}}}
+  ruleUndo(kw,pv);const pv2=ruleFind(fk);addRule(fk,NL,true);
+  if(NL!=L)rows.forEach(x=>{if(!x.del&&String(canon(x.led)).toLowerCase()==String(canon(L)).toLowerCase())x.led=NL});
+  setAdj();draw();$("rm").textContent="Auto-rule updated.";ruleToast(fk,NL,pv2,rows);return}}
 async function askRuleKw(kw,L){
- const n=vis.filter(([x])=>!x.del).length;let pref=kw,note="";
+ const n=vis.filter(([x])=>!x.del).length;let pref=kw.replace(/^[pn]:/,""),note="";
  for(;;){
   let val=pref;const on=e=>{if(e.target&&e.target.id=="rkw")val=e.target.value},kd=e=>{if(e.target&&e.target.id=="rkw"&&e.key=="Enter"){e.preventDefault();const b=e.target.closest(".card").querySelector("button[data-i='0']");if(b)b.click()}};
   document.addEventListener("input",on);document.addEventListener("keydown",kd);
@@ -1866,19 +1915,19 @@ async function askRuleKw(kw,L){
   if(nk.includes("=")){note="The keyword cannot contain “=”.";continue}
   if(!vis.some(([x])=>!x.del&&kwHit(x.nar.toLowerCase(),nk))){note=`None of the ${n} transaction${n==1?"":"s"} you just applied the ledger to contain <b>"${esc(nk)}"</b>${kwWhole(nk)?" as a whole word":""}. Use a word from their narration.`;continue}
   return nk}}
-$("ba").onclick=async()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="",rmHtml="";
+$("ba").onclick=async()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="",rmHtml="",rtA=null;
  if(rf&&rf.k=="p"){const m=new Map();let n=0;vis.forEach(([x])=>{if(x.del)return;n++;const a=m.get(x.nk)||m.set(x.nk,{n:0,s:x.nar}).get(x.nk);a.n++});
   if(m.size>1){const li=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,8).map(a=>`<li>${a.n} × ${esc(a.s.length>50?a.s.slice(0,50)+"…":a.s)}</li>`).join("");
    const r=await dlg("Apply to several narration styles?",`<p>This party filter has <b>${m.size} different narration styles</b>, ${n} transactions in all. Ledger <b>${esc(L)}</b> will be set on every one of them.</p><ul style="margin:6px 0 6px 18px">${li}${m.size>8?"<li>…</li>":""}</ul><p class="mu">Cheque and bank-transfer entries are sometimes kept in different ledgers. To handle one style at a time, cancel and use the N× badge instead.</p>`,[{t:"Apply to all "+n},{t:"Cancel",s:1}]);if(!r||r.i!==0)return}}
 vis.forEach(([x])=>{if(!x.del)x.led=L});
- if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){let kw=ruleKw();if(kw){let w=ruleWarn(kw,vis,L);let ok=true;
-  while(w.length){const r=await dlg("Check this auto-rule before saving",`<p>Rule to be saved: when the narration contains <b>"${esc(kw)}"</b> → ledger <b>${esc(L)}</b></p><p><b>Warning:</b></p><ul style="margin:6px 0 6px 18px">${w.map(t=>`<li>${t}</li>`).join("")}</ul><p class="mu">The ledger has already been applied to the rows shown. Only the saved rule is affected by your choice.</p>`,[{t:"Save rule anyway"},{t:"Change keyword…",s:1},{t:"Don't save rule",s:1}]);
+ if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){let kw=ruleKwF();if(kw){let w=ruleWarn(kw,vis,L);let ok=true;
+  while(w.length){const r=await dlg("Check this auto-rule before saving",`<p>Rule to be saved: when the ${ruleDesc(kw)} → ledger <b>${esc(L)}</b></p><p><b>Warning:</b></p><ul style="margin:6px 0 6px 18px">${w.map(t=>`<li>${t}</li>`).join("")}</ul><p class="mu">The ledger has already been applied to the rows shown. Only the saved rule is affected by your choice.</p>`,[{t:"Save rule anyway"},{t:"Change keyword…",s:1},{t:"Don't save rule",s:1}]);
    if(!r||r.i===2){ok=false;break}if(r.i===0)break;
    const nk=await askRuleKw(kw,L);if(nk&&nk!==kw){kw=nk;w=ruleWarn(kw,vis,L);const sm=ruleSame(kw,L);if(sm)w.push(sm)}}
-  if(ok){addRule(kw,L,true);const nm=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)).length;rmHtml=`<b>Auto-rule saved:</b> narration contains <b>"${esc(kw)}"</b> → <b>${esc(L)}</b>. It matches ${kwWhole(kw)?"as a whole word":"as text"} in ${nm} transaction${nm==1?"":"s"} of this statement and is applied automatically next time (saved to the selected client profile). <a href="#" id="rmShow" data-kw="${esc(kw)}">Show the rows this rule matches</a>`}
+  if(ok){const pv=ruleFind(kw);addRule(kw,L,true);rtA=[kw,L,pv,vis.map(([x])=>x)];const nm=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)).length;rmHtml=`<b>Auto-rule saved:</b> ${ruleDesc(kw).replace(/^./,c=>c.toUpperCase())} → <b>${esc(L)}</b>. It matches ${KEYR.test(kw)?"exactly like the "+(kw[0]=="p"?"P×":"N×")+" filter":kwWhole(kw)?"as a whole word":"as text"} in ${nm} transaction${nm==1?"":"s"} of this statement and is applied automatically next time (saved to the selected client profile). <a href="#" id="rmShow" data-kw="${esc(kw)}">Show the rows this rule matches</a>`}
   else msg="Auto-rule NOT saved. The ledger was applied to the shown rows only."}
- else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
- setAdj();/* re-arm: the P× confirm dialog above is async, so the earlier click-time flag has already expired */draw();if(rmHtml)$("rm").innerHTML=rmHtml;else $("rm").textContent=msg;$("bl").value="";$("bl").blur()};
+ else msg=ruleWhy||"No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
+ setAdj();/* re-arm: the P× confirm dialog above is async, so the earlier click-time flag has already expired */draw();if(rmHtml){$("rm").innerHTML=rmHtml;if(rtA)ruleToast(...rtA)}else $("rm").textContent=msg;$("bl").value="";$("bl").blur()};
 
 function fillDD(){["dp","dr"].forEach(i=>{const e=$(i),cur=e.value||"Suspense",o=[...new Set(["Suspense",...ledPool()])];if(!o.includes(cur))o.push(cur);e.innerHTML=o.map(x=>`<option${x==cur?" selected":""}>${esc(x)}</option>`).join("");e.value=cur})}
 function setV(i,v){const e=$(i);if(e.tagName=="SELECT"&&![...e.options].some(o=>o.value==v)){const o=document.createElement("option");o.textContent=v;e.appendChild(o)}e.value=v}
@@ -2018,7 +2067,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.65<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.66<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -3189,7 +3238,7 @@ function ctx(){const v=ta.value,pos=ta.selectionStart;if(ta.selectionEnd!==pos)r
  const line=v.slice(ls,le),cp=pos-ls,eq=line.indexOf("=");if(eq<1||cp<=eq)return null;
  const kw=line.slice(0,eq).trim();if(!kw)return null;
  return{eq:ls+eq,le,kw,q:line.slice(eq+1,cp).trim()}}
-function find(kw,q){const kl=kw.toLowerCase(),ql=q.toLowerCase(),words=kl.split(/\s+/).filter(w=>w.length>=3),out=[];
+function find(kw,q){const kl=kw.toLowerCase().replace(/^[pn]:/,""),ql=q.toLowerCase(),words=kl.split(/\s+/).filter(w=>w.length>=3),out=[];
  for(const n of L()){const nl=n.toLowerCase();let s=-1;
   if(ql){if(nl===ql)return[];if(nl.startsWith(ql))s=0;else if(nl.split(/[\s\-_\/&.,()]+/).some(w=>w.startsWith(ql)))s=1;else if(ql.length>=3&&nl.includes(ql))s=2}
   else{if(nl.includes(kl))s=0;else if(words.some(w=>nl.includes(w)))s=1;else s=3}
