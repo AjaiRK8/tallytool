@@ -521,7 +521,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}</style></head><b
 <p class="mu exe-link" style="margin:6px 0 0;font-size:13px">&#128187; Prefer a desktop app? <a href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener">Download the Windows version (.exe)</a>. If Windows shows &ldquo;Windows protected your PC&rdquo;, click <b>More info</b> then <b>Run anyway</b>.</p>
 <div id="gob" hidden class="pu-gob"><p>Statement processed. If this client already has a profile, select it in the Client profile box now to load its rules, ledgers and column mapping. Then continue.</p><button type="button" id="gob2">Continue to Settings →</button></div>
 <div id="orgn" class="pu-note"><i class="ic bulb"></i> <b>For the best result, upload the original file from your bank</b> (the PDF, Excel or CSV you downloaded from net banking or the bank app), not a scanned, photographed, screenshotted, edited or redacted copy. Original files hold the exact dates, amounts and narrations. Scanned or redacted copies have to be read by OCR, which can misread dates and narrations.</div>
-<details class="pu-dtl"><summary><b>Statement not reading properly? Convert it to CSV yourself with Claude / ChatGPT etc.</b></summary><div style="font-size:13px"><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV it gives you and check it against the statement.</li><li>Upload that CSV file in step 1 above.</li></ol><textarea id="mpt2" readonly rows="9" style="width:100%;font-size:12px"></textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt2',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in. Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid var(--danger);border-radius:6px;background:rgba(217,48,37,.08)"><b><i class="ic warn"></i> Data security</b><br><span id="mds2"></span></div></div></details>
+<details class="pu-dtl"><summary><b>Statement not reading properly? Convert it to CSV yourself with Claude / ChatGPT etc.</b></summary><div style="font-size:13px"><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV it gives you and check it against the statement.</li><li>Upload that CSV file in step 1 above.</li></ol><textarea id="mpt2" readonly rows="9" style="width:100%;font-size:12px"></textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt2',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in (it is also copied, so you can paste it if the box is empty). Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid var(--danger);border-radius:6px;background:rgba(217,48,37,.08)"><b><i class="ic warn"></i> Data security</b><br><span id="mds2"></span></div></div></details>
 </div>
 <div class="pu-side">
 <div id="cpBox" class="pu-sec">
@@ -554,7 +554,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}</style></head><b
 <b>2. Settings</b>
 <div class="pu-blk pu-tally"><b><i class="ic link"></i> Tally ledger master</b> <span class="mu">(enables type-ahead and flags unknown names in red)</span>
 <div class="g" style="margin-top:6px;align-items:end"><div><label>Load exported ledger list (XML / CSV / XLSX)</label><input type="file" id="lf" accept=".xml,.csv,.xls,.xlsx"></div></div>
-<p class="mu" id="lm" style="margin:6px 0 0">Export in Tally: Display More Reports → List of Accounts → Alt+E.</p><details style="margin:8px 0"><summary style="cursor:pointer;font-size:13px"><b>Step-by-step: export ledgers from Tally and load them here</b></summary><div style="font-size:13px;margin-top:6px"><p style="margin:8px 0 2px"><b>A. Export the ledgers from Tally as an XML file</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Open the company in Tally that this bank statement belongs to.</li><li>From the <b>Gateway of Tally</b>, press <b>Alt+E</b> (Export) and select <b>Masters</b>. (Tally.ERP 9: <b>Gateway of Tally &rarr; Export of Data &rarr; Masters</b>.)</li><li>On the export screen, set <b>Format</b> to <b>XML (Data Interchange)</b> and, under the masters to export, select <b>Ledgers</b> (or <b>All Masters</b>).</li><li>Choose the <b>export location</b> and <b>file name</b>, then confirm the export.</li><li>Tally saves an <b>.xml</b> file in that folder. Note where it was saved.</li></ol><p style="margin:8px 0 2px"><b>B. Load the file into this tool</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Go to the <b>Settings</b> page.</li><li>Under <b>Load exported ledger list (XML / CSV / XLSX)</b>, select <b>Choose file</b> and pick the exported XML file.</li><li>The number of ledgers loaded and the company name appear below the button. The company name is filled in automatically, and the ledger and group fields can now suggest your Tally ledgers.</li><li>Review the <b>bank ledger</b> and other ledger settings, then continue to the upload step.</li></ol><p style="margin:8px 0 0">Prefer Excel or CSV? In Tally, press <b>Alt+E</b> (Export), choose <b>Masters</b>, set the format to <b>Excel</b> or <b>CSV</b>, and load that file in the same way.</p></div></details><small id="lc"></small><small id="gc"></small><datalist id="ll"></datalist></div>
+<p class="mu" id="lm" style="margin:6px 0 0">Export in Tally: Display More Reports → List of Accounts → Alt+E.</p><details style="margin:8px 0"><summary style="cursor:pointer;font-size:13px"><b>Step-by-step: export ledgers from Tally and load them here</b></summary><div id="mgd" style="font-size:13px;margin-top:6px"><p style="margin:8px 0 2px"><b>A. Export the ledgers from Tally as an XML file</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Open the company in Tally that this bank statement belongs to.</li><li>From the <b>Gateway of Tally</b>, press <b>Alt+E</b> (Export) and select <b>Masters</b>. (Tally.ERP 9: <b>Gateway of Tally &rarr; Export of Data &rarr; Masters</b>.)</li><li>On the export screen, set <b>Format</b> to <b>XML (Data Interchange)</b> and, under the masters to export, select <b>Ledgers</b> (or <b>All Masters</b>).</li><li>Choose the <b>export location</b> and <b>file name</b>, then confirm the export.</li><li>Tally saves an <b>.xml</b> file in that folder. Note where it was saved.</li></ol><p style="margin:8px 0 2px"><b>B. Load the file into this tool</b></p><ol style="margin:4px 0 8px 20px;padding:0;line-height:1.55"><li>Go to the <b>Settings</b> page.</li><li>Under <b>Load exported ledger list (XML / CSV / XLSX)</b>, select <b>Choose file</b> and pick the exported XML file.</li><li>The number of ledgers loaded and the company name appear below the button. The company name is filled in automatically, and the ledger and group fields can now suggest your Tally ledgers.</li><li>Review the <b>bank ledger</b> and other ledger settings, then continue to the upload step.</li></ol><p style="margin:8px 0 0">Prefer Excel or CSV? In Tally, press <b>Alt+E</b> (Export), choose <b>Masters</b>, set the format to <b>Excel</b> or <b>CSV</b>, and load that file in the same way.</p></div></details><small id="lc"></small><small id="gc"></small><datalist id="ll"></datalist></div>
 <div class="pu-blk"><div class="pu-bh"><b>Company &amp; bank</b><span class="mu">Names must match Tally exactly</span></div>
 <div class="g">
 <div><label>Company name (as in Tally)</label><input id="co" placeholder="My Company"></div>
@@ -576,7 +576,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}</style></head><b
 <datalist id="lg"></datalist></div>
 <div class="pu-blk pu-last"><div class="pu-bh"><b>Auto-ledger rules</b><span class="mu">Assign ledgers automatically from the narration</span></div>
 <label>Auto-ledger rules — one per line: keyword=Ledger name</label>
-<textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea></div>
+<textarea id="rules" rows="3" placeholder="swiggy=Staff Welfare&#10;amazon=Purchases&#10;salary=Salary Expense"></textarea><small class="mu" id="rsgHint" style="display:block;margin-top:4px"></small></div>
 <div id="cpCard"><div class="cpi"><i class="ic layers"></i></div><div class="cpm"><div class="cpt" id="cpcT"></div><small class="mu" id="cpcS"></small><div class="cpv" id="cpcV"></div></div>
 <div class="cpa"><button id="cpSave" type="button" class="cpsv"><i class="ic save"></i> Save as client profile</button><button type="button" class="cpx" id="cpCopy" hidden>Save as a new profile…</button></div></div>
 <div class="pu-foot"><button id="go">Apply &amp; preview</button><small class="mu" style="margin-left:8px">Apply &amp; preview shows the transactions with these settings.</small></div></div>
@@ -612,7 +612,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}</style></head><b
 <div class="fg"><div class="fl w2"><label for="mln">Ledger name</label><input id="mln" placeholder="e.g. Bank Charges" autocomplete="off"></div>
 <div class="fl"><label for="mlg">Under group</label><input id="mlg" list="gl" placeholder="Suspense A/c (default)" autocomplete="off"></div>
 <div class="fl"><label for="mlo">Opening balance</label><input id="mlo" type="number" step="0.01" min="0" placeholder="optional"></div>
-<div class="fl"><label for="mld">Dr/Cr</label><select id="mld"><option>Dr</option><option>Cr</option></select></div></div>
+<div class="fl"><label for="mld">Dr/Cr</label><select id="mld"><option>Dr</option><option>Cr</option></select></div><div class="fl"><label for="mlb">Bill-by-bill</label><select id="mlb"><option value="">Default</option><option>Yes</option><option>No</option></select></div></div>
 <div class="fa" style="margin-top:8px"><button type="button" id="mla">+ Add ledger</button><span id="mlm" style="font-size:13px"></span></div></div>
 <div class="w" id="ctw"><table><thead><tr><th>Create</th><th>Ledger name</th><th>Under group</th><th class="r">Opening balance</th><th>Dr/Cr</th><th>Bill-by-bill</th><th class="r">Txns</th></tr></thead><tbody id="ctb"></tbody></table></div>
 <div id="css" class="mu" style="margin-top:8px"></div>
@@ -783,7 +783,7 @@ const OC=(()=>{
   isEnc(u){if(!(u[0]==0xD0&&u[1]==0xCF&&u[2]==0x11&&u[3]==0xE0))return false;try{const s=streams(u);if(s.EncryptionInfo&&s.EncryptedPackage)return true;const w=s.Workbook||s.Book;return !!(w&&fpFind(w))}catch(e){return false}}}})();
 // Dates stored as real Excel dates with the built-in short-date format are shown by the library as m/d/yy (US order). Rewrite them as dd/mm/yyyy so day and month are never swapped.
 function xlDates(wb){const S=XLSX.SSF;if(!S||!S.is_date||!S.parse_date_code)return;for(const n of wb.SheetNames){const ws=wb.Sheets[n];for(const k in ws){if(k[0]=="!")continue;const c=ws[k];if(c&&c.t=="n"&&typeof c.z=="string"&&S.is_date(c.z)){const o=S.parse_date_code(c.v);if(o&&o.y>1900)c.w=String(o.d).padStart(2,"0")+"/"+String(o.m).padStart(2,"0")+"/"+o.y}}}}
-async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value;let u=new Uint8Array(buf);const ask=m=>{$("pww").hidden=false;$("pw").focus();return new Error(m)};
+async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value;let u=new Uint8Array(buf);const ask=m=>{$("pww").hidden=false;$("pw").focus();return Object.assign(new Error(m),{pwErr:true})};
  if(OC.isEnc(u)){/* password to open: .xlsx/.xlsm/.xlsb (Agile + Standard) and legacy .xls (RC4 + RC4 CryptoAPI) */
   if(!pw)throw ask("This Excel file is password-protected. Enter the password in the box that appeared and click Unlock.");
   $("msg").textContent="Unlocking the Excel file…";PG.go("unlock","Checking the password…");
@@ -817,7 +817,7 @@ $("lf").onchange=async e=>{const f=e.target.files[0];if(!f)return;let co="";try{
  else{const a=(await rd(f)).filter(r=>r.some(c=>String(c).trim())),fc=r=>String(r.find(c=>String(c).trim())||"").trim(),hi=a.findIndex(r=>/^(particulars|name|ledger name|ledgers?)$/i.test(fc(r)));
   for(const r of a.slice(0,Math.max(hi,0))){const c=fc(r);if(c&&!/list of|chart of|accounts?$|ledgers?$|\d{1,2}[-\/ ][A-Za-z]{3}[-\/ ]\d{2,4}/i.test(c)){co=c;break}}
   setL(a.slice(hi+1).map(fc));setG([])}
- co=co.replace(/&amp;/g,"&").trim();if(co)$("co").value=co;$("lc").textContent+=co?"; company: "+co:"; company name not found in file"}catch(x){$("lc").textContent=" Could not read: "+x.message}};
+ co=co.replace(/&amp;/g,"&").trim();if(co)$("co").value=co;$("lc").textContent+=co?"; company: "+co:"; company name not found in file"}catch(x){$("lc").textContent=x.pwErr?" This file is password-protected. Type its password in the box on the Upload page (Step 1), then choose this file again.":" Could not read: "+x.message}};
 const num=s=>{s=String(s||"").replace(/[,\s₹]/g,"");const m=s.match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):0};
 const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
 function pd(s){s=String(s).trim();let m;const p=(d,mo,y)=>{y=+y;d=+d;mo=+mo;if(y<100)y+=2000;if(mo<1||mo>12||d<1||d>new Date(y,mo,0).getDate())return null;return y+String(mo).padStart(2,"0")+String(d).padStart(2,"0")};
@@ -908,7 +908,6 @@ $("cf").onclick=()=>{["q","ft","mn","mx","rc","df","dt","lq"].forEach(id=>$(id).
 $("bt").onchange=()=>{const T=$("bt").value;let msg="";if(T){const ch=[],L=T=="Contra"?(canon($("bl").value.trim())||$("cash").value.trim()):"";vis.forEach(([x,i])=>{if(x.del)return;const was=x.t;x.t=T;if(T=="Contra"&&was!="Contra"){x.led=L;ch.push([x,i])}});
  if(T=="Contra"&&ch.length){msg=$("lr").checked?contraRule(ch,L):`Contra ledger set to ${L}.`;if(L&&led.length&&bad(L)&&!isCl(L))openCs()}}
  $("bt").value="";draw();$("rm").textContent=msg};
-function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
 /* ---- proof-reading: show a parsed row on the original PDF page ---- */
 function pvDecorate(){if(!window.curPdf&&!window.curSrc)return;document.querySelectorAll("#tb tr").forEach(tr=>{const c=tr.querySelector(".sc");if(!c)return;const x=data[+c.dataset.s];if(!x||!((window.curPdf&&x.pg&&x.py!=null)||(window.curSrc&&x.sr!=null))||tr.querySelector(".pv-v"))return;const td=tr.children[1];if(!td)return;const b=document.createElement("button");b.type="button";b.className="s pv-v";b.dataset.i=c.dataset.s;b.title="Show this row in the original file";b.textContent="🔍";b.style.cssText="padding:0 6px;margin-left:4px;font-size:12px";td.appendChild(b)})}
 {const d0=draw;draw=function(){const r=d0.apply(this,arguments);try{pvDecorate()}catch(e){}return r}}
@@ -1019,7 +1018,7 @@ function anmDeco(){
 {const s=clSum;clSum=function(){const r=s.apply(this,arguments);try{anmDeco()}catch(e){}return r}}
 document.addEventListener("change",ev=>{const t=ev.target;if(!t||!t.id)return;if(t.id=="anmMult"){const v=parseFloat(t.value);if(v>0){anm.mult=v;try{localStorage.setItem("tanm",String(v))}catch(e){}clSum()}}else if(t.id=="anmOnly"){anm.only=t.checked;clSum()}});
 function csStat(){clSum();const t=csList.filter(isCl).length,r=csList.length-t;$("css").innerHTML=csList.length?`${t} of ${csList.length} ticked to be created`+(r?` · <b style="color:#d93025">${r} not ticked</b>: vouchers using them will be rejected by Tally unless they already exist`:""):""}
-function csRender(){manual.forEach(x=>{if(!cl[x.n])cl[x.n]={on:true,grp:x.g||"Suspense A/c",ob:x.ob||"",dc:x.dc||"Dr",bw:""}});const m=missL();["cfb","ctw","css","chp"].forEach(i=>{const e=$(i);if(e)e.style.display=m.length?"":"none"});{const e=$("cbr");if(e)e.style.display=m.length?"flex":"none"}csList=m;const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim());
+function csRender(){manual.forEach(x=>{if(!cl[x.n])cl[x.n]={on:true,grp:x.g||"Suspense A/c",ob:x.ob||"",dc:x.dc||"Dr",bw:x.bw||""}});const m=missL();["cfb","ctw","css","chp"].forEach(i=>{const e=$(i);if(e)e.style.display=m.length?"":"none"});{const e=$("cbr");if(e)e.style.display=m.length?"flex":"none"}csList=m;const act=data.filter(x=>!x.del),bn=canon($("bank").value.trim());
  $("cst").innerHTML=m.length?`${m.length} ledger${m.length>1?"s":""} to create.`+(led.length?"":" No Tally master is loaded, so this lists <b>every</b> ledger the import uses and all are ticked by default: untick the ones that already exist in Tally (creating an existing ledger gives a duplicate error)."):"✓ No missing ledgers. Nothing to create: click Next to continue.";if(m.length&&!grp.length)$("cst").innerHTML+=` <br>No groups were found in the imported master, so Tally's standard groups are offered. Load an XML master export from Tally to use your own group list.`;
  $("ctb").innerHTML=m.map((n,k)=>{const o=clGet(n),c=n==bn?act.length:act.filter(x=>canon(x.led)==n).length;
   return `<tr><td><input type="checkbox" data-k="${k}" data-f="on"${o.on?" checked":""}></td><td class="n">${esc(n)}${manual.some(x=>x.n.toLowerCase()==n.toLowerCase())?` <span class="b">manual</span> <button type="button" class="dx mrm" data-k="${k}" title="Remove this manually added ledger" aria-label="Remove ledger">&times;</button>`:""}</td><td><span class="qw" style="display:block"><input list="gl" class="${o.grp.trim()&&gbad(o.grp)?"bad":""}" data-k="${k}" data-f="grp" value="${esc(o.grp)}" placeholder="Suspense A/c (default)"><button type="button" class="qx gx" data-k="${k}" title="Clear (blank = Suspense A/c)" aria-label="Clear group"${o.grp?"":" hidden"}>&times;</button></span></td><td><input type="number" step="0.01" min="0" data-k="${k}" data-f="ob" value="${esc(o.ob)}" placeholder="optional"></td><td><select data-k="${k}" data-f="dc"><option${o.dc=="Dr"?" selected":""}>Dr</option><option${o.dc=="Cr"?" selected":""}>Cr</option></select></td><td><select data-k="${k}" data-f="bw"><option value=""${o.bw==""?" selected":""}>Default</option><option${o.bw=="Yes"?" selected":""}>Yes</option><option${o.bw=="No"?" selected":""}>No</option></select></td><td class="r">${c}</td></tr>`}).join("");
@@ -1033,9 +1032,9 @@ $("mla").onclick=()=>{const raw=$("mln").value.trim().replace(/\s+/g," ");if(!ra
  if(led.length&&inM(raw))return mMsg("\u201c"+canon(raw)+"\u201d already exists in your Tally master, so it need not be created.");
  const nm=canon(raw);if(missL().some(x=>x.toLowerCase()==nm.toLowerCase()))return mMsg("\u201c"+nm+"\u201d is already in the list below.");
  const gv=$("mlg").value.trim(),g=gv?gfind(gv):"Suspense A/c";if(!g)return mMsg("Group \u201c"+gv+"\u201d is not in the group list. Pick one from the list or leave it blank for Suspense A/c.");
- const ob=$("mlo").value.trim(),dc=$("mld").value;
- manual.push({n:nm,g,ob,dc});cl[nm]={on:true,grp:g,ob,dc,bw:""};
- $("mln").value="";$("mlg").value="";$("mlo").value="";$("mld").value="Dr";mMsg("Added \u201c"+nm+"\u201d. It is ticked and will be created in the XML.",1);csRender();warn();$("mln").focus()};
+ const ob=$("mlo").value.trim(),dc=$("mld").value,bw=$("mlb").value;
+ manual.push({n:nm,g,ob,dc,bw});cl[nm]={on:true,grp:g,ob,dc,bw};
+ $("mln").value="";$("mlg").value="";$("mlo").value="";$("mld").value="Dr";$("mlb").value="";mMsg("Added \u201c"+nm+"\u201d. It is ticked and will be created in the XML.",1);csRender();warn();$("mln").focus()};
 $("mln").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("mla").click()}});
 $("ctb").addEventListener("input",csEdit);$("ctb").addEventListener("change",csEdit);
 function openCs(){csOpen=true;$("cs").hidden=false;csRender();warn()}
@@ -1580,7 +1579,7 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
  /* no 'repair' of amounts or balances from neighbouring balances: a misread figure is reported as read and flagged by chk() */
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP1=new RegExp(BP0.source.replace("www\\.|e-?mail|",""),"i");/* BP0 minus the weak www./e-mail words */
-const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&/narr|desc|partic|remark/i.test(t)};
+const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&(/narr|desc|partic|remark/i.test(t)||(/detail/i.test(t)&&/debit|credit|withdraw|deposit|amount|balance/i.test(t)))};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
  L.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const buf=await f.arrayBuffer(),pw=$("pw").value;
@@ -1588,7 +1587,7 @@ async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF lib
 /* ---- validation: balance chain check with auto-repair ---- */
 function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(hi<0)return Z;
  const h=R[hi],ix=re=>h.findIndex(c=>re.test(c)),dI=ix(/date/i),dr=ix(/debit|withdraw|dr\b/i),cr=ix(/credit|deposit|cr\b/i),bl=ix(/balance|bal\b/i),am=ix(/^amount$/i);
- const T=(a=>a.length>1&&pd(a[0][dI])>pd(a[a.length-1][dI])?a.reverse():a)(R.slice(hi+1).filter(r=>pd(r[dI]||""))),n=T.length;/* newest-first statements: check the balance chain oldest to newest */if(!n)return Z;const nI=ix(/narr|desc|partic|remark/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
+ const T=(a=>a.length>1&&pd(a[0][dI])>pd(a[a.length-1][dI])?a.reverse():a)(R.slice(hi+1).filter(r=>pd(r[dI]||""))),n=T.length;/* newest-first statements: check the balance chain oldest to newest */if(!n)return Z;const nI=ix(/narr|desc|partic|remark|detail/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
  const split=dr>=0&&cr>=0,S=r=>num(r[cr])-num(r[dr]),B=r=>bl>=0&&String(r[bl]||"").trim()?sbv(r[bl]):null,f=x=>(Math.round(x*100)/100).toFixed(2),eq=(x,y)=>Math.abs(x-y)<=.011;
  let bad=0,fx=0;const sim=(x,y)=>x.length==y.length&&[...x].filter((c,i)=>c!=y[i]).length<=2;
  if(bl<0||!split){T.forEach(r=>{const k=split?[num(r[dr]),num(r[cr])].filter(Boolean).length:(am>=0&&num(r[am])?1:0);if(k!=1){bad++;fl(r,"Debit/credit amount not clear: could not be confirmed")}});return{n,bad,fx,nw,ver:false}}
@@ -1767,7 +1766,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
    row.y=l.y;row.p=p;row.oc=!!OC;out.push(row)}}
  if(!any)throw new Error("No text found in the PDF (it may be a scanned image).");
  const hi=out.findIndex(isH);let colRes=null,cc=0;
- if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
+ if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
   const body=out.slice(hi+1).filter(r=>!isH(r)),anc=[];xDate(body,dI,hr,allL);body.forEach((r,i)=>{if(pd(r[dI]||"")&&!/computer[\s-]generated|statement is generated|signature/i.test(r.join(" ")))anc.push(i)});
   const pc2=anc.map(i=>[{y:body[i].y,t:body[i][nI]||""}]);
   body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" "))||SR.test(r[nI]))return;let bj=-1,bd=1e9;
@@ -1788,7 +1787,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
    lr.push([dm[0],(/^\s*\d{1,5}\s+$/.test(t.slice(0,dm.index))?t2.replace(/^\s*\d{1,5}(?=\s)/,""):t2).replace(A," ").replace(/(^|\s)[-–—](?=\s|$)/g," ").replace(/\s+/g," ").trim(),"",out?String(amt):"",out?"":String(amt),String(bal)]);{const q=lr[lr.length-1];q.y=tx.y;q.p=tx.p;q.oc=tx.oc}}
   else if(!dm&&!am.length&&lr.length>1&&t.trim().length>3&&tx.p==lp&&ly-tx.y<=16&&n2<2&&!BP.test(t)&&!/page|statement|total|balance/i.test(t)){lr[lr.length-1][1]+=" "+t.trim();ly=tx.y;n2++}}
  return colRes&&cc>=lr.length-1?colRes:(lr.length>1?lr:(colRes||out))}
-$("pwb").onclick=()=>{const f=$("f").files[0];if(f)$("f").onchange({target:$("f")});else $("msg").textContent="Choose a statement file first."};$("pw").onkeydown=e=>{if(e.key=="Enter")$("pwb").onclick()};$("pw").onchange=()=>{const f=$("f").files[0];if(f&&!/\.csv$/i.test(f.name))$("f").onchange({target:$("f")})};
+$("pwb").onclick=()=>{const f=$("f").files[0];if(f)$("f").onchange({target:$("f")});else $("msg").textContent="Choose a statement file first."};$("pw").onkeydown=e=>{if(e.key=="Enter"){window.pwK=true;setTimeout(()=>window.pwK=false,100);$("pwb").onclick()}};$("pw").onchange=()=>{if(window.pwK)return;const f=$("f").files[0];if(f&&/\.(pdf|xlsx|xlsm|xls)$/i.test(f.name))$("f").onchange({target:$("f")})};
 ["bank","dp","dr","cash"].forEach(i=>$(i).addEventListener("input",chkF));chkF();
 
 
@@ -1851,13 +1850,31 @@ function ruleWarn(kw,rs,L){const w=[],sh=new Set(rs.filter(([x])=>!x.del).map(([
  if(oth.length){const ex=[...new Set(oth.map(x=>x.nar))].slice(0,3).map(s=>esc(s.length>45?s.slice(0,45)+"…":s)).join("; ");w.push(`<b>${oth.length} other transaction${oth.length>1?"s":""} of a different party</b> also contain "${esc(kw)}" (e.g. ${ex}) and would get <b>${esc(L)}</b> in future imports.`)}
  $("rules").value.split("\n").forEach(l=>{const p=l.split("="),k=(p[0]||"").trim().toLowerCase(),led=p.slice(1).join("=").trim();if(k&&p.length>1&&k!=kw&&(k.includes(kw)||kw.includes(k))&&led.toLowerCase()!=L.trim().toLowerCase())w.push(`Overlaps with the existing rule <b>"${esc(k)}" → ${esc(led)}</b>. Only one of the two rules will win for narrations containing both.`)});
  return w}
+/* Own keyword for an auto-rule: asked from the "Check this auto-rule before saving" popup. Returns the new keyword (lower case) or null when the user goes back. */
+function ruleSame(kw,L){let m="";$("rules").value.split("\n").forEach(l=>{const p=l.split("="),k=(p[0]||"").trim().toLowerCase(),ld=p.slice(1).join("=").trim();if(k&&p.length>1&&k==kw&&ld.toLowerCase()!=String(L).trim().toLowerCase())m=`A rule for <b>"${esc(k)}"</b> already exists (→ <b>${esc(ld)}</b>). Saving will replace it with <b>${esc(L)}</b>.`});return m}
+async function askRuleKw(kw,L){
+ const n=vis.filter(([x])=>!x.del).length;let pref=kw,note="";
+ for(;;){
+  let val=pref;const on=e=>{if(e.target&&e.target.id=="rkw")val=e.target.value},kd=e=>{if(e.target&&e.target.id=="rkw"&&e.key=="Enter"){e.preventDefault();const b=e.target.closest(".card").querySelector("button[data-i='0']");if(b)b.click()}};
+  document.addEventListener("input",on);document.addEventListener("keydown",kd);
+  const p=dlg("Set your own keyword",`<p>Rule: when the narration contains the keyword below → ledger <b>${esc(L)}</b></p>${note?`<p style="color:#d93025;margin:6px 0">${note}</p>`:""}<input id="rkw" type="text" value="${esc(pref)}" autocomplete="off" spellcheck="false" style="width:100%;box-sizing:border-box"><p class="mu" style="font-size:12px;margin:8px 0 0">Use a word that appears in the narration, such as the party name. It is not case-sensitive. A short keyword (up to 4 letters or digits) must match a whole word. The new keyword is checked again before it is saved.</p>`,[{t:"Check and save"},{t:"Back",s:1}]);
+  const el=document.getElementById("rkw");if(el){el.focus();el.select()}
+  const r=await p;document.removeEventListener("input",on);document.removeEventListener("keydown",kd);
+  if(!r||r.i!==0)return null;
+  pref=val;const nk=val.trim().toLowerCase().replace(/\s+/g," ");
+  if(!nk){note="Type a keyword.";continue}
+  if(nk.includes("=")){note="The keyword cannot contain “=”.";continue}
+  if(!vis.some(([x])=>!x.del&&kwHit(x.nar.toLowerCase(),nk))){note=`None of the ${n} transaction${n==1?"":"s"} you just applied the ledger to contain <b>"${esc(nk)}"</b>${kwWhole(nk)?" as a whole word":""}. Use a word from their narration.`;continue}
+  return nk}}
 $("ba").onclick=async()=>{const L=canon($("bl").value.trim());if(!L||!vis.length)return;let msg="",rmHtml="";
  if(rf&&rf.k=="p"){const m=new Map();let n=0;vis.forEach(([x])=>{if(x.del)return;n++;const a=m.get(x.nk)||m.set(x.nk,{n:0,s:x.nar}).get(x.nk);a.n++});
   if(m.size>1){const li=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,8).map(a=>`<li>${a.n} × ${esc(a.s.length>50?a.s.slice(0,50)+"…":a.s)}</li>`).join("");
    const r=await dlg("Apply to several narration styles?",`<p>This party filter has <b>${m.size} different narration styles</b>, ${n} transactions in all. Ledger <b>${esc(L)}</b> will be set on every one of them.</p><ul style="margin:6px 0 6px 18px">${li}${m.size>8?"<li>…</li>":""}</ul><p class="mu">Cheque and bank-transfer entries are sometimes kept in different ledgers. To handle one style at a time, cancel and use the N× badge instead.</p>`,[{t:"Apply to all "+n},{t:"Cancel",s:1}]);if(!r||r.i!==0)return}}
 vis.forEach(([x])=>{if(!x.del)x.led=L});
- if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){const kw=ruleKw();if(kw){const w=ruleWarn(kw,vis,L);let ok=true;
-  if(w.length){const r=await dlg("Check this auto-rule before saving",`<p>Rule to be saved: when the narration contains <b>"${esc(kw)}"</b> → ledger <b>${esc(L)}</b></p><p><b>Warning:</b></p><ul style="margin:6px 0 6px 18px">${w.map(t=>`<li>${t}</li>`).join("")}</ul><p class="mu">The ledger has already been applied to the rows shown. Only the saved rule is affected by your choice.</p>`,[{t:"Save rule anyway"},{t:"Don't save rule",s:1}]);ok=!!r&&r.i===0}
+ if($("lr").checked&&vis.every(([x])=>x.del||x.t=="Contra")&&vis.some(([x])=>!x.del))msg=contraRule(vis,L);else if($("lr").checked){let kw=ruleKw();if(kw){let w=ruleWarn(kw,vis,L);let ok=true;
+  while(w.length){const r=await dlg("Check this auto-rule before saving",`<p>Rule to be saved: when the narration contains <b>"${esc(kw)}"</b> → ledger <b>${esc(L)}</b></p><p><b>Warning:</b></p><ul style="margin:6px 0 6px 18px">${w.map(t=>`<li>${t}</li>`).join("")}</ul><p class="mu">The ledger has already been applied to the rows shown. Only the saved rule is affected by your choice.</p>`,[{t:"Save rule anyway"},{t:"Change keyword…",s:1},{t:"Don't save rule",s:1}]);
+   if(!r||r.i===2){ok=false;break}if(r.i===0)break;
+   const nk=await askRuleKw(kw,L);if(nk&&nk!==kw){kw=nk;w=ruleWarn(kw,vis,L);const sm=ruleSame(kw,L);if(sm)w.push(sm)}}
   if(ok){addRule(kw,L,true);const nm=data.filter(x=>!x.del&&x.t!="Contra"&&kwHit(x.nar.toLowerCase(),kw)).length;rmHtml=`<b>Auto-rule saved:</b> narration contains <b>"${esc(kw)}"</b> → <b>${esc(L)}</b>. It matches ${kwWhole(kw)?"as a whole word":"as text"} in ${nm} transaction${nm==1?"":"s"} of this statement and is applied automatically next time (saved to the selected client profile). <a href="#" id="rmShow" data-kw="${esc(kw)}">Show the rows this rule matches</a>`}
   else msg="Auto-rule NOT saved. The ledger was applied to the shown rows only."}
  else msg="No common keyword found in these rows, so no auto-rule was saved. Type a word in the narration search first."}
@@ -1949,9 +1966,9 @@ Rules:
 Give me the result as a downloadable .csv file (if you cannot create files, give it as plain text in one code block).
 Then check that for each row: balance = previous balance - debit + credit, and list any rows that do not match.`;
 const MDS='Uploading your statement to any AI chat service (Claude, ChatGPT, etc.) is entirely your own decision and risk. This tool and its author (Ajai R Krishnan) are <b>not responsible for the security, privacy or handling of your data</b> by any third-party AI service, or for any confidentiality, client-consent or data-protection duty you owe (for example professional secrecy or privacy laws). Always compare the CSV with the original statement before importing it.';
-function openClaude(){window.open("https://claude.ai/new?q="+encodeURIComponent(MP),"_blank","noopener")}
+function openClaude(){try{navigator.clipboard.writeText(MP)}catch(e){}window.open("https://claude.ai/new?q="+encodeURIComponent(MP),"_blank","noopener")}
 function cpP(id,b){const t=document.getElementById(id);t.select();const ok=()=>{b.textContent="Copied ✓"};try{navigator.clipboard.writeText(t.value).then(ok,()=>{document.execCommand("copy");ok()})}catch(e){document.execCommand("copy");ok()}}
-const manualHtml=`<p><b>Do it yourself with an AI chat (Claude, ChatGPT, etc.)</b></p><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV the AI gives you and check it against the statement.</li><li>Come back here and upload that CSV file in step 1.</li></ol><textarea id="mpt" readonly rows="9" style="width:100%;font-size:12px">${esc(MP)}</textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in. Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);font-size:13px"><b>⚠ Data security</b><br>${MDS}</div>`;
+const manualHtml=`<p><b>Do it yourself with an AI chat (Claude, ChatGPT, etc.)</b></p><ol style="margin:4px 0 8px 18px;padding:0"><li>Open an AI chat of your choice and attach your bank statement.</li><li>Copy the prompt below and send it.</li><li>Download the CSV the AI gives you and check it against the statement.</li><li>Come back here and upload that CSV file in step 1.</li></ol><textarea id="mpt" readonly rows="9" style="width:100%;font-size:12px">${esc(MP)}</textarea><div style="margin:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" onclick="cpP('mpt',this)">Copy prompt</button><button type="button" class="s" onclick="openClaude()" title="Opens a new Claude chat with the prompt already filled in. You still attach your statement and send it.">Open Claude with this prompt</button></div><div class="mu" style="font-size:12px">Opens claude.ai in a new tab with the prompt filled in (it is also copied, so you can paste it if the box is empty). Attach your statement there and press send; you stay signed in to your own account.</div><div style="padding:8px 10px;border:1px solid #d93025;border-radius:6px;background:rgba(217,48,37,.08);font-size:13px"><b>⚠ Data security</b><br>${MDS}</div>`;
 document.getElementById("mpt2").value=MP;document.getElementById("mds2").innerHTML=MDS;
 function dlg(t,h,b,k,c){return new Promise(res=>{const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px";
  o.innerHTML=`<div class="card" style="max-width:580px;max-height:92vh;overflow:auto;margin:0"><b style="font-size:16px">${t}</b><div style="margin:10px 0">${h}</div>${c?`<label class="ck" style="font-size:13px;color:var(--tx);margin-bottom:10px"><input type="checkbox" id="dc">${c}</label>`:""}<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">${b.map((x,i)=>`<button type="button" data-i="${i}"${i==0&&c?" disabled":""} class="${x.s?"s":""}">${x.t}</button>`).join("")}</div></div>`;
@@ -2001,7 +2018,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.64<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.65<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -2079,6 +2096,7 @@ setup:{t:"Step 2 · Settings",s:"Tell the tool how to turn rows into Tally vouch
  n:"pv",nl:"Next: Preview →"},
 pv:{t:"Step 3 · Preview",s:"Check every transaction and set the ledgers.",
  b:`<ol><li>Read the summary at the top. Rows marked <b style="color:#d93025">⚠</b> or highlighted in red need checking against the original statement.</li>
+ <li>Once you have compared the flagged rows with the statement, use <b>Confirm all selected</b>.</li>
  <li>Edit any row directly: change the <b>Type</b> (Payment / Receipt / Contra), <b>Narration</b> or <b>Ledger</b>.</li>
  <li>Use <b>Filter</b> to find rows by narration, type, ledger, amount or date, or tick <b>⚠ Needs review only</b>.</li>
  <li>To change many rows at once, filter them, pick a type or ledger under <b>Apply to all shown rows</b>, then apply. Tick <b>Remember as auto-rule</b> to reuse it next time.</li>
@@ -2091,7 +2109,7 @@ pv:{t:"Step 3 · Preview",s:"Check every transaction and set the ledgers.",
 cs:{t:"Step 4 · Create missing ledgers",s:"Add ledgers that are not yet in Tally.",
  b:`<ol><li>Review the list. Ledger names used in your transactions but not found in Tally are shown here.</li>
  <li>To add a ledger yourself, use <b>Add a ledger manually</b> above the table: type the name, optionally a group and opening balance, then click <b>+ Add ledger</b>. It appears in the list ticked, with a <b>manual</b> tag and a × to remove it.</li>
- <li>Keep a ledger <b>ticked</b> to create it, or untick it to skip.</li>
+ <li>Keep a ledger <b>ticked</b> to create it, or untick it to skip. Use <b>Tick all</b> or <b>Untick all</b> to save time.</li>
  <li>Groups come from your imported Tally master. Groups in red are not in that list.</li>
  <li>Choose the <b>Under group</b> for each, or set one group for all ticked rows using <b>Apply group to ticked</b>. If left blank, <b>Suspense A/c</b> is used.</li>
  <li>Optionally enter an <b>Opening balance</b> (with Dr/Cr) and <b>Bill-by-bill</b>. Leave blank for Tally's defaults.</li>
@@ -2117,7 +2135,7 @@ function open(){render();o.classList.add("show")}
 function close(){try{hvStop()}catch(e){}o.classList.remove("show")}
 $$("hlpb").onclick=open;$$("hlpx").onclick=close;$$("hlpd").onclick=close;
 o.addEventListener("click",e=>{if(e.target===o)close()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")close();else if(e.key==="F1"){e.preventDefault();open()}});
 })();
 </script>
 <script>
@@ -3154,6 +3172,64 @@ async function start(e){
  wipe();
 }
 each(["nsTab","nsBtn2"],e=>e.addEventListener("click",start));
+})();
+</script>
+<style id="rsgCss">#rsg{position:fixed;z-index:60;min-width:240px;max-width:min(440px,calc(100vw - 16px));max-height:260px;overflow:auto;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;font-size:13px}#rsg[hidden]{display:none}#rsg div{padding:6px 9px;border-radius:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#rsg div.on,#rsg div:hover{background:var(--acs,rgba(26,86,219,.12))}#rsg small{color:var(--mu);margin-left:8px;font-size:11px}#rsg b{font-weight:700}</style>
+<script>
+/* Ledger suggestions in the Settings rules box: after "keyword=" the ledgers of the loaded Tally list / XML file are offered. */
+(function(){
+const ta=document.getElementById("rules"),hint=document.getElementById("rsgHint");if(!ta)return;
+const box=document.createElement("div");box.id="rsg";box.hidden=true;box.setAttribute("role","listbox");document.body.appendChild(box);
+let items=[],sel=0;
+const E=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const L=()=>(typeof led!=="undefined"&&led.length)?led:[];
+const upHint=()=>{if(hint)hint.textContent=L().length?"After the = sign, pick a ledger from your Tally list ("+L().length+" ledgers): ↑ ↓ to move, Enter or Tab to choose, Esc to close.":"Load the Tally ledger list (above) to get ledger suggestions after the = sign."};
+function ctx(){const v=ta.value,pos=ta.selectionStart;if(ta.selectionEnd!==pos)return null;
+ const ls=v.lastIndexOf("\n",pos-1)+1;let le=v.indexOf("\n",pos);if(le<0)le=v.length;
+ const line=v.slice(ls,le),cp=pos-ls,eq=line.indexOf("=");if(eq<1||cp<=eq)return null;
+ const kw=line.slice(0,eq).trim();if(!kw)return null;
+ return{eq:ls+eq,le,kw,q:line.slice(eq+1,cp).trim()}}
+function find(kw,q){const kl=kw.toLowerCase(),ql=q.toLowerCase(),words=kl.split(/\s+/).filter(w=>w.length>=3),out=[];
+ for(const n of L()){const nl=n.toLowerCase();let s=-1;
+  if(ql){if(nl===ql)return[];if(nl.startsWith(ql))s=0;else if(nl.split(/[\s\-_\/&.,()]+/).some(w=>w.startsWith(ql)))s=1;else if(ql.length>=3&&nl.includes(ql))s=2}
+  else{if(nl.includes(kl))s=0;else if(words.some(w=>nl.includes(w)))s=1;else s=3}
+  if(s>=0)out.push([s,n])}
+ out.sort((a,b)=>a[0]-b[0]||a[1].localeCompare(b[1]));return out.slice(0,8).map(x=>x[1])}
+function hide(){box.hidden=true;items=[]}
+function caret(){const cs=getComputedStyle(ta),d=document.createElement("div");
+ ["fontFamily","fontSize","fontWeight","fontStyle","letterSpacing","wordSpacing","textIndent","textTransform","paddingTop","paddingRight","paddingBottom","paddingLeft","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth","boxSizing","lineHeight","tabSize"].forEach(p=>{d.style[p]=cs[p]});
+ d.style.position="absolute";d.style.visibility="hidden";d.style.left="-9999px";d.style.top="0";d.style.whiteSpace="pre-wrap";d.style.overflowWrap="break-word";d.style.width=ta.offsetWidth+"px";
+ d.textContent=ta.value.slice(0,ta.selectionStart);const m=document.createElement("span");m.textContent="\u200b";d.appendChild(m);document.body.appendChild(d);
+ const r=ta.getBoundingClientRect(),lh=parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.3,x=r.left+m.offsetLeft-ta.scrollLeft,y=r.top+m.offsetTop-ta.scrollTop;d.remove();return{x,y,lh,r}}
+function show(){const c=ctx();if(!c||!L().length){hide();return}
+ items=find(c.kw,c.q);if(!items.length){hide();return}
+ if(sel>=items.length)sel=0;
+ const ql=c.q.toLowerCase();
+ box.innerHTML=items.map((n,i)=>{let nm=E(n);if(ql){const k=n.toLowerCase().indexOf(ql);if(k>=0)nm=E(n.slice(0,k))+"<b>"+E(n.slice(k,k+ql.length))+"</b>"+E(n.slice(k+ql.length))}
+  const p=(typeof lpar!=="undefined"&&lpar[n])?"<small>"+E(lpar[n])+"</small>":"";
+  return'<div role="option" data-i="'+i+'" class="'+(i==sel?"on":"")+'" aria-selected="'+(i==sel)+'">'+nm+p+'</div>'}).join("");
+ box.hidden=false;
+ const k=caret(),bw=box.offsetWidth,bh=box.offsetHeight;
+ let left=Math.min(Math.max(8,k.x),window.innerWidth-bw-8),top=k.y+k.lh+2;
+ if(top+bh>window.innerHeight-8)top=Math.max(8,k.y-bh-2);
+ box.style.left=left+"px";box.style.top=top+"px"}
+function accept(i){const c=ctx();if(!c||i<0||i>=items.length)return;const name=items[i],v=ta.value;
+ ta.value=v.slice(0,c.eq+1)+name+v.slice(c.le);const p=c.eq+1+name.length;ta.setSelectionRange(p,p);
+ hide();ta.dispatchEvent(new Event("input",{bubbles:true}));ta.focus()}
+ta.addEventListener("input",()=>{sel=0;show()});
+ta.addEventListener("click",()=>{sel=0;show()});
+ta.addEventListener("focus",upHint);
+ta.addEventListener("keyup",e=>{if(["ArrowLeft","ArrowRight","Home","End"].includes(e.key)){sel=0;show()}});
+ta.addEventListener("keydown",e=>{if(box.hidden)return;
+ if(e.key==="ArrowDown"){e.preventDefault();sel=(sel+1)%items.length;show()}
+ else if(e.key==="ArrowUp"){e.preventDefault();sel=(sel-1+items.length)%items.length;show()}
+ else if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();accept(sel)}
+ else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();hide()}});
+ta.addEventListener("blur",()=>setTimeout(hide,120));
+box.addEventListener("mousedown",e=>{e.preventDefault();const d=e.target.closest("[data-i]");if(d)accept(+d.dataset.i)});
+window.addEventListener("scroll",e=>{if(!box.hidden&&e.target!==box)hide()},true);
+window.addEventListener("resize",hide);
+upHint();
 })();
 </script>
 </body></html>
