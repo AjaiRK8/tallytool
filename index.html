@@ -2067,7 +2067,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.71<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.72<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -2607,21 +2607,23 @@ $("cpDel").onclick=async()=>{const n=find(box.value);if(!n){note("Type or pick t
  const was=delProfiles([n],null);if(was)noProfile("Deleted profile: "+n+".");else{render();note("Deleted profile: "+n)}};
 $("cpBack").onclick=()=>{sv("cp_bk",Date.now());note("Backup downloaded");return dl("client_profiles_backup.json",JSON.stringify({v:2,profiles:P,clientRules:CR,starter:st.value}),"application/json")};
 /* ---- automatic backup folder (Chrome / Edge): first profile save asks for a folder; every later change is backed up there ---- */
+const bkOff=()=>{try{return localStorage.getItem("bk_on")=="0"}catch(e){return false}};
 const FB={h:null,ok:!!window.showDirectoryPicker,t:null,pend:false,last:null,F:"client_profiles_backup.json"};
 const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("bt_cfg",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const idbGet=async k=>{try{const d=await idb();return await new Promise(res=>{const q=d.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}};
 const idbSet=async(k,v)=>{try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=res;t.onerror=rej})}catch(e){}};
 function fbStatus(){const e=$("cpFb");if(!e)return;const d=$("cpDir");if(d)d.hidden=!FB.ok;
- e.textContent=!FB.ok?"Automatic backup to a folder works only in Chrome or Edge. Use Backup regularly.":!FB.h?"No backup folder chosen yet. Click Backup folder to choose one; backups are then saved there automatically.":FB.pend?"Backup folder “"+FB.h.name+"”: click anywhere on this page to allow access; automatic backup then continues.":"Automatic backup folder: “"+FB.h.name+"”"+(FB.last?" · last backup "+FB.last.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")}
+ e.textContent=FB.ok&&bkOff()?"Automatic backup is off. Turn it on in ⚙ App preferences > Backup.":!FB.ok?"Automatic backup to a folder works only in Chrome or Edge. Use Backup regularly.":!FB.h?"No backup folder chosen yet. Click Backup folder to choose one; backups are then saved there automatically.":FB.pend?"Backup folder “"+FB.h.name+"”: click anywhere on this page to allow access; automatic backup then continues.":"Automatic backup folder: “"+FB.h.name+"”"+(FB.last?" · last backup "+FB.last.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"")}
 async function fbPerm(ask){try{const o={mode:"readwrite"};if(await FB.h.queryPermission(o)=="granted")return true;return ask&&(await FB.h.requestPermission(o))=="granted"}catch(e){return false}}
 async function fbWrite(){try{const f=await FB.h.getFileHandle(FB.F,{create:true}),w=await f.createWritable();await w.write(JSON.stringify({v:2,profiles:P,clientRules:CR,starter:st.value}));await w.close();FB.last=new Date();FB.pend=false;try{localStorage.setItem("cp_bk",String(Date.now()))}catch(e){}fbStatus();return true}catch(e){FB.pend=true;fbStatus();return false}}
-function fbSchedule(){if(!FB.h)return;clearTimeout(FB.t);FB.t=setTimeout(async()=>{if(await fbPerm(false))await fbWrite();else{FB.pend=true;fbStatus()}},1500)}
+function fbSchedule(){if(!FB.h||bkOff())return;clearTimeout(FB.t);FB.t=setTimeout(async()=>{if(await fbPerm(false))await fbWrite();else{FB.pend=true;fbStatus()}},1500)}
 async function fbPick(){try{const h=await showDirectoryPicker({mode:"readwrite",id:"btbackup"});FB.h=h;await idbSet("dir",h);if(await fbWrite())note("Backup folder set: "+h.name);return true}catch(e){return false}}
-async function fbFirst(){if(!FB.ok||FB.h)return;let no=false;try{no=localStorage.getItem("cp_dir_no")=="1"}catch(e){}if(no)return;
+async function fbFirst(){if(!FB.ok||FB.h||bkOff())return;let no=false;try{no=localStorage.getItem("cp_dir_no")=="1"}catch(e){}if(no)return;
  const r=await dlg("Choose a backup folder","<p>Pick a folder on this computer (for example <b>Documents\\TallyBackups</b>). A backup of all your client profiles is then saved there automatically after every change.</p><p class=\"mu\">Nothing is uploaded. If you clear browser data, load this file with <b>Restore</b>.</p>",[{t:"Choose folder"},{t:"Not now",s:1}]);
  if(r.i==0)await fbPick();else{try{localStorage.setItem("cp_dir_no","1")}catch(e){}fbStatus()}}
+document.addEventListener("bkchange",()=>{fbStatus();if(!bkOff())fbSchedule()});
 $("cpDir").onclick=async()=>{if(!FB.ok)return;await fbPick()};
-document.addEventListener("click",()=>{if(FB.pend&&FB.h){FB.pend=false;fbPerm(true).then(ok=>ok?fbWrite():(FB.pend=true,fbStatus()))}},true);
+document.addEventListener("click",()=>{if(FB.pend&&FB.h&&!bkOff()){FB.pend=false;fbPerm(true).then(ok=>ok?fbWrite():(FB.pend=true,fbStatus()))}},true);
 (async()=>{if(FB.ok){const h=await idbGet("dir");if(h){FB.h=h;if(!(await fbPerm(false)))FB.pend=true}}fbStatus()})();
 $("cpRest").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const b=JSON.parse(await f.text());if(!b.profiles||typeof b.profiles!="object")throw new Error("not a profiles backup");const c=Object.keys(b.profiles).length;const r=await dlg("Restore "+c+" profile(s)","<p><b>Merge</b>: add these; same-name profiles are overwritten, others stay.</p><p><b>Replace all</b>: delete every current profile first.</p>",[{t:"Merge"},{t:"Replace all"},{t:"Cancel",s:1}]);if(r.i==2){e.target.value="";return}if(r.i==1){for(const k of Object.keys(P))delete P[k];for(const k of Object.keys(CR))delete CR[k]}Object.assign(P,b.profiles);if(b.clientRules&&typeof b.clientRules=="object"){Object.assign(CR,b.clientRules);sv(KC,CR)}if(typeof b.starter=="string"&&!st.value.trim()){st.value=b.starter;sv(KS,b.starter)}sv(K,P);render();note("Restored "+c+" profile(s); "+(r.i==1?"all other profiles were removed.":"same-name profiles were replaced."))}catch(x){note("Could not restore: "+x.message)}e.target.value=""};
 st.value=ld(KS,null)??DEF;on.checked=ld(KO,true);
@@ -2646,7 +2648,7 @@ window.cpAuto={has:n=>!!find(n),active:()=>act,use:async n=>{const k=find(n);if(
 render();
 })();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-(function(){const bk=(()=>{try{return +localStorage.getItem("cp_bk")||0}catch(e){return 0}})();const n=(()=>{try{return Object.keys(JSON.parse(localStorage.getItem("cp_profiles")||"{}")).length}catch(e){return 0}})();if(n&&Date.now()-bk>7*864e5){const i=document.getElementById("cpInfo");if(i)i.textContent=bk?"Last backup was over 7 days ago. Click Backup.":"No backup yet. Click Backup to keep a copy of your profiles."}})();
+(function(){const bk=(()=>{try{return +localStorage.getItem("cp_bk")||0}catch(e){return 0}})();const n=(()=>{try{return Object.keys(JSON.parse(localStorage.getItem("cp_profiles")||"{}")).length}catch(e){return 0}})();let on=true,dd=7;try{on=localStorage.getItem("bk_on")!="0";dd=[1,3,7,15,30].includes(+localStorage.getItem("bk_days"))?+localStorage.getItem("bk_days"):7}catch(e){}if(on&&n&&Date.now()-bk>dd*864e5){const i=document.getElementById("cpInfo");if(i)i.textContent=bk?"Last backup was over "+dd+" day"+(dd>1?"s":"")+" ago. Click Backup.":"No backup yet. Click Backup to keep a copy of your profiles."}})();
 </script><style id="mnavCss">
 #mnb,#nvx,#nvbd{display:none}
 @media(max-width:760px){
@@ -2894,7 +2896,7 @@ window.rxLog={count:async()=>db?(await dbList()).length:0,prune:async()=>{if(db)
 <div class="apr"><label class="ck"><input type="checkbox" id="apIntro"> Show the intro page when the app opens</label></div>
 <div class="apr"><label class="ck"><input type="checkbox" id="apItr"> Enable the CA summary for ITR export</label><small class="mu">Adds the Excel / PDF summary panel to the Export step. Off by default.</small></div>
 <div class="apr"><label for="apKeep">Export log: keep the last</label><select id="apKeep"><option value="10">10 exports</option><option value="25">25 exports</option><option value="50">50 exports</option><option value="100">100 exports</option><option value="200">200 exports</option></select><small class="mu" id="apCount"></small><div class="apb"><button type="button" class="s" id="apClear">Clear export log</button></div></div>
-<div class="apr"><label>Backup</label><small class="mu" id="apBkInfo"></small><div class="apb" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" id="apBk">Back up now</button><button type="button" class="s" id="apRs">Restore from backup</button><button type="button" class="s" id="apBd" hidden>Choose backup folder</button></div><small class="mu">Saved settings live only in this browser, and clearing browser data erases them. A reminder pops up every 7 days until you back up.</small></div>
+<div class="apr"><label>Backup</label><small class="mu" id="apBkInfo"></small><div class="apb" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="s" id="apBk">Back up now</button><button type="button" class="s" id="apRs">Restore from backup</button><button type="button" class="s" id="apBd" hidden>Choose backup folder</button></div><small class="mu">Saved settings live only in this browser, and clearing browser data erases them. Manual Back up now and Restore always work.</small><label class="ck" style="margin-top:6px"><input type="checkbox" id="apBkOn"> Backup reminders and automatic backup folder</label><small class="mu">On by default. Turn off to stop the reminder popup and pause saving to the backup folder.</small><label for="apBkDays" style="margin-top:6px">Remind me to back up every</label><select id="apBkDays"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="15">15 days</option><option value="30">30 days</option></select></div>
 <div class="apr"><button type="button" class="s" id="apReset">Reset all preferences</button><small class="mu">Puts the theme, intro page, ITR summary export (off) and export log size back to their defaults. Client profiles, ledgers, rules and the export log itself are not touched.</small></div>
 </div></div>
 <style id="umCss2">
@@ -2982,8 +2984,8 @@ $("apKeep").onchange=async e=>{const n=parseInt(e.target.value,10);
   S("rxKeep",String(n));prevKeep=String(n);if(window.rxLog)await window.rxLog.prune()}catch(x){console.error(x)}
  cnt()};
 $("apClear").onclick=async()=>{try{if(window.rxLog)await window.rxLog.clear()}catch(x){console.error(x)}cnt()};
-$("apReset").onclick=async()=>{const r=await dlg("Reset all preferences?","<p>This sets:</p><ul style=\"margin:4px 0 8px 20px;padding:0\"><li>Theme: match my device</li><li>Intro page: shown when the app opens</li><li>CA summary for ITR export: off</li><li>Export log: keep the last 100</li><li>Use of this app: ask again (single or multiple users)</li></ul><p class=\"mu\">Client profiles, ledgers, rules and the export log are not touched.</p>",[{t:"Reset"},{t:"Cancel",s:1}]);
- if(r.i!=0)return;D("tth");D("tintro");D("rxKeep");D("titr");{const c=$("caPn");if(c)c.style.display="none"}if(window.umSet)window.umSet(null);R.removeAttribute("data-theme");const k=$("introSkip");if(k)k.checked=false;fill();if(window.umAsk)window.umAsk()};
+$("apReset").onclick=async()=>{const r=await dlg("Reset all preferences?","<p>This sets:</p><ul style=\"margin:4px 0 8px 20px;padding:0\"><li>Theme: match my device</li><li>Intro page: shown when the app opens</li><li>CA summary for ITR export: off</li><li>Export log: keep the last 100</li><li>Use of this app: ask again (single or multiple users)</li><li>Backup reminders: on, every 7 days</li></ul><p class=\"mu\">Client profiles, ledgers, rules and the export log are not touched.</p>",[{t:"Reset"},{t:"Cancel",s:1}]);
+ if(r.i!=0)return;D("tth");D("tintro");D("rxKeep");D("titr");D("bk_on");D("bk_days");D("bk_snz");{const c=$("caPn");if(c)c.style.display="none"}if(window.umSet)window.umSet(null);R.removeAttribute("data-theme");const k=$("introSkip");if(k)k.checked=false;fill();if(window.bkFill)window.bkFill();if(window.umAsk)window.umAsk()};
 })();
 </script>
 <script>
@@ -3004,15 +3006,21 @@ async function backup(){
 if($("apBk"))$("apBk").onclick=backup;
 if($("apRs"))$("apRs").onclick=()=>{const r=$("cpRest");if(r)r.click()};
 if($("apBd")){$("apBd").hidden=!window.showDirectoryPicker||!$("cpDir");$("apBd").onclick=()=>{const d=$("cpDir");if(d)d.click()}}
-const tab=$("apTab");if(tab)tab.addEventListener("click",info);
-setInterval(()=>{const o=$("apo");if(o&&o.classList.contains("on"))info()},4000);
+const bkOn=()=>G("bk_on")!="0",bkDays=()=>{const d=+G("bk_days");return [1,3,7,15,30].includes(d)?d:7};
+function bkFill(){const c=$("apBkOn"),s=$("apBkDays");if(c)c.checked=bkOn();if(s){s.value=String(bkDays());s.disabled=!bkOn()}info();bkTail()}
+function bkTail(){const e=$("apBkInfo");if(e&&nProf())e.textContent+=bkOn()?" · Reminder every "+bkDays()+" day"+(bkDays()>1?"s":""):" · Backup reminders are off"}
+window.bkFill=bkFill;
+if($("apBkOn"))$("apBkOn").onchange=async e=>{if(!e.target.checked){const r=await dlg("Turn off backup reminders?","<p>The backup reminder will stop and the automatic backup folder will pause.</p><p class=\"mu\">Your saved "+what()+" stay only in this computer. You can still use <b>Back up now</b> any time.</p>",[{t:"Turn off"},{t:"Cancel",s:1}]);if(r.i!=0){e.target.checked=true;return}S("bk_on","0")}else{S("bk_on","1");try{localStorage.removeItem("bk_snz")}catch(x){}}bkFill();try{document.dispatchEvent(new Event("bkchange"))}catch(x){}};
+if($("apBkDays"))$("apBkDays").onchange=e=>{S("bk_days",e.target.value);try{localStorage.removeItem("bk_snz")}catch(x){}info();bkTail()};
+const tab=$("apTab");if(tab)tab.addEventListener("click",bkFill);
+setInterval(()=>{const o=$("apo");if(o&&o.classList.contains("on")){info();bkTail()}},4000);
 async function remind(){
  const r=await dlg("Time to back up your settings","<p>Your saved "+what()+" are stored only in this browser. If the browser data is cleared, they are lost.</p><p class=\"mu\">Last backup: "+fmt(lastBk())+"</p>",[{t:"Back up now"},{t:"Remind me tomorrow",s:1}]);
  if(r.i==0){await backup()}else{S("bk_snz",String(Date.now()+DAY))}}
 let tries=0;
 function check(){
  if(!nProf())return;
- const now=Date.now();if(now-lastBk()<7*DAY||(+G("bk_snz")||0)>now)return;
+ if(!bkOn())return;const now=Date.now();if(now-lastBk()<bkDays()*DAY||(+G("bk_snz")||0)>now)return;
  const um=$("umo"),ap=$("apo");
  if((um&&um.classList.contains("on"))||(ap&&ap.classList.contains("on"))||document.querySelector('div[style*="z-index:100"]')){if(++tries<10)setTimeout(check,2500);return}
  remind().catch(e=>console.error(e))}
@@ -3471,4 +3479,229 @@ window.BTTPlayer=(function(){
  return{mount:mount}})();
 </script>
 
+<style id="hvTipCss">
+#hvTip{position:fixed;z-index:2147483000;max-width:300px;padding:7px 10px;border-radius:7px;background:#1f2430;color:#fff;font:12.5px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s;white-space:pre-line;left:-9999px;top:0}
+#hvTip.on{opacity:1}
+#hvTip b{display:block;font-weight:700;margin-bottom:2px}
+[data-theme="dark"] #hvTip{background:#f3f4f6;color:#111}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #hvTip{background:#f3f4f6;color:#111}}
+</style>
+<script>
+/* ===== HOVER TIPS =====
+   Rest the pointer on any button, box, filter or table badge for 1 second and a small tip explains what it does.
+   Text comes from TIP (by element id), TXT (by visible label, for controls without an id), CLS (table rows and badges),
+   and falls back to the element's own title. Native title tooltips are moved into the tip so two never show at once.
+   Reads only: changes no data. Keep identical in index.html and index_software.html. */
+(function(){
+"use strict";
+if(window.matchMedia&&matchMedia("(hover: none)").matches)return;/* phones / tablets: no hover */
+const TIP={
+/* top bar & navigation */
+thm:"Theme|Switch between the light and dark look of the app.",
+cpSave:"Save as client profile|Saves the current company, bank ledger, rules and ledgers as a profile so you can load them next time for this client.",
+cpCopy:"Save as a new profile|Saves the current settings under a new profile name, keeping the original profile unchanged.",
+nsTab:"New statement|Clears the current statement and starts again from Upload. Saved profiles are not touched.",
+cuTab:"Contact us|Send a question or feedback to the developer.",
+apTab:"App preferences|Theme, intro page, single / multiple users, export log, backup and reset.",
+hvBtn:"How-to video|Plays a short walkthrough of all the steps.",
+introGo:"Get started|Closes the intro and opens the Upload step.",
+introSkip:"Skip intro|Tick to open straight to Upload next time instead of this intro page.",
+/* upload */
+f:"Statement file|Choose the bank statement: PDF, Excel, CSV or photos. Select every page together.",
+pw:"File password|If the PDF is password protected, type its password here (often your customer ID or date of birth).",
+pwb:"Unlock|Opens the protected PDF with the password typed in the box.",
+gob2:"Continue to Settings|Goes to step 2 to set the company, bank ledger and rules.",
+mpt2:"AI prompt|Copy this prompt into an AI chat with your statement attached; it returns a clean CSV you can upload here.",
+/* client profiles */
+cpSel:"Client profile|Search and pick a saved client / bank profile. It loads that client's rules, ledgers and column mapping.",
+cpNew:"New profile|Starts a fresh profile from the Settings page.",
+cpBack:"Backup|Downloads one file with every client profile, so you can restore them later or on another computer.",
+cpDir:"Backup folder|Choose a folder where the backup file is saved automatically after every change.",
+cpRest:"Restore|Loads profiles from a backup file. You can merge them with the current ones or replace all.",
+cpDel:"Delete|Deletes the profile named in the box.",
+cpCl:"Shared rules for this client|Rules here apply to every bank of this client. One per line: keyword=Ledger name.",
+cpOn:"Use starter rules|Applies the starter rules below to every client, along with the client's own rules.",
+cpSt:"Starter rules|Common rules used for every client. One per line: keyword=Ledger name.",
+rxF:"Open exported XML|Re-opens a Tally XML you exported earlier, so you can check or edit it.",
+rxM:"Keep new-ledger entries|When re-opening an XML, also keep the ledger masters it created.",
+pf:"Load profile file|Loads a saved profile file (.json).",
+lf:"Load ledger list|Loads the ledger list exported from Tally (XML, CSV or Excel) so ledger names can be picked and checked.",
+/* settings */
+co:"Company name|The company name exactly as it appears in Tally. The XML imports into this company.",
+bank:"Bank ledger|The ledger in Tally for this bank account. Every transaction is posted against it.",
+dp:"Default ledger for payments|Payments (Dr) that match no rule are posted to this ledger, usually Suspense.",
+dr:"Default ledger for receipts|Receipts (Cr) that match no rule are posted to this ledger, usually Suspense.",
+c1:"Cash withdrawals as Contra|Books ATM / cash withdrawals as Contra entries to the Cash ledger.",
+k1:"Cash withdrawal keywords|Words in the narration that mark a cash withdrawal, separated by commas.",
+c2:"Cash deposits as Contra|Books cash deposits as Contra entries from the Cash ledger.",
+k2:"Cash deposit keywords|Words in the narration that mark a cash deposit, separated by commas.",
+cash:"Cash ledger|The cash ledger in Tally used for cash Contra entries.",
+c3:"Self transfers as Contra|Books transfers between your own bank accounts as Contra entries.",
+ibadd:"Add bank account|Adds a row for another of your bank accounts used in self transfers.",
+rules:"Auto-ledger rules|One per line: keyword=Ledger name. A transaction whose narration contains the keyword gets that ledger.",
+go:"Apply & preview|Applies these settings and rules and shows the transactions in Preview.",
+ob:"Opening balance|Leave blank to work it out from the statement. Type a figure only if the statement does not show it.",
+/* preview filters */
+rfb:"Clear this filter|Removes the N× / P× / ₹× badge filter and shows all rows again.",
+cf:"Clear filters|Resets every filter and shows all transactions.",
+q:"Narration search|Shows only rows whose narration contains this text.",
+qx:"Clear search|Empties the narration search box.",
+ft:"Type filter|Show only Payments, Receipts or Contra entries.",
+lq:"Ledger filter|Shows only rows whose ledger contains this text.",
+mn:"Minimum amount|Shows only rows of at least this amount.",
+mx:"Maximum amount|Shows only rows of at most this amount.",
+df:"From date|Shows only rows on or after this date.",
+dt:"To date|Shows only rows on or before this date.",
+rc:"Recurring|Shows only repeating transactions: same narration, same amount, or either.",
+fx:"Exported|Show only rows already exported to Tally, or only those not exported yet.",
+gs:"Group similar|Sorts rows so similar narrations sit together, making it easy to set one ledger for all of them.",
+fu:"Ledger not in master|Shows only rows whose ledger is not in the Tally ledger list you loaded (it will be created in step 4).",
+eo:"Needs review only|Shows only rows flagged for checking, such as balance mismatches or OCR doubts.",
+/* bulk actions */
+bt:"Set type for shown rows|Changes the voucher type (Payment / Receipt / Contra) of every row currently shown.",
+bl:"Ledger for shown rows|Type or pick a ledger to give to every row currently shown.",
+ba:"Apply ledger to shown|Gives the ledger typed beside it to every row currently shown in the table.",
+lr:"Remember as auto-rule|Also saves a rule, so the same kind of transaction gets this ledger automatically next time.",
+bd:"Remove shown rows|Skips every row currently shown, so they are left out of the Tally import. They can be restored.",
+cbb:"Confirm all selected|Marks the ticked flagged rows as checked. Compare them with the original statement first.",
+stt:"Set type for selected|Changes the voucher type of the ticked rows.",
+sl:"Ledger for selected|Type or pick a ledger to give to the ticked rows.",
+sap:"Apply to selected|Applies the type and ledger chosen beside it to the ticked rows.",
+sx:"Clear selection|Unticks every row.",
+sa:"Select all|Ticks or unticks every row currently shown.",
+cm:"Next: Create ledgers|Goes to step 4 to create any ledgers that are not yet in Tally. Needed before export.",
+csv:"Download current preview|Downloads the table as it is shown now as a CSV / Excel file.",
+/* create ledgers */
+cka:"Tick all|Ticks every new ledger, so all are created in Tally.",
+ckn:"Untick all|Unticks every new ledger.",
+mln:"New ledger name|Name of a ledger to add by hand.",
+mlg:"Under group|The Tally group the new ledger goes under (default Suspense A/c).",
+mlo:"Opening balance|Optional opening balance for the new ledger.",
+mld:"Dr / Cr|Whether the opening balance is debit or credit.",
+mlb:"Bill-by-bill|Turn bill-wise details on or off for this ledger in Tally.",
+mla:"Add ledger|Adds the ledger typed above to the list to be created.",
+cxml:"Export XML only|Downloads the Tally XML of transactions without new ledgers.",
+clo:"Export ledgers only|Downloads only the ticked ledger masters as XML. Import this into Tally first.",
+ccsv:"Download CSV|Downloads the new-ledger list as CSV.",
+csn2:"Next: Export|Goes to step 5 to download the Tally file.",
+/* export */
+xml:"Export XML|Downloads the Tally XML with new ledgers and all transactions. Import it in Tally from Import > Transactions.",
+xsel:"Export selected only|Downloads a Tally XML of only the ticked rows.",
+nsBtn2:"Start new statement|Clears this statement and starts again from Upload.",
+caFy:"Period|The financial year or period the CA summary covers.",
+caHv:"High-value threshold|Transactions at or above this amount are listed separately in the summary.",
+caNm:"Client name|Name printed on the summary report. Leave blank to use the company name.",
+caSx:"Suspense detail|Lists each suspense entry under its group in the summary.",
+caTx:"Full transaction list|Adds a ledger-wise list of every transaction to the summary.",
+caXl:"Excel summary|Downloads the CA / ITR summary as an Excel file.",
+caPd:"PDF summary|Downloads the CA / ITR summary as a PDF.",
+caCl:"Classify suspense|Sorts suspense entries into groups for the summary.",
+/* help & contact */
+xclr:"Clear|Empties this box.",
+hlpb:"Help|Shows help for the page you are on.",
+hlpx:"Close help|Closes the help panel.",
+hlpd:"Got it|Closes the help panel.",
+ctx:"Close|Closes this window.",
+ctn:"Your name|Your name, so we know who wrote.",
+cte:"Your email|We reply to this address.",
+ctj:"Subject|A short subject for your message.",
+ctg:"Message|Type your question or feedback.",
+cts:"Send message|Sends your message to the developer.",
+mnb:"Menu|Opens the steps menu.",
+nvx:"Close menu|Closes the steps menu.",
+/* app preferences */
+apx:"Close|Closes App preferences.",
+apTheme:"Theme|Light, dark, or match your device setting.",
+apUm:"Use of this app|Single user saves settings automatically in one profile. Multiple users shows client profiles for many clients.",
+apIntro:"Intro page|Show the intro page each time the app opens.",
+apItr:"CA summary for ITR|Adds the Excel / PDF CA summary panel to the Export step.",
+apKeep:"Export log size|How many past exports to keep in the log.",
+apClear:"Clear export log|Deletes the list of past exports. Files you downloaded are not touched.",
+apBk:"Back up now|Downloads a backup file of your saved settings and profiles.",
+apRs:"Restore from backup|Loads settings and profiles from a backup file.",
+apBd:"Backup folder|Choose a folder where backups are saved automatically.",
+apBkOn:"Backup reminders|On: reminds you to back up and saves to the backup folder automatically. Off: stops both; manual backup still works.",
+apBkDays:"Reminder interval|How often to remind you to back up.",
+apReset:"Reset preferences|Puts every preference back to its default. Profiles and data are not touched.",
+/* desktop app only */
+port:"Tally port|The port Tally listens on (Tally default 9000). Turn on Tally's ODBC / HTTP server to use it.",
+tf:"Fetch from Tally|Reads the ledger list straight from the running Tally company.",
+stGo:"Choose ledgers|Goes to step 4 to pick which ledgers to send.",
+tsAll:"Send to Tally|Sends all transactions straight into the running Tally company.",
+tsSel:"Send selected to Tally|Sends only the ticked transactions into Tally.",
+tsStop:"Stop|Stops sending after the current transaction.",
+tsClr:"Clear sent history|Forgets which transactions were already sent, so they can be sent again.",
+tsLed:"Send ledgers to Tally|Creates the ticked new ledgers straight in the running Tally company."
+};
+["2","3"].forEach(n=>["tsAll","tsSel","tsStop","tsClr","tsLed"].forEach(k=>{if(TIP[k]&&!TIP[k+n])TIP[k+n]=TIP[k]}));
+/* controls without an id, matched by their visible text */
+const TXT={
+"Home":"Home|The intro page with a quick overview.",
+"Upload":"Step 1 · Upload|Choose the bank statement file.",
+"Settings":"Step 2 · Settings|Company, bank ledger, contra and auto-ledger rules.",
+"Preview":"Step 3 · Preview|Check transactions, set ledgers, filter and fix rows.",
+"Create ledgers":"Step 4 · Create ledgers|Create ledgers that are not yet in Tally.",
+"Export":"Step 5 · Export|Download the Tally XML or send it to Tally.",
+"Windows app (.exe)":"Windows app|Download the desktop version, which can talk to Tally directly.",
+"Download the Windows version (.exe)":"Windows app|Download the desktop version, which can talk to Tally directly.",
+"Copy prompt":"Copy prompt|Copies the AI prompt to the clipboard.",
+"Open Claude with this prompt":"Open Claude|Opens a new Claude chat with the prompt already filled in. Attach your statement there.",
+"Apply selected rules":"Apply selected rules|Saves the ticked suggested rules so matching transactions get those ledgers.",
+"Apply none":"Apply none|Closes the suggestions without saving any rule.",
+"Single user":"Single user|Just you: settings save and load automatically; client profiles are hidden.",
+"Multiple users":"Multiple users|A firm or many clients: shows client profiles to keep each client's settings apart.",
+"How profiles work":"How profiles work|Opens a short explanation of client profiles.",
+"Shared rules & starter rules":"Rules|Opens the shared client rules and starter rules.",
+"More ledger options (optional)":"More options|Opening balance, Dr / Cr and bill-by-bill for the new ledger."
+};
+/* table rows and badges */
+const CLS=[
+[".pv-v","View in statement|Shows this row in the original statement file."],
+["button.ia","Insert transaction|Adds a transaction by hand before or after this row."],
+[".dx","Remove / restore|Removes this transaction so it is skipped in the import. Click again to bring it back."],
+["input.sc","Select row|Ticks this row for the selected-row actions above the table."],
+["input.rvk","Select rule|Tick to save this suggested rule."],
+[".ibr .ik","Transfer keywords|Words in the narration that mark a transfer to or from this other account, separated by commas."],
+[".ibr .il","Other bank ledger|The Tally ledger of your other bank account for these Contra entries."],
+[".ibr button","Remove|Removes this bank account row."],
+["#pv td select,#tb td select,td select","Voucher type|Payment, Receipt or Contra for this transaction."],
+["td textarea","Narration|The narration from the statement. You can edit it; the edit goes into the Tally voucher."],
+["td input[type=text],td input:not([type])","Ledger|The ledger this transaction is posted to. Type or pick from the list."],
+["td input[type=number]","Amount|Edit the amount of this transaction."],
+["td input[type=date]","Date|Edit the date of this transaction."]
+];
+const BADGE={"N":"N× · Same narration","P":"P× · Same party","₹":"₹× · Same amount"};
+const tip=document.createElement("div");tip.id="hvTip";tip.setAttribute("role","tooltip");
+const add=()=>document.body.appendChild(tip);document.body?add():document.addEventListener("DOMContentLoaded",add);
+const norm=s=>(s||"").replace(/\s+/g," ").trim();
+function own(el){/* the element's native title, moved to data-tip so the browser does not show its own tooltip too */
+ const t=el.getAttribute("title");if(t){el.dataset.tip=t;el.removeAttribute("title");if(!el.getAttribute("aria-label")&&!norm(el.textContent))el.setAttribute("aria-label",t)}
+ return el.dataset.tip||""}
+function textOf(el){
+ const o=own(el);
+ if(el.matches("span.b")){const k=norm(el.textContent).charAt(0);return BADGE[k]?BADGE[k]+"|"+(o||"Click to show only these transactions; click again to clear."):o}
+ if(el.id&&TIP[el.id])return TIP[el.id];
+ if(el.tagName=="LABEL"){const i=el.htmlFor?document.getElementById(el.htmlFor):el.querySelector("input,select,textarea");if(i&&i.id&&TIP[i.id])return TIP[i.id]}
+ for(const[s,t]of CLS){try{if(el.matches(s))return t}catch(e){}}
+ const lab=el.matches(".dn")?norm((el.querySelector("span")||el).textContent):norm(el.childNodes[0]&&el.childNodes[0].nodeType==3?el.childNodes[0].textContent:el.textContent);
+ for(const k in TXT)if(lab==k||lab.indexOf(k)==0&&lab.length<k.length+40)return TXT[k];
+ return o}
+const SEL="button,input:not([type=hidden]),select,textarea,a[href],summary,label,span.b,[data-tip],[title]";
+let cur=null,T=null,held=null;
+function release(){if(held&&!held.hasAttribute("title")&&held.dataset.tip)held.setAttribute("title",held.dataset.tip);held=null}/* give the title back when the pointer leaves */
+function hide(){clearTimeout(T);T=null;tip.classList.remove("on");tip.style.left="-9999px";cur=null}
+function show(el,t){
+ if(!el.isConnected)return;const i=t.indexOf("|");tip.textContent="";
+ if(i>0){const b=document.createElement("b");b.textContent=t.slice(0,i);tip.append(b,t.slice(i+1))}else tip.textContent=t;
+ const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight,W=innerWidth,H=innerHeight;
+ let x=r.left+r.width/2-w/2,y=r.bottom+8;if(y+h>H-6)y=r.top-h-8;if(y<6)y=6;x=Math.max(6,Math.min(x,W-w-6));
+ tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("on")}
+document.addEventListener("mouseover",e=>{
+ const el=e.target.closest&&e.target.closest(SEL);if(el===cur)return;hide();if(el!==held)release();if(!el)return;
+ const t=textOf(el);held=el;if(!t)return;cur=el;T=setTimeout(()=>show(el,t),1000)},true);
+document.addEventListener("mouseout",e=>{const h=cur||held;if(h&&!(e.relatedTarget&&h.contains(e.relatedTarget))){hide();release()}},true);
+["mousedown","keydown","wheel","blur"].forEach(n=>window.addEventListener(n,hide,true));
+window.addEventListener("scroll",hide,true);
+})();
+</script>
 </body></html>
