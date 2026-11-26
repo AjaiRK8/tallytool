@@ -636,7 +636,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}.ic.trashb{--m:ur
 
 <script>
 const $=id=>document.getElementById(id);let rows=[],hdr=[],data=[],selS=new Set(),OPN=null,goCs=false,csSeen=false,cur="up";
-const F=[["date","Date",/date|txn/i],["nar","Narration",/narr|desc|partic|remark|detail|memo/i],["ref","Ref / Cheque no",/ref|chq|cheque|utr/i],["dr","Debit / Withdrawal",/debit|withdraw|dr\b/i],["cr","Credit / Deposit",/credit|deposit|cr\b/i],["amt","Single amount (optional)",/^\s*(?:txn\.?\s*|transaction\s*)?(?:amount|amt)\b(?!.*(?:withdraw|deposit|debit|credit))/i],["bal","Balance (optional, for cross-check)",/balance|bal\b/i]];
+const F=[["date","Date",/date|txn/i],["nar","Narration",/narr|narat|desc|partic|remark|detail|memo/i],["ref","Ref / Cheque no",/ref|chq|cheque|utr/i],["dr","Debit / Withdrawal",/debit|withdraw|dr\b/i],["cr","Credit / Deposit",/credit|deposit|cr\b/i],["amt","Single amount (optional)",/^\s*(?:txn\.?\s*|transaction\s*)?(?:amount|amt)\b(?!.*(?:withdraw|deposit|debit|credit))/i],["bal","Balance (optional, for cross-check)",/balance|bal\b/i]];
 function csv(t,d=","){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==d){r.push(c);c=""}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c="";o.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);o.push(r)}return o}
 /* ---- progress bar: adapts to the path the file takes (open > unlock > read > OCR / AI > ready) ---- */
 const PG=(()=>{const W={open:5,unlock:15,text:35,sheets:30,read:30,ocr:80,ocr2:80,ai:80,ready:0},
@@ -793,7 +793,7 @@ async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value;let u=
   $("msg").textContent="Unlocking the Excel file…";PG.go("unlock","Checking the password…");
   try{u=await OC.unlock(u,pw,v=>PG.set(v,"Checking the password · "+Math.round(v*100)+"%"))}catch(e){if(e.bad)throw ask("Incorrect Excel password. Re-enter it and click Unlock.");throw e}}
  try{const wb=XLSX.read(u,{type:"array",cellNF:true});xlDates(wb);return wb}catch(e){if(/password|encrypt|decrypt|protected/i.test(e&&e.message||""))throw Object.assign(new Error("This Excel file has a password with an encryption type that is not supported here. Open it in Excel, use Save As without a password, then upload that."),{unsup:true});throw e}}
-const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
+const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|narat|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
 let pipeNote="",pipePer=null;/* statement period printed in the file header ("period 01/04/2026 to 04/10/2026"): used only to flag dates outside it */
 const perFind=t=>{const D=/(\d{1,2}[\/\-.](?:\d{1,2}|[A-Za-z]{3,9})[\/\-.]\d{2,4}|\d{1,2}\s[A-Za-z]{3,9},?\s\d{4})/.source,m=String(t||"").replace(/\s+/g," ").match(new RegExp("(?:period|from|between)[^0-9]{0,40}"+D+"\\s*:?\\s*(?:to|till|until|-|–)\\s*:?\\s*"+D,"i"));if(!m)return null;const a=pd(m[1]),z=pd(m[2]);return a&&z&&a<=z?{a,z}:null};
 /* Excel: a second copy of the table further down the sheet (the same heading again, then rows already listed above, e.g. re-sorted) is left out */
@@ -801,7 +801,7 @@ function xlCopyCut(r,hi){const H=r[hi].map(x=>String(x).trim().toLowerCase()).jo
  for(let i=hi+1;i<r.length;i++){if(r[i].map(x=>String(x).trim().toLowerCase()).join("|")!==H)continue;const seen=new Set(r.slice(hi+1,i).map(key)),rest=r.slice(i+1).filter(x=>key(x));
   if(rest.length&&rest.filter(x=>seen.has(key(x))).length>=rest.length*.8){let e=i;while(e>hi+1&&(!key(r[e-1])||(hdrScore(r[e-1])==0&&r[e-1].filter(x=>String(x).trim()).length<=2&&!/\d/.test(r[e-1].join("")))))e--;return r.slice(0,e)}}return r}
 /* Excel: a column with no heading right after the narration column (Particulars merged over two cells) is more narration */
-function xlNarJoin(r,hi){const H=r[hi],n=H.findIndex(x=>/narr|desc|partic|remark|detail|memo/i.test(String(x)));if(n<0||n+1>=H.length||String(H[n+1]).trim())return;
+function xlNarJoin(r,hi){const H=r[hi],n=H.findIndex(x=>/narr|narat|desc|partic|remark|detail|memo/i.test(String(x)));if(n<0||n+1>=H.length||String(H[n+1]).trim())return;
  if(r.slice(hi+1).filter(x=>/[A-Za-z]{2}/.test(String(x[n+1]||""))&&/\d/.test(String(x[0]||"")+String(x[1]||""))).length<2)return;/* real narration rows (with a date), not a footer note */r.slice(hi+1).forEach(x=>{const a=String(x[n]||"").trim(),b=String(x[n+1]||"").trim();if(b&&/[A-Za-z]/.test(b)){x[n]=a?a+" "+b:b;x[n+1]=""}})}
 /* Excel: how many rows of a sheet agree with its own balance column (previous balance - withdrawal + deposit); used to choose between sheets */
 function xlChain(r,hi){const h=r[hi].map(x=>String(x).trim()),f=re=>h.findIndex(x=>re.test(x)),b=f(/^(closing\s*|available\s*|running\s*)?bal(ance)?\b(?!.*type)/i),
@@ -821,7 +821,7 @@ async function rd(f){pipeNote="";pipePer=null;window.xlSh=null;if($("xls"))$("xl
 $("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;PG.begin(/\.(pdf|jpe?g|png|webp|bmp)$/i.test(f.name)?"pdf":/\.(xlsx|xlsm|xlsb|xls)$/i.test(f.name)?"xl":"csv");
  try{a=await rd(f)}catch(x){$("msg").textContent=(x.manual?"":"Could not read file: ")+x.message;const w=!x.unsup&&(x.pwErr||/password/i.test(x.message));PG.fail(w?(/incorrect/i.test(x.message)?"Incorrect password: re-enter it above and click Unlock":"Waiting for the password: type it above and click Unlock"):"Stopped: "+x.message,w);return}
  window.stPer=pipePer;a.forEach((r,i)=>{r.rn=i+1});a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
- let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
+ let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|narat|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
  hdr=a[h].map(x=>String(x).trim());rows=a.slice(h+1);
  {const L=hdr.map(x=>x.toLowerCase()),ix=n=>L.indexOf(n);window.ownCsv=(["date","type","narration","amount","ledger"].every(n=>ix(n)>=0)&&L.length<=6)?{t:ix("type"),l:ix("ledger"),d:ix("direction")}:null;if(window.ownCsv)pipeNote="Recognised this software's own CSV: type and ledger are kept as saved.";}
  if(IMG.test(f.name)||/\.pdf$/i.test(f.name))window.curSrc=null;else{window.curPdf=null;window.curSrc={a,h,name:f.name};rows.forEach((r,i)=>{r.sr=h+1+i})}
@@ -1852,7 +1852,7 @@ async function blBob(doc){const OC=!!doc.isOcr;let lo=null,hi=null;const kd=d=>{
  /* no 'repair' of amounts or balances from neighbouring balances: a misread figure is reported as read and flagged by chk() */
  return out}
 const BP0=/please do not share|never asks|one-time|\botp\b|\bpin\b|power of attorney|computer[\s-]generated|statement is generated|signature|registered office|customer care|toll.?free|www\.|e-?mail|gstin|statement (summary|of)|end of statement|page\s*\d|disclaimer|kindly|call us/i;const BP1=new RegExp(BP0.source.replace("www\\.|e-?mail|",""),"i");/* BP0 minus the weak www./e-mail words */
-const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&(/narr|desc|partic|remark/i.test(t)||(/detail/i.test(t)&&/debit|credit|withdraw|deposit|amount|balance/i.test(t)))};
+const BP={test:t=>{if(LY&&LY.junk&&LY.junk.test(t))return true;if(!BP0.test(t))return false;if(BP1.test(t))return true;return!(/\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4}/.test(t)&&/\d[\d,]*\.\d{2}(?!\d)/.test(t))}};/* a line holding a date AND an amount is a transaction even if its narration contains www./e-mail */const isH=r=>{const t=r.join(" ");return /date/i.test(t)&&(/narr|narat|desc|partic|remark/i.test(t)||(/detail/i.test(t)&&/debit|credit|withdraw|deposit|amount|balance/i.test(t)))};
 async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF library failed to load");
  L.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const buf=await f.arrayBuffer(),pw=$("pw").value;
@@ -1860,7 +1860,7 @@ async function openPdf(f){const L=window.pdfjsLib;if(!L)throw new Error("PDF lib
 /* ---- validation: balance chain check with auto-repair ---- */
 function chk(R){const hi=R.findIndex(isH),Z={n:0,bad:0,fx:0,nw:0,ver:false};if(hi<0)return Z;
  const h=R[hi],ix=re=>h.findIndex(c=>re.test(c)),dI=ix(/date/i),dr=ix(/debit|withdraw|dr\b/i),cr=ix(/credit|deposit|cr\b/i),bl=ix(/balance|bal\b/i),am=ix(/^amount$/i);
- const T=(a=>a.length>1&&pd(a[0][dI])>pd(a[a.length-1][dI])?a.reverse():a)(R.slice(hi+1).filter(r=>pd(r[dI]||""))),n=T.length;/* newest-first statements: check the balance chain oldest to newest */if(!n)return Z;const nI=ix(/narr|desc|partic|remark|detail/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
+ const T=(a=>a.length>1&&pd(a[0][dI])>pd(a[a.length-1][dI])?a.reverse():a)(R.slice(hi+1).filter(r=>pd(r[dI]||""))),n=T.length;/* newest-first statements: check the balance chain oldest to newest */if(!n)return Z;const nI=ix(/narr|narat|desc|partic|remark|detail/i),nw=nI<0?0:T.filter(r=>!/[A-Za-z]{2}/.test(r[nI]||"")).length;const fl=(r,t)=>{(r.fl=r.fl||[]).push(t)};if(nI>=0)T.forEach(r=>{if(!/[A-Za-z]{2}/.test(r[nI]||""))fl(r,"Narration empty or unclear")});
  const split=dr>=0&&cr>=0,S=r=>num(r[cr])-num(r[dr]),B=r=>bl>=0&&String(r[bl]||"").trim()?sbv(r[bl]):null,f=x=>(Math.round(x*100)/100).toFixed(2),eq=(x,y)=>Math.abs(x-y)<=.011;
  let bad=0,fx=0;const sim=(x,y)=>x.length==y.length&&[...x].filter((c,i)=>c!=y[i]).length<=2;
  if(bl<0||!split){T.forEach(r=>{const k=split?[num(r[dr]),num(r[cr])].filter(Boolean).length:(am>=0&&num(r[am])?1:0);if(k!=1){bad++;fl(r,"Debit/credit amount not clear: could not be confirmed")}});return{n,bad,fx,nw,ver:false}}
@@ -1917,7 +1917,7 @@ async function stTot(doc){if(doc._tot!==undefined)return doc._tot;let t="";
   g=k=>{const m=t.match(new RegExp(k+L+M,"i"));if(!m)return null;const v=gMny(m[1]);return v?v.sv:null};
  return doc._tot={op:g("opening[^\\S\\n]*bal(?:ance)?"),cl:g("closing[^\\S\\n]*bal(?:ance)?"),td:g("total[^\\S\\n]*(?:debits?|withdrawals?)"),tc:g("total[^\\S\\n]*(?:credits?|deposits?)")}}
 /* the extra transactions one reading has over another are a totals / opening / closing line read as a transaction: that reading is not fuller */
-function junkX(A,B,TT){try{const cols=R=>{const h=R.find(isH)||[],ix=re=>h.findIndex(c=>re.test(c));return{h,d:ix(/date/i),n:ix(/narr|desc|partic|remark|detail/i),dr:ix(/debit|withdraw|dr\b/i),cr:ix(/credit|deposit|cr\b/i),b:ix(/balance|bal\b/i)}},
+function junkX(A,B,TT){try{const cols=R=>{const h=R.find(isH)||[],ix=re=>h.findIndex(c=>re.test(c));return{h,d:ix(/date/i),n:ix(/narr|narat|desc|partic|remark|detail/i),dr:ix(/debit|withdraw|dr\b/i),cr:ix(/credit|deposit|cr\b/i),b:ix(/balance|bal\b/i)}},
   a=cols(A),b=cols(B);if(a.d<0||b.d<0)return false;const key=(r,c)=>[pd(r[c.d]||""),num(r[c.dr]).toFixed(2),num(r[c.cr]).toFixed(2)].join("|"),have=new Map();
   B.forEach(r=>{if(r!==b.h&&pd(r[b.d]||"")){const k=key(r,b);have.set(k,(have.get(k)||0)+1)}});const ex=[];
   A.forEach(r=>{if(r===a.h||!pd(r[a.d]||""))return;const k=key(r,a);if(have.get(k))have.set(k,have.get(k)-1);else ex.push(r)});
@@ -1948,7 +1948,7 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
  if(!ok){try{$("msg").textContent="Reading the table column by column...";ok=tryR(await gridRows(doc),"Column reader")}catch(e){errs.push(e.message)}}
  if(!ok)try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}
  if(!ok&&LY){LY=null;try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}}/* saved layout failed balance check: generic parser */
- if(!LP){const tx=ok?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
+ if(!LP){const tx=ok?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|narat|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
   try{$("msg").textContent="Cross-checking with balance-chain reader...";const okc=tryR(await chainRows(doc),"Balance-chain reader"),ch=C[C.length-1];
    if(okc&&(!ok||(tx.src=="PDF text"?ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03:ch.v.n>tx.v.n&&ch.v.bad<=tx.v.bad&&!junkX(ch.R,tx.R,TOT))))ok=true;/* both reconcile: PDF text gives way to the fuller narration; the column reader only to more transactions */
    else if(tx)C.push(C.splice(C.indexOf(tx),1)[0])}catch(e){errs.push("Chain: "+e.message);if(tx&&C[C.length-1]!==tx)C.push(C.splice(C.indexOf(tx),1)[0])}}
@@ -1986,7 +1986,7 @@ async function refMark(doc,R){try{const RX=/(?<![0-9A-Za-z])\d{12}(?![0-9@])/g,R
    (a few scattered disagreements are flagged; a reader that differs on many rows is the weaker one for this layout and is ignored).
    Flags rows for review only; nothing is changed. ---- */
 async function ownMark(doc,R,C,c){try{
- const RK=R0=>{const i0=R0.findIndex(isH),H=R0[i0]||[],f=re=>H.findIndex(x=>re.test(x)),d=Math.max(0,f(/date/i)),n=f(/narr|desc|partic|remark|detail/i),dr=f(/debit|withdraw|dr\b/i),cr=f(/credit|deposit|cr\b/i),bl=f(/balance|bal\b/i),
+ const RK=R0=>{const i0=R0.findIndex(isH),H=R0[i0]||[],f=re=>H.findIndex(x=>re.test(x)),d=Math.max(0,f(/date/i)),n=f(/narr|narat|desc|partic|remark|detail/i),dr=f(/debit|withdraw|dr\b/i),cr=f(/credit|deposit|cr\b/i),bl=f(/balance|bal\b/i),
    X=R0.slice(i0+1).filter(r=>r.length>2&&pd(r[d]||""));return{X,n,k:X.map(r=>{const a=Math.abs(num(r[dr])||num(r[cr])||0),b=bl<0?null:sbv(r[bl]);return pd(r[d])+"|"+a.toFixed(2)+"|"+(b==null?"":b.toFixed(2))})}};
  const A=RK(R),T=A.X,nI=A.n,sf=s=>String(s||"").toLowerCase().replace(/\s+/g,""),
   AM=/^\(?-?₹?\d[\d,]*\.\d{1,2}\)?(cr|dr)?\.?$/i,DT=/^\d{1,2}[\/\-.](\d{1,2}|[A-Za-z]{3,9})[\/\-.]\d{2,4}$/,MK=/^(cr|dr)\.?$/i,
@@ -2135,7 +2135,7 @@ async function chainRows(doc){
 const SR=/^[\s*\-=#.]*(?:(?:month(?:ly)?|sub|grand)[\s-]*total|opening\s*bal(?:ance)?|bal(?:ance)?\s*b\/?f|b\/f|brought\s*forward|carried\s*forward|c\/f|closing\s*bal(?:ance)?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,\-]*\d{2,4})\s*[*\-=#.]*\s*(?:\S{0,3}\s*)?$|^[\s*\-=#.]*(?:(?:month(?:ly)?|sub|grand)[\s-]*total|opening\s*bal(?:ance)?|bal(?:ance)?\s*b\/?f|brought\s*forward|carried\s*forward|closing\s*bal(?:ance)?)\b/i;
 function stPeriod(allL){try{const t=allL.slice(0,120).map(x=>x.join(" ")).join("\n"),m=t.match(/(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,]+\d{2,4})\s*(?:to|till|until|and|-|–)\s*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,]+\d{2,4})/i);if(!m)return null;const s=pd(m[1]),e=pd(m[2]);return s&&e&&s<=e&&e.slice(0,4)-s.slice(0,4)<=1?[s,e]:null}catch(e){return null}}
 function xDate(body,dI,hr,allL){try{if(dI<0)return;
- const nI=hr.findIndex(c=>/narr|desc|partic|remark/i.test(c)),dr=hr.findIndex(c=>/debit|withdraw|dr\b/i.test(c)),cr=hr.findIndex(c=>/credit|deposit|cr\b/i.test(c)),am=hr.findIndex(c=>/^amount$/i.test(c)),bl=hr.findIndex(c=>/bal/i.test(c));
+ const nI=hr.findIndex(c=>/narr|narat|desc|partic|remark/i.test(c)),dr=hr.findIndex(c=>/debit|withdraw|dr\b/i.test(c)),cr=hr.findIndex(c=>/credit|deposit|cr\b/i.test(c)),am=hr.findIndex(c=>/^amount$/i.test(c)),bl=hr.findIndex(c=>/bal/i.test(c));
  const hasAmt=r=>[dr,cr,am].some(c=>c>=0&&num(r[c])),sh=/^\s*(\d{1,2})[\/\-.](\d{1,2})\s*$/;
  const cand=body.filter(r=>sh.test(r[dI]||"")&&!pd(r[dI]||""));
  if(cand.length>=3){const P=stPeriod(allL);if(P){const y0=+P[0].slice(0,4),m0=+P[0].slice(4,6),y1=+P[1].slice(0,4);
@@ -2451,7 +2451,7 @@ async function gridRows(doc){window._gd=[];
    {/* the lines of a transaction must sit around its date line the way the statement aligns every row: a line given to the wrong row breaks that */
     const ys=ls.map(l=>l.y),hi=Math.max(...ys),lo=Math.min(...ys),ya=A0.y,hh=A0.h||8,pt=P.pitch||hh*1.2;let odd=false;
     if(ls.length>1){if(AL=="middle")odd=Math.abs((hi+lo)/2-ya)>pt*.3;else if(AL=="top")odd=hi>ya+hh*.6;else odd=lo<ya-hh*.6}
-    row.odd=odd&&!ALW&&P.mode!="rules"&&r.k>0&&r.k<A.length-1;
+    row.odd=odd&&!ALW&&P.mode!="rules"&&r.k>0&&r.k<A.length-1;row.rm=P.mode=="rules";
     if(odd&&!ALW&&P.mode!="rules"&&AL=="middle"&&(r.k==0||r.k==A.length-1)&&PS.length>1)(row.fl=row.fl||[]).push("This transaction is at a page break and its lines do not sit around its date the way the other rows do: part of its narration may be on the other page or on the neighbouring transaction. Compare with the PDF (🔍)")}/* rows cut by the statement's own ruled lines are not judged: the lines decide *//* judged at the end (rows running onto the next page are not); first and last rows of a page are not judged */
    if(P.amb.has(r.k))(row.fl=row.fl||[]).push("The statement does not show clearly which of two neighbouring transactions some wrapped narration lines belong to: compare this narration and the next/previous one with the PDF (🔍)");
    const bal=g.bi>=0?gMny(col(g.bi)):null;if(bal)row[5]=f2(bal.sv);
@@ -2507,6 +2507,14 @@ async function gridRows(doc){window._gd=[];
   return words(x,y)};
  rows.forEach((r,k)=>{let s="";const mr=MR.get(r.ng);
   NW[k].forEach((w,q)=>{const t=T(w);if(!s){s=t;return}s+=spc(NW[k][q-1],w,mr,s)?" "+t:t});r[1]=s.replace(/\s+/g," ").trim()});
+ /* a line that is only a month and year ("August 2023") may be a month heading printed between rows, not part of the narration */
+ rows.forEach((r,k)=>{const L=NW[k];if(L.length<2)return;const MY=/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?[\s,'-]*(\d{2}|\d{4})$/i;
+  if([L[0],L[L.length-1]].some(l=>MY.test(T(l).trim()))){const t="A line of this narration is only a month and year: it may be a month heading printed between the rows, not part of this narration. Compare with the PDF (🔍)";r.fl=r.fl||[];if(!r.fl.includes(t))r.fl.push(t)}});
+ /* a page break inside a narration: the last line of a page's last transaction runs to the column edge (it goes on) and the next page's first transaction has lines above its date line, so a piece may have been given to the wrong one */
+ for(let k=0;k+1<rows.length;k++){const a=rows[k],b=rows[k+1];if(a.p==b.p)continue;const L=NW[k][NW[k].length-1],mr=MR.get(a.ng);if(!L||!L.length||mr==null)continue;const w=L[L.length-1];
+  if(!(mr-w.r<fc(w)*1.5+.5))continue;const hh=(b.nl[0]&&b.nl[0].h)||8;if(!b.nl.some(l=>l.y>b.y+hh*.6))continue;
+  const t="This transaction is at a page break and its narration runs to the edge of the column: part of it may be printed on the other page and given to the neighbouring transaction. Compare with the PDF (🔍)";
+  for(const x of[a,b]){x.fl=x.fl||[];if(!x.fl.includes(t))x.fl.push(t)}}
  /* one Amount column with no Dr/Cr printed: the balance change decides the side (in date order) */
  const desc=rows.length>1&&rows[0][0]>rows[rows.length-1][0],ord=desc?[...rows].reverse():rows;let pb=opening;
  for(const r of ord){const b=r[5]!==""?+r[5]:null;if(r.av!=null){let s=null;if(pb!=null&&b!=null){const d=Math.round((b-pb)*100)/100;if(Math.abs(Math.abs(d)-r.av)<.006)s=d<0}
@@ -2539,7 +2547,7 @@ async function pdfText(doc,OC){const out=[],allL=[];let H=null,any=false;
    row.y=l.y;row.p=p;row.oc=!!OC;out.push(row)}}
  if(!any)throw new Error("No text found in the PDF (it may be a scanned image).");
  const hi=out.findIndex(isH);let colRes=null,cc=0;
- if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
+ if(hi>=0){const hr=out[hi],nI=hr.findIndex(c=>/narr|narat|desc|partic|remark|detail/i.test(c)),dI=hr.findIndex(c=>/date/i.test(c)),res=out.slice(0,hi+1);
   const body=out.slice(hi+1).filter(r=>!isH(r)),anc=[];xDate(body,dI,hr,allL);body.forEach((r,i)=>{if(pd(r[dI]||"")&&!/computer[\s-]generated|statement is generated|signature/i.test(r.join(" ")))anc.push(i)});
   const pc2=anc.map(i=>[{y:body[i].y,t:body[i][nI]||""}]);
   body.forEach((r,i)=>{if(nI<0||!r[nI]||pd(r[dI]||"")||BP.test(r.join(" "))||SR.test(r[nI]))return;let bj=-1,bd=1e9;
@@ -2840,7 +2848,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.79<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.80<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -4773,7 +4781,7 @@ async function mgAdd(f){const map={};F.forEach(([k])=>{const el=$("m_"+k);map[k]
  let a;try{try{PG.begin(/\.(pdf|jpe?g|png|webp|bmp)$/i.test(f.name)?"pdf":/\.(xlsx|xlsm|xlsb|xls)$/i.test(f.name)?"xl":"csv")}catch(x){}a=await rd(f)}
  catch(x){try{PG.fail("Stopped: "+x.message)}catch(y){}say("Could not read "+esc(f.name),"<p>"+esc(x.message)+"</p>"+(/password/i.test(x.message)?"<p class='mu'>A password-protected file can be added after unlocking: open it on the Upload page on its own, or save an unlocked copy.</p>":""));return}
  {const q=window.stPer;window.stPer=q&&pipePer?{a:q.a<pipePer.a?q.a:pipePer.a,z:q.z>pipePer.z?q.z:pipePer.z}:null}/* merged statements: the period covers both */a=a.filter(r=>r.some(x=>String(x).trim()));if(!a.length){try{PG.fail("No rows found")}catch(x){}say("Nothing found","<p>No rows were found in "+esc(f.name)+".</p>");return}
- let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
+ let h=a.findIndex(r=>r.some(x=>/date/i.test(x))&&r.some(x=>/narr|narat|desc|partic|remark|detail|memo/i.test(x)));if(h<0){let bs=1;a.forEach((r,i)=>{const q=hdrScore(r);if(q>bs){bs=q;h=i}})}if(h<0)h=0;
  const H2=a[h].map(x=>String(x).trim()),body=a.slice(h+1),nm={};
  F.forEach(([k,l,re])=>{const ci=map[k];if(ci<0){nm[k]=-1;return}const name=String(hdr[ci]||"").trim().toLowerCase();let j=name?H2.findIndex(x=>x.toLowerCase()==name):-1;if(j<0)j=H2.findIndex(x=>re.test(x));nm[k]=j});
  if(nm.date<0||(nm.dr<0&&nm.cr<0&&nm.amt<0)){try{PG.fail("Columns not recognised")}catch(x){}say("Columns not recognised","<p>The Date and amount columns of <b>"+esc(f.name)+"</b> could not be matched to the first statement.</p><p class='mu'>Columns found: "+esc(H2.filter(Boolean).join(", ")||"none")+"</p><p class='mu'>Add only statements of the same account and in a similar format.</p>");return}
