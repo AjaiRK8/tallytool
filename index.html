@@ -518,6 +518,7 @@ html #nv a#nsTab .ic{margin:0;width:16px;height:16px;flex:none}.ic.trashb{--m:ur
 <div id="pww" hidden><label><i class="ic lock"></i> This file is password-protected. Enter the password (used only in this tab, never saved)</label><div style="display:flex;gap:8px"><input id="pw" type="password" autocomplete="off" placeholder="File password"><button type="button" id="pwb" style="white-space:nowrap">Unlock</button></div></div>
 <div id="prg" hidden role="progressbar" aria-live="polite"></div>
 <p class="mu" id="msg">Everything runs in your browser; your statement is never uploaded.</p>
+<p id="xls" hidden><label>Sheet: <select id="xlsS"></select></label> <small class="mu">This workbook has several sheets. The one with the transaction table is chosen automatically; pick another if it is wrong.</small></p>
 <p class="mu exe-link" style="margin:6px 0 0;font-size:13px">&#128187; Prefer a desktop app? <a href="https://github.com/AjaiRK8/tallytool/releases/latest" target="_blank" rel="noopener">Download the Windows version (.exe)</a>. If Windows shows &ldquo;Windows protected your PC&rdquo;, click <b>More info</b> then <b>Run anyway</b>.</p>
 <p id="lrp" class="mu" hidden style="font-size:13px;margin:6px 0 0">Something read wrongly (a narration on the wrong transaction, a missing or merged row)? <button type="button" class="s" id="lrB" style="padding:2px 8px;font-size:12px">Save a layout report</button> Names, numbers and amounts in it are scrambled; send the file to the developer so the reader can be fixed.</p>
 <div id="gob" hidden class="pu-gob"><p>Statement processed. If this client already has a profile, select it in the Client profile box now to load its rules, ledgers and column mapping. Then continue.</p><button type="button" id="gob2">Continue to Settings →</button></div>
@@ -795,9 +796,28 @@ async function xlRead(f){const buf=await f.arrayBuffer(),pw=$("pw").value;let u=
 const hdrScore=r=>{const t=r.map(x=>String(x).trim());return [/date/i,/narr|desc|partic|remark|detail|memo/i,/debit|withdraw|\bdr\b/i,/credit|deposit|\bcr\b/i,/balance|\bbal\b/i].filter(re=>t.some(x=>re.test(x))).length};
 let pipeNote="",pipePer=null;/* statement period printed in the file header ("period 01/04/2026 to 04/10/2026"): used only to flag dates outside it */
 const perFind=t=>{const D=/(\d{1,2}[\/\-.](?:\d{1,2}|[A-Za-z]{3,9})[\/\-.]\d{2,4}|\d{1,2}\s[A-Za-z]{3,9},?\s\d{4})/.source,m=String(t||"").replace(/\s+/g," ").match(new RegExp("(?:period|from|between)[^0-9]{0,40}"+D+"\\s*:?\\s*(?:to|till|until|-|–)\\s*:?\\s*"+D,"i"));if(!m)return null;const a=pd(m[1]),z=pd(m[2]);return a&&z&&a<=z?{a,z}:null};
-async function rd(f){pipeNote="";pipePer=null;if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text(),tf=/\.txt$/i.test(f.name)?txtFind(t):null;pipePer=perFind(t.slice(0,6000));if(tf){pipeNote=tf.note;return tf.rows}return csv(t,dlm(t))}PG.go("sheets","Opening the workbook…");await PG.y();const wb=await xlRead(f);PG.go("sheets","Reading the sheets…");await PG.y();let best=[],bsc=-1,bn="";
- wb.SheetNames.forEach(n=>{const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",dateNF:"dd/mm/yyyy"});let bs=0,bi=-1;r.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;bi=i}});const sc=bs*100000+(bi<0?0:r.length-bi);if(sc>bsc){bsc=sc;best=r;bn=n}});
- if(wb.SheetNames.length>1)pipeNote="Sheet used: "+bn+".";pipePer=perFind(best.slice(0,40).map(r=>r.join(" ")).join(" "));return best}
+/* Excel: a second copy of the table further down the sheet (the same heading again, then rows already listed above, e.g. re-sorted) is left out */
+function xlCopyCut(r,hi){const H=r[hi].map(x=>String(x).trim().toLowerCase()).join("|"),key=x=>x.map(v=>String(v).trim()).filter(Boolean).join("|");
+ for(let i=hi+1;i<r.length;i++){if(r[i].map(x=>String(x).trim().toLowerCase()).join("|")!==H)continue;const seen=new Set(r.slice(hi+1,i).map(key)),rest=r.slice(i+1).filter(x=>key(x));
+  if(rest.length&&rest.filter(x=>seen.has(key(x))).length>=rest.length*.8){let e=i;while(e>hi+1&&(!key(r[e-1])||(hdrScore(r[e-1])==0&&r[e-1].filter(x=>String(x).trim()).length<=2&&!/\d/.test(r[e-1].join("")))))e--;return r.slice(0,e)}}return r}
+/* Excel: a column with no heading right after the narration column (Particulars merged over two cells) is more narration */
+function xlNarJoin(r,hi){const H=r[hi],n=H.findIndex(x=>/narr|desc|partic|remark|detail|memo/i.test(String(x)));if(n<0||n+1>=H.length||String(H[n+1]).trim())return;
+ if(r.slice(hi+1).filter(x=>/[A-Za-z]{2}/.test(String(x[n+1]||""))&&/\d/.test(String(x[0]||"")+String(x[1]||""))).length<2)return;/* real narration rows (with a date), not a footer note */r.slice(hi+1).forEach(x=>{const a=String(x[n]||"").trim(),b=String(x[n+1]||"").trim();if(b&&/[A-Za-z]/.test(b)){x[n]=a?a+" "+b:b;x[n+1]=""}})}
+/* Excel: how many rows of a sheet agree with its own balance column (previous balance - withdrawal + deposit); used to choose between sheets */
+function xlChain(r,hi){const h=r[hi].map(x=>String(x).trim()),f=re=>h.findIndex(x=>re.test(x)),b=f(/^(closing\s*|available\s*|running\s*)?bal(ance)?\b(?!.*type)/i),
+  w=f(/debit|withdraw|\bdr\b/i),d=f(/credit|deposit|\bcr\b/i),am=f(/amount|\bamt\b/i),ty=h.findIndex((x,i)=>i!=b&&/type|^\s*(dr|cr|debit)\s*\/\s*(cr|dr|credit)\s*$/i.test(x));
+ if(b<0)return 0;const two=w>=0&&d>=0&&w!=d;if(!two&&am<0)return 0;let p=null,n=0,pa=0,pc=0;
+ for(const x of r.slice(hi+1)){const bv=String(x[b]||"").trim();if(!/\d/.test(bv))continue;const v=num(bv);let a,c;
+  if(two){a=num(x[w]);c=num(x[d])}else{const m=num(x[am]),t=ty>=0?String(x[ty]||""):"",dr=/\b(dr|d|debit|withdrawal)\b/i.test(t)||(!t&&m<0);a=dr?Math.abs(m):0;c=dr?0:Math.abs(m)}
+  if(p!=null&&(Math.abs(p-a+c-v)<.011||Math.abs(p+pa-pc-v)<.011))n++;p=v;pa=a;pc=c}return n}/* oldest first: this row's amount; newest first: the row above's */
+function xlShow(){const S=window.xlSh,p=$("xls");if(!p)return;p.hidden=!S;if(!S)return;const s=$("xlsS");s.innerHTML=S.nm.map(n=>`<option value="${esc(n)}"${n==S.bn?" selected":""}>${esc(n)}${n==S.au?" (auto)":""}</option>`).join("");
+ s.onchange=()=>{S.f.sheet=s.value;$("f").onchange({target:{files:[S.f]}})}}
+async function rd(f){pipeNote="";pipePer=null;window.xlSh=null;if($("xls"))$("xls").hidden=true;if(IMG.test(f.name)||/\.pdf$/i.test(f.name))return pdfRows(f);if(/\.(csv|tsv|txt)$/i.test(f.name)){const t=await f.text(),tf=/\.txt$/i.test(f.name)?txtFind(t):null;pipePer=perFind(t.slice(0,6000));if(tf){pipeNote=tf.note;return tf.rows}return csv(t,dlm(t))}PG.go("sheets","Opening the workbook…");await PG.y();const wb=await xlRead(f);PG.go("sheets","Reading the sheets…");await PG.y();let best=[],bsc=-1,bn="";const SH={},nm=[];
+ wb.SheetNames.forEach(n=>{let r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",dateNF:"dd/mm/yyyy"});let bs=0,bi=-1;r.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;bi=i}});
+  if(bi>=0)r=xlCopyCut(r,bi);if(r.some(x=>x.some(v=>String(v).trim()))){SH[n]=r;nm.push(n)}if(bi>=0){const sc=bs*1e8+xlChain(r,bi)*1e4+r.slice(bi+1).filter(x=>x.some(v=>String(v).trim())).length;if(sc>bsc){bsc=sc;best=r;bn=n}}else if(bsc<0){bsc=0;best=r;bn=n}});
+ const au=bn,own=f.sheet&&SH[f.sheet]?f.sheet:"";if(own){best=SH[own];bn=own}window.xlSh=nm.length>1?{f,nm,au,bn}:null;/* several sheets: the user may pick another one (Upload › Sheet) */
+ {let hi=-1,bs=0;best.forEach((x,i)=>{const q=hdrScore(x);if(q>bs){bs=q;hi=i}});if(hi>=0)xlNarJoin(best,hi)}
+ if(nm.length>1)pipeNote="Sheet used: "+bn+(own&&own!=au?" (chosen by you).":" (chosen automatically; another sheet can be picked below).");pipePer=perFind(best.slice(0,40).map(r=>r.join(" ")).join(" "));return best}
 $("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.localeCompare(q.name,undefined,{numeric:true}));const f=fs[0];if(!f)return;if(fs.length>1){if(!fs.every(z=>IMG.test(z.name))){$("msg").textContent="Several files can be loaded together only when they are all photos (JPG/PNG) of the same statement. Select one PDF, CSV or Excel file at a time.";return}f.imgs=fs}else delete f.imgs;$("gob").hidden=true;{const k=f.name+"|"+f.size+"|"+f.lastModified;if(k!=window.lastFk){window.lastFk=k;$("pw").value="";$("pww").hidden=true}}let a;PG.begin(/\.(pdf|jpe?g|png|webp|bmp)$/i.test(f.name)?"pdf":/\.(xlsx|xlsm|xlsb|xls)$/i.test(f.name)?"xl":"csv");
  try{a=await rd(f)}catch(x){$("msg").textContent=(x.manual?"":"Could not read file: ")+x.message;const w=!x.unsup&&(x.pwErr||/password/i.test(x.message));PG.fail(w?(/incorrect/i.test(x.message)?"Incorrect password: re-enter it above and click Unlock":"Waiting for the password: type it above and click Unlock"):"Stopped: "+x.message,w);return}
  window.stPer=pipePer;a.forEach((r,i)=>{r.rn=i+1});a=a.filter(r=>r.some(x=>String(x).trim()));data.forEach(x=>{delete x.del});
@@ -807,7 +827,7 @@ $("f").onchange=async e=>{const fs=[...e.target.files].sort((p,q)=>p.name.locale
  if(IMG.test(f.name)||/\.pdf$/i.test(f.name))window.curSrc=null;else{window.curPdf=null;window.curSrc={a,h,name:f.name};rows.forEach((r,i)=>{r.sr=h+1+i})}
  $("map").innerHTML=F.map(([k,l,re])=>{const i=hdr.findIndex(x=>re.test(x));return `<div><label>${l} column</label><select id="m_${k}"><option value="-1">— none —</option>${hdr.map((x,j)=>`<option value="${j}"${j==i&&!(k=="amt"&&i<0)?" selected":""}>${x||"Col "+(j+1)}</option>`).join("")}</select></div>`}).join("");
  $("raw").innerHTML="<small>Parsed preview (first 5 rows) — check these look right:</small><table><tr>"+hdr.map(h=>`<th>${esc(h)}</th>`).join("")+"</tr>"+rows.slice(0,5).map(r=>"<tr>"+hdr.map((_,i)=>`<td>${esc(r[i]??"")}</td>`).join("")+"</tr>").join("")+"</table>";
- applyCols();PG.done(`Loaded ${rows.length} rows`);$("msg").textContent=`Loaded ${rows.length} rows.`+(pipeNote?" "+pipeNote:"");$("gob").hidden=false;if($("lrp"))$("lrp").hidden=!(window.curPdf&&!window.curPdf.isOcr);$("gob").scrollIntoView({block:"nearest",behavior:"smooth"})};
+ applyCols();PG.done(`Loaded ${rows.length} rows`);$("msg").textContent=`Loaded ${rows.length} rows.`+(pipeNote?" "+pipeNote:"");xlShow();$("gob").hidden=false;if($("lrp"))$("lrp").hidden=!(window.curPdf&&!window.curPdf.isOcr);$("gob").scrollIntoView({block:"nearest",behavior:"smooth"})};
 $("gob2").onclick=()=>{$("setup").hidden=false;nav("setup")};
 let led=[],grp=[],lpar={};try{lpar={}}catch(e){}const setLP=o=>{lpar=o||{};try{localStorage.setItem("tlp",JSON.stringify(lpar))}catch(e){}};let _lc=null,_ln=-1,_lm=null;const lmap=()=>{if(_lc!==led||_ln!==led.length){_lc=led;_ln=led.length;_lm=new Map();for(const l of led){const k=String(l).toLowerCase();if(!_lm.has(k))_lm.set(k,l)}}return _lm},inM=v=>lmap().has(String(v).trim().toLowerCase()),canon=v=>lmap().get(String(v).trim().toLowerCase())||v,bad=v=>led.length>0&&!!String(v).trim()&&!inM(v);
 function chkF(){["bank","dp","dr","cash"].forEach(i=>$(i).classList.toggle("bad",bad($(i).value)));document.querySelectorAll(".il").forEach(e=>e.classList.toggle("bad",bad(e.value)))}
@@ -1896,6 +1916,12 @@ async function stTot(doc){if(doc._tot!==undefined)return doc._tot;let t="";
   L="[^\\S\\n]*(?:\\(?(?:rs|inr|₹)\\.?\\)?)?[^\\S\\n]*[:\\-]?[^\\S\\n]*",
   g=k=>{const m=t.match(new RegExp(k+L+M,"i"));if(!m)return null;const v=gMny(m[1]);return v?v.sv:null};
  return doc._tot={op:g("opening[^\\S\\n]*bal(?:ance)?"),cl:g("closing[^\\S\\n]*bal(?:ance)?"),td:g("total[^\\S\\n]*(?:debits?|withdrawals?)"),tc:g("total[^\\S\\n]*(?:credits?|deposits?)")}}
+/* the extra transactions one reading has over another are a totals / opening / closing line read as a transaction: that reading is not fuller */
+function junkX(A,B,TT){try{const cols=R=>{const h=R.find(isH)||[],ix=re=>h.findIndex(c=>re.test(c));return{h,d:ix(/date/i),n:ix(/narr|desc|partic|remark|detail/i),dr:ix(/debit|withdraw|dr\b/i),cr:ix(/credit|deposit|cr\b/i),b:ix(/balance|bal\b/i)}},
+  a=cols(A),b=cols(B);if(a.d<0||b.d<0)return false;const key=(r,c)=>[pd(r[c.d]||""),num(r[c.dr]).toFixed(2),num(r[c.cr]).toFixed(2)].join("|"),have=new Map();
+  B.forEach(r=>{if(r!==b.h&&pd(r[b.d]||"")){const k=key(r,b);have.set(k,(have.get(k)||0)+1)}});const ex=[];
+  A.forEach(r=>{if(r===a.h||!pd(r[a.d]||""))return;const k=key(r,a);if(have.get(k))have.set(k,have.get(k)-1);else ex.push(r)});
+  const T=TT||{};return ex.some(r=>/\b(total|opening\s*bal|closing\s*bal|b\/f|c\/f|brought\s*forward|carried\s*forward)/i.test(String(r[a.n]||""))||[T.td,T.tc].some(t=>t!=null&&[num(r[a.dr]),num(r[a.cr])].some(v=>v>0&&Math.abs(v-Math.abs(t))<.011)))}catch(e){return false}}
 function endCk(R,o){if(!o)return 0;
  const hi=R.findIndex(isH);if(hi<0)return 0;const h=R[hi],ix=re=>h.findIndex(c=>re.test(c)),dI=ix(/date/i),dr=ix(/debit|withdraw|dr\b/i),cr=ix(/credit|deposit|cr\b/i),bl=ix(/balance|bal\b/i);
  if(dI<0||dr<0||cr<0||bl<0)return 0;let T=R.slice(hi+1).filter(r=>pd(r[dI]||""));if(T.length<2)return 0;if(pd(T[0][dI])>pd(T[T.length-1][dI]))T=[...T].reverse();
@@ -1924,7 +1950,7 @@ async function pdfRows(f){const doc=IMG.test(f.name)?await imgDoc(f):await openP
  if(!ok&&LY){LY=null;try{ok=tryR(await pdfText(doc),"PDF text")}catch(e){errs.push(e.message)}}/* saved layout failed balance check: generic parser */
  if(!LP){const tx=ok?C[C.length-1]:null,ns=R=>{const h=R.find(isH),i=h?h.findIndex(c=>/narr|desc|partic|remark|detail/i.test(c)):-1;return i<0?0:R.reduce((a,r)=>a+(r!==h&&r[i]?String(r[i]).length:0),0)};
   try{$("msg").textContent="Cross-checking with balance-chain reader...";const okc=tryR(await chainRows(doc),"Balance-chain reader"),ch=C[C.length-1];
-   if(okc&&(!ok||(tx.src=="PDF text"?ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03:ch.v.n>tx.v.n&&ch.v.bad<=tx.v.bad)))ok=true;/* both reconcile: PDF text gives way to the fuller narration; the column reader only to more transactions */
+   if(okc&&(!ok||(tx.src=="PDF text"?ch.v.n>=tx.v.n*.98&&ch.v.bad<=tx.v.bad&&ns(ch.R)>ns(tx.R)*1.03:ch.v.n>tx.v.n&&ch.v.bad<=tx.v.bad&&!junkX(ch.R,tx.R,TOT))))ok=true;/* both reconcile: PDF text gives way to the fuller narration; the column reader only to more transactions */
    else if(tx)C.push(C.splice(C.indexOf(tx),1)[0])}catch(e){errs.push("Chain: "+e.message);if(tx&&C[C.length-1]!==tx)C.push(C.splice(C.indexOf(tx),1)[0])}}
  const txtGood=C.some(c=>!/OCR/.test(c.src)&&c.v.n>=5&&c.v.bad<=c.v.n*.1&&c.v.nw<=c.v.n*.1);/* the text layer already gives a nearly reconciled reading: OCR (minutes on a long text PDF) would not read it better; the warning below lists the unverified rows */
  if(!ok&&!txtGood){try{$("msg").textContent="Text layer not reliable, trying OCR...";PG.go("ocr","Text layer isn’t reliable · switching to OCR · warming up the engine…");if(await ocrRun(await ocrL(doc),"OCR")){ok=true;pre="Used OCR. "}}catch(e){errs.push("OCR: "+e.message)}}
@@ -2010,9 +2036,12 @@ async function ownMark(doc,R,C,c){try{
  let alt=pool[0];if(!alt&&/^Layout/.test(c.src))alt=await more();
  const pair=X=>{const B=RK(X.R),mm=[];let p=0;A.k.forEach((k,i)=>{for(let j=p;j<Math.min(B.X.length,p+6);j++)if(B.k[j]==k){mm[i]=j;p=j+1;break}});return B.n>=0&&mm.filter(j=>j!=null).length>=T.length*.98?{B,mm}:null},
   cn=(t,w)=>{let n=0,k=-1;while((k=t.indexOf(w,k+1))>=0)n++;return n},nar=(P,i)=>{const j=P.mm[i];return j==null?null:sf(P.B.X[j][P.B.n])},P2=alt&&pair(alt);
- if(P2){const Dd=[];
+ /* readers that mix other columns (a Tran Id, a UTR number) into the narration cannot judge which transaction a narration belongs to */
+ const blind=P2&&T.filter((r,i)=>{const o=nar(P2,i);if(o==null||!r.ot)return false;return(String(r.ot).match(/[A-Za-z0-9]{6,}/g)||[]).some(t=>{t=sf(t);return t&&cn(o,t)>cn(sf(r[nI]),t)})}).length>T.length*.1;
+ if(P2&&!blind){const Dd=[];
   T.forEach((r,i)=>{if(P2.mm[i]==null||boxed.has(r))return;const a=sf(r[nI]),own=nar(P2,i);
-   for(const w of tk2(r[nI])){if(cn(a,w)<=cn(own,w))continue;let hit=0;for(const s of[-1,1]){const bn=nar(P2,i+s),an=T[i+s];if(bn!=null&&cn(bn,w)>(an?cn(sf(an[nI]),w):0)){Dd.push([i,i+s,w,!cn(own,w)&&!(an&&cn(sf(an[nI]),w))]);hit=1;break}}if(hit)break}});
+   const otx=[r,T[i-1],T[i+1]].map(x=>x&&x.ot?sf(x.ot):"").join(" ");/* text the column reader read in another column of these rows is not narration */
+   for(const w of tk2(r[nI])){if(cn(a,w)<=cn(own,w)||cn(otx,w))continue;let hit=0;for(const s of[-1,1]){const bn=nar(P2,i+s),an=T[i+s];if(bn!=null&&cn(bn,w)>(an?cn(sf(an[nI]),w):0)){Dd.push([i,i+s,w,!cn(own,w)&&!(an&&cn(sf(an[nI]),w))]);hit=1;break}}if(hit)break}});
   if(Dd.length&&Dd.length<=Math.max(3,T.length*.02))Dd.forEach(([i,i2,w])=>{const nx=i2>i;
    fl(T[i],"A second reader puts part of this narration ("+q(w)+") on the "+(nx?"next":"previous")+" transaction: check the narration (🔍)");
    if(T[i2])fl(T[i2],"A second reader puts text from the "+(nx?"previous":"next")+" transaction ("+q(w)+") on this one: check the narration (🔍)")});
@@ -2142,6 +2171,18 @@ const gMny=t=>{const s=String(t||"").replace(/\s+/g,"");if(!/\d/.test(s))return 
  const m=s.match(/^(\()?([-+])?(?:₹|rs\.?|inr)?(\d[\d,]*(?:\.\d+)?)(\))?([-+])?(?:\(?(dr|cr)\)?\.?)?$/i);if(!m)return null;
  const v=parseFloat(m[3].replace(/,/g,""));if(isNaN(v))return null;const neg=(!!m[1]&&!!m[4])||m[2]=="-"||m[5]=="-",dc=(m[6]||"").toLowerCase();
  return{v,neg,pos:m[2]=="+",dc,sv:dc=="dr"||(!dc&&neg)?-v:v}};
+async function pgVRules(pg){/* vertical ruled lines of a page (cell borders, box sides): [{x,y0,y1}] */
+ try{const O=pdfjsLib.OPS,ol=pg._ol||(pg._ol=await pg.getOperatorList()),V=[],st=[];let m=[1,0,0,1,0,0];
+ const mul=(a,b)=>[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]],tp=(x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
+ for(let i=0;i<ol.fnArray.length;i++){const f=ol.fnArray[i],a=ol.argsArray[i];
+  if(f==O.save)st.push(m);else if(f==O.restore)m=st.pop()||m;else if(f==O.transform)m=mul(m,a);
+  else if(f==O.paintFormXObjectBegin){st.push(m);if(a&&a[0])m=mul(m,a[0])}else if(f==O.paintFormXObjectEnd)m=st.pop()||m;
+  else if(f==O.constructPath){const g=a[1];let k=0,cu=null;for(const op of a[0]){
+   if(op==O.rectangle){const p1=tp(g[k],g[k+1]),p2=tp(g[k]+g[k+2],g[k+1]+g[k+3]);k+=4;const x0=Math.min(p1[0],p2[0]),x1=Math.max(p1[0],p2[0]),y0=Math.min(p1[1],p2[1]),y1=Math.max(p1[1],p2[1]);
+    if(y1-y0>2.5){if(x1-x0<2.5)V.push({x:(x0+x1)/2,y0,y1});else V.push({x:x0,y0,y1},{x:x1,y0,y1})}}
+   else if(op==O.moveTo){cu=tp(g[k],g[k+1]);k+=2}else if(op==O.lineTo){const e=tp(g[k],g[k+1]);k+=2;if(cu&&Math.abs(e[0]-cu[0])<.6&&Math.abs(e[1]-cu[1])>2.5)V.push({x:(e[0]+cu[0])/2,y0:Math.min(e[1],cu[1]),y1:Math.max(e[1],cu[1])});cu=e}
+   else if(op==O.curveTo)k+=6;else if(op==O.curveTo2||op==O.curveTo3)k+=4}}}
+ return V}catch(e){return[]}}
 async function pgRules(pg){/* horizontal ruled lines of a page (table borders, row lines, cell backgrounds), pieces at one height merged: [{y,cov}] */
  const O=pdfjsLib.OPS,ol=pg._ol||(pg._ol=await pg.getOperatorList()),S=[],st=[];let m=[1,0,0,1,0,0];
  const mul=(a,b)=>[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]],tp=(x,y)=>[m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];
@@ -2225,8 +2266,8 @@ let gridInfo="";
 async function gridRows(doc){window._gd=[];
  const DTW=/(?<!\d)(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}|\d{1,2}(?:st|nd|rd|th)?[\s\-\/][A-Za-z]{3,9}[\s\-\/,']+\d{2,4})(?!\d)/,
   MONY=/\d[\d,]*\.\d{2}(?!\d)/,HW=/date|\bdt\b|narr|narat|desc|partic|remark|detail|debit|withdraw|credit|deposit|amount|balance|chq|cheque|\bref/i,
-  HV=/^(s|sl|sr|no|#|serial|date|dt|value|val|post|posting|book|txn|tran|trans|transaction|transactions|narration|naration|description|desc|particulars|remarks?|details?|memo|ref|reference|chq|cheque|check|instrument|instr|utr|id|number|num|debits?|withdrawals?|withdrawl|credits?|deposits?|amount|amt|balance|bal|closing|running|available|inr|rs|type|dr|cr|branch|code|init|br|mode|of|and|in|the|sno|slno|srno)$/,
-  OPB=/opening|\bb\/f\b|brought\s*forward/i,ENDL=/^\s*(total|closing|grand|statement summary|end of|transaction total)/i,f2=x=>(Math.round(x*100)/100).toFixed(2),
+  HV=/^(s|sl|sr|no|#|serial|date|dt|value|val|post|posting|book|txn|tran|trans|transaction|transactions|narration|naration|description|desc|particulars|remarks?|details?|memo|ref|reference|chq|cheque|check|instrument|instr|utr|id|number|num|debits?|withdrawals?|withdrawl|credits?|deposits?|amount|amt|balance|bal|closing|running|available|inr|rs|type|dr|cr|branch|code|init|br|mode|of|and|in|the|sno|slno|srno|dd|mm|yy|yyyy|mmm|ddmmyyyy|ddmmyy|name|sol|format)$/,/* Axis prints (dd/mm/yyyy) under its date headings */
+  OPB=/opening|\bb\/f\b|brought\s*forward/i,ENDL=/^\s*(?:\d{1,5}\s+)?(total|closing|grand|statement summary|end of|transaction total)/i,f2=x=>(Math.round(x*100)/100).toFixed(2),
   T=s=>s.map(w=>w.s).join(" ");
  let G=null,opening=null;const PS=[];
  /* ---- pass 1a: every page: words, lines, the heading and the lines under it ---- */
@@ -2254,7 +2295,8 @@ async function gridRows(doc){window._gd=[];
  for(const q of PR){const{L,hb}=q;
   let gs=null;
   if(hb){const bw=L.slice(hb.a,hb.b+1).flatMap(l=>l.w.map(w=>({...w,ly:l.y}))).sort((a,b)=>a.x-b.x);gs=[];
-   for(const w of bw){const g=gs.find(g=>(w.x<g.r-.3&&w.r>g.x+.3)||g.w.some(v=>v.ly==w.ly&&w.x>=v.x&&(v.it!=null&&v.it==w.it?w.sp==1&&w.x-v.r<1.2*w.h:w.x-v.r<.36*w.h)));if(g){g.w.push(w);g.x=Math.min(g.x,w.x);g.r=Math.max(g.r,w.r)}else gs.push({x:w.x,r:w.r,w:[w]})}
+   const VR=await pgVRules(q.pg),vsep=(x0,x1,y)=>VR.some(v=>v.x>x0-.6&&v.x<x1+.6&&v.y0<=y+2&&v.y1>=y-1);/* a drawn cell border between two heading words: two columns, even when the PDF wrote them as one piece of text */
+   for(const w of bw){const g=gs.find(g=>(w.x<g.r-.3&&w.r>g.x+.3)||g.w.some(v=>v.ly==w.ly&&w.x>=v.x&&!vsep(v.r,w.x,w.ly)&&(v.it!=null&&v.it==w.it?w.sp==1&&w.x-v.r<1.2*w.h:w.x-v.r<.36*w.h)));if(g){g.w.push(w);g.x=Math.min(g.x,w.x);g.r=Math.max(g.r,w.r)}else gs.push({x:w.x,r:w.r,w:[w]})}
    for(let mg=true;mg;){mg=false;for(let a=0;a<gs.length&&!mg;a++)for(let b=a+1;b<gs.length&&!mg;b++)if(gs[a].x<gs[b].r-.3&&gs[a].r>gs[b].x+.3){gs[a].w.push(...gs[b].w);gs[a].x=Math.min(gs[a].x,gs[b].x);gs[a].r=Math.max(gs[a].r,gs[b].r);gs.splice(b,1);mg=true}}
    gs.sort((a,b)=>a.x-b.x)}
   const cand=[];for(const l of L.slice(hb?hb.b+1:0)){if(BP.test(l.t))continue;if(ENDL.test(l.t)&&cand.some(c=>DTW.test(c.t)))break;if(cand.length&&cand[cand.length-1].y-l.y>4*l.h&&cand.some(c=>DTW.test(c.t)))break;cand.push(l)}/* table lines: up to the totals under the table */
@@ -2272,13 +2314,20 @@ async function gridRows(doc){window._gd=[];
   for(let j=0;j+1<gs.length;){const c0=(gs[j].x+gs[j].r)/2,c1=(gs[j+1].x+gs[j+1].r)/2;let mn=1e9;for(let x=c0;x<=c1;x+=.5)mn=Math.min(mn,cov(x));
    if(mn>rv&&IV.length>=3){gs[j].w.push(...gs[j+1].w);gs[j].x=Math.min(gs[j].x,gs[j+1].x);gs[j].r=Math.max(gs[j].r,gs[j+1].r);gs.splice(j+1,1)}else j++}/* no empty strip under two headings: one heading */
   const S2=gs.map(g=>({x:g.x,r:g.r,c:(g.x+g.r)/2,t:T(g.w.sort((a,b)=>b.ly-a.ly||a.x-b.x))}));S2.forEach(s=>s.k=GLB(s.t));
+  if(S2.some(s=>s.k=="amt"))S2.forEach(s=>{if((s.k=="dr"||s.k=="cr")&&/^(debit|dr)\s*[\/&-]?\s*(credit|cr)$|^(credit|cr)\s*[\/&-]?\s*(debit|dr)$/i.test(s.t.replace(/[().]/g,"").trim()))s.k="type"});/* Debit/Credit next to an Amount column holds DR / CR */
   for(let j=0;j+1<S2.length;j++){let x0=S2[j].c,x1=S2[j+1].c;const cnt=[];if(S2[j+1].x-S2[j].r>=1.5){x0=S2[j].r;x1=S2[j+1].x}/* an edge never runs through a heading: the gap inside a half-empty column is not the gap between columns */for(let x=x0;x<=x1;x+=.5)cnt.push(cov(x));
    const mn=Math.min(...cnt);let bs=null,st=-1;for(let q=0;q<=cnt.length;q++){if(q<cnt.length&&cnt[q]==mn){if(st<0)st=q}else if(st>=0){if(!bs||q-st>bs[1]-bs[0])bs=[st,q];st=-1}}
    B.push(bs?x0+(bs[0]+bs[1]-1)/4:(S2[j].r+S2[j+1].x)/2)}
+  {/* drawn column borders running down the table settle the column edges (a right-aligned amount may reach under the next heading) */
+   const VR=await pgVRules(k.pages[0].pg),ys=LN.filter(l=>l.p==k.pages[0].p).map(l=>l.y);
+   if(ys.length>=3){const top=Math.max(...ys),bot=Math.min(...ys),need=(top-bot)*.6;
+    for(let j=0;j<B.length;j++){const c=VR.filter(v=>v.x>S2[j].c&&v.x<S2[j+1].c);const len=x=>c.filter(v=>Math.abs(v.x-x)<1).reduce((a,v)=>a+Math.max(0,Math.min(v.y1,top+5)-Math.max(v.y0,bot-5)),0);
+     let bx=null,bl=0;for(const v of c){const L2=len(v.x);if(L2>bl){bl=L2;bx=v.x}}if(bx!=null&&bl>=need)B[j]=bx}}}
   const K=S2.map(s=>s.k),fi=(c,pre)=>{const z=K.map((x,i)=>x==c?i:-1).filter(i=>i>=0);return z.length?(pre?z.find(i=>pre.test(S2[i].t))??z[0]:z[0]):-1};
   const g={B,K,di:fi("date",/txn|tran|post|book/i),ni:fi("nar"),ri:fi("ref"),dri:fi("dr"),cri:fi("cr"),ai:fi("amt"),ti:fi("type"),bi:K.lastIndexOf("bal"),lab:S2.map(s=>s.t)};
   k.g=g.di>=0&&g.ni>=0&&(g.bi>=0||g.dri>=0||g.ai>=0)?g:null;window._gd.push({p:k.pages.map(q=>q.p).join(","),lab:g.lab.map((t,i)=>t+"="+K[i]+"@"+(B[i]||0).toFixed(0))})}
  /* ---- pass 1c: the transaction lines of every page ---- */
+ const TS={d:0,c:0,a:0,ad:0,ac:0,n:0};/* running totals of the amounts read so far: a line repeating them is the statement's totals line */
  for(const q of PR){let g=null;const k=q.gs?GS.find(k=>k.pages.includes(q)):null;if(k&&k.g)g=G=k.g;else if(G)g=G;else continue;
   const top=!q.hb,body=q.L.slice(q.hb?q.hb.b+1:0).filter(l=>!BP.test(l.t));
   const cells=l=>{if(l.c&&l.cg===g)return l.c;const c=g.K.map(()=>[]);for(const w of l.w){let j=0;const cx=(w.x+w.r)/2;while(j<g.B.length&&cx>g.B[j])j++;c[j].push(w)}l.cg=g;return l.c=c},
@@ -2288,11 +2337,40 @@ async function gridRows(doc){window._gd=[];
    const bv=g.bi>=0?gMny(ct(l,g.bi)):null,am=[g.dri,g.cri,g.ai].some(i=>i>=0&&gMny(ct(l,i)));
    if(bv&&OPB.test(t)&&!am)return"open";
    if(bv&&am&&!/[A-Za-z]{3}/.test(d)&&!SRS.test(ct(l,g.ni)))return"tx0";/* date printed once per day: this row inherits it */
-   if(bv&&!am&&SR.test(ct(l,g.ni)||t))return"sum";if(am&&!bv&&/totals?/i.test(t))return"sum";/* a totals line inside the table is not narration */return""};
+   if(bv&&!am&&SR.test(ct(l,g.ni)||t))return"sum";if(am&&!bv&&/\btotals?\b/i.test(t))return"sum";/* a totals line inside the table is not narration */return""};
   const K2=body.map(kind);
+  for(let i=1;i<K2.length;i++){/* "Opening | Balance 7,87,679.59": a wrapped label; the balance line is the opening line */
+   if(K2[i]!==""||K2[i-1]!==""||!nOnly(body[i-1])||body[i-1].y-body[i].y>1.6*(body[i].h||8))continue;const bv=g.bi>=0&&gMny(ct(body[i],g.bi)),am=[g.dri,g.cri,g.ai].some(j=>j>=0&&gMny(ct(body[i],j)));
+   if(bv&&!am&&/^(openingbalance|openingbal|balanceb\/?f|broughtforward|balancebroughtforward)$/i.test((ct(body[i-1],g.ni)+ct(body[i],g.ni)).replace(/[\s:.]+/g,""))){K2[i]="open";K2[i-1]="lbl"}}
+  for(let i=0;i+1<K2.length;i++){/* "4,56,870.71 Cr Closing | Balance": the closing line, its label wrapped onto the line below */
+   if(K2[i]!==""||K2[i+1]!==""||!nOnly(body[i+1])||body[i].y-body[i+1].y>1.6*(body[i+1].h||8))continue;const bv=g.bi>=0&&gMny(ct(body[i],g.bi)),am=[g.dri,g.cri,g.ai].some(j=>j>=0&&gMny(ct(body[i],j)));
+   if(bv&&!am&&/^(closingbalance|closingbal|balancec\/?f|carriedforward|balancecarriedforward)$/i.test((ct(body[i],g.ni)+ct(body[i+1],g.ni)).replace(/[\s:.]+/g,""))){K2[i]="end";K2[i+1]="end"}}
+  {/* a date line without an amount whose amount is printed on a line just above or below it (SBI: next line; Axis: the narration's first line,
+      the date centred lower): that line is part of the same transaction, not a new one dated the same day */
+   const amt=l=>!!((g.bi>=0&&gMny(ct(l,g.bi)))||[g.dri,g.cri,g.ai].some(i=>i>=0&&gMny(ct(l,i))));
+   for(let i=0;i<K2.length;i++){if(K2[i]!="tx"||amt(body[i]))continue;let best=-1,bd=1e9;
+    for(const s of[-1,1])for(let j=i+s;j>=0&&j<K2.length;j+=s){if(K2[j]=="tx0"){const d=Math.abs(body[i].y-body[j].y);if(d<=2*(body[i].h||8)&&d<bd){bd=d;best=j}break}if(K2[j]!=="")break}
+    if(best>=0)K2[best]=""}}
   for(let i=0;i<K2.length;i++)if(K2[i]=="open"||K2[i]=="sum"||K2[i]=="end")for(const j of[i-1,i+1]){if(j<0||j>=K2.length||K2[j]!=="")continue;
    const t=(j<i?ct(body[j],g.ni)+ct(body[i],g.ni):ct(body[i],g.ni)+ct(body[j],g.ni)).replace(/[\s:]+/g,"");if(nOnly(body[j])&&/^(openingbalance|closingbalance|balanceb\/?f|broughtforward|carriedforward|balanceforward)$/i.test(t))K2[j]="lbl"}
-  let endAt=K2.findIndex((c,i)=>c=="end"&&K2.slice(0,i).some(x=>x=="tx"||x=="tx0"));if(endAt<0)endAt=body.length;
+  {/* a dateless line without a balance whose amounts are the totals of every debit / credit above it is the totals line (its words may be cut beyond
+      recognition in a narrow column); the narration-only lines just above it that spell TOTAL go with it */
+   const mv=(l,j)=>{if(j<0)return null;const m=gMny(ct(l,j));return m&&m.v?m.v:null},eq=(x,y)=>x!=null&&y>0&&Math.abs(x-y)<.011;
+   const pair=l=>{if(g.ai<0)return null;const m=ct(l,g.ai).replace(/\s+/g,"").match(/^(\d[\d,]*\.\d{2})\/(\d[\d,]*\.\d{2})$/);return m?[num(m[1]),num(m[2])]:null};/* "debits/credits" in one Amount cell */
+   for(let i=0;i<K2.length;i++){const l=body[i],d=mv(l,g.dri),c=mv(l,g.cri),pr=pair(l),a=pr?null:mv(l,g.ai),bv=g.bi>=0&&gMny(ct(l,g.bi));
+    if((K2[i]===""||K2[i]=="sum")&&!bv&&TS.n>=3&&pr&&eq(pr[0],TS.ad)&&eq(pr[1],TS.ac)){K2[i]=K2.slice(i+1).some(x=>x=="tx")?"sum":"end";if(K2[i]=="end")break;continue}
+    if((K2[i]===""||K2[i]=="sum")&&!bv&&TS.n>=3&&(d!=null||c!=null||a!=null)&&((eq(d,TS.d)&&(c==null||eq(c,TS.c)))||(eq(c,TS.c)&&d==null)||eq(a,TS.a)||(a!=null&&(eq(a,TS.d)||eq(a,TS.c))))){
+     K2[i]=K2.slice(i+1).some(x=>x=="tx")?"sum":"end";if(K2[i]=="end")break;continue}/* more dated rows after it: a subtotal */
+    if(K2[i]=="tx"||K2[i]=="tx0"||K2[i]===""){if(d!=null)TS.d+=d;if(c!=null)TS.c+=c;if(a!=null){TS.a+=a;const ty=g.ti>=0?ct(l,g.ti):"",m=gMny(ct(l,g.ai));if(/\b(dr|debit|d)\b/i.test(ty)||(m&&(m.dc=="dr"||m.neg)))TS.ad+=a;else TS.ac+=a}if(d!=null||c!=null||a!=null)TS.n++}}}
+  {/* the end line's own words may start on the narration-only lines just above it (TRANSACTION | TOTAL DR/CR, or TRANSA | CTION T | OTAL D | R/CR):
+      those lines go with it - only when, read together with it, they begin with the TOTAL wording */
+   const e=K2.findIndex((c,i)=>c=="end"&&((TS.n>=3&&!K2.some(x=>x=="tx"||x=="tx0"))||K2.slice(0,i).some(x=>x=="tx"||x=="tx0")));/* rows read on earlier pages count */
+   if(e>0){let own=ct(body[e],g.ni).replace(/\s+/g,"");let t="",pick=-1;
+    for(let j=e+1;j<K2.length&&j<=e+2&&nOnly(body[j])&&body[j-1].y-body[j].y<=1.6*(body[j].h||8);j++)own+=ct(body[j],g.ni).replace(/\s+/g,"");/* and the narration-only lines just below it */
+    for(let j=e-1;j>=0&&K2[j]===""&&nOnly(body[j])&&body[j].y-body[j+1].y<=1.6*(body[j].h||8);j--){t=ct(body[j],g.ni).replace(/\s+/g,"")+t;
+     if(/^(?:transaction|grand|page|sub)?totals?(?:dr|cr|\/|$)/i.test(t+own))pick=j}
+    if(pick>=0)for(let j=pick;j<e;j++)K2[j]="end"}}
+  let endAt=K2.findIndex((c,i)=>c=="end"&&((TS.n>=3&&!K2.some(x=>x=="tx"||x=="tx0"))||K2.slice(0,i).some(x=>x=="tx"||x=="tx0")));if(endAt<0)endAt=body.length;else while(endAt>0&&K2[endAt-1]===""&&body[endAt-1].y-body[endAt].y<=1.2*(body[endAt].h||8)&&!cells(body[endAt-1])[g.ni].length)endAt--;/* the totals printed a little above the TOTAL words belong to that line */
   const BL=body.slice(0,endAt),BK=K2.slice(0,endAt),A=BL.map((l,i)=>BK[i]=="tx"||BK[i]=="tx0"?i:-1).filter(i=>i>=0);
   BL.forEach((l,i)=>{if(BK[i]=="open"&&opening==null&&!PS.some(z=>z.A.length)&&(!A.length||i<A[0]))opening=gMny(ct(l,g.bi)).sv});
   const fc=l=>cells(l).findIndex(c=>c.length),ncol=l=>cells(l).filter(c=>c.length).length,lone=l=>g.bi>=0&&ncol(l)==1&&cells(l)[g.bi].length&&gMny(ct(l,g.bi)),
@@ -2300,10 +2378,12 @@ async function gridRows(doc){window._gd=[];
    spans=l=>l.w.some(w=>g.B.some(b=>w.x<b-.5&&w.r>b+.5))||l.w.some((w,i)=>{const v=l.w[i+1];return v&&g.B.some(b=>w.r<=b&&v.x>=b)&&v.x-w.r<.35*w.h}),
    olab=l=>/^(opening|closing|balance|opening balance|closing balance|balance b\/f|b\/f|c\/f)$/i.test(ct(l,g.ni).trim())&&ncol(l)==1;
   const spc=i=>i>=0&&i<BL.length&&(BK[i]=="open"||BK[i]=="sum"||BK[i]=="lbl"||olab(BL[i]));/* a balance alone on its line belongs to its row, unless it sits by an Opening/Closing label */
-  let C0=BL.map((l,i)=>BK[i]==""&&!SRS.test(l.t)&&!(SR.test(l.t)&&fc(l)<g.ni)&&!(ncol(l)>=3&&spans(l))&&!(lone(l)&&(spc(i-1)||spc(i+1)))&&!olab(l)?i:-1).filter(i=>i>=0);
+  let C0=BL.map((l,i)=>BK[i]==""&&!SRS.test(l.t)&&!(SR.test(l.t)&&fc(l)<g.ni)&&!(ncol(l)>=3&&spans(l)&&![g.bi,g.dri,g.cri,g.ai].some(j=>j>=0&&gMny(ct(l,j))))&&!(lone(l)&&(spc(i-1)||spc(i+1)))&&!olab(l)?i:-1).filter(i=>i>=0);
   if(A.length){const la=A[A.length-1];let cut=null;for(let i=la+1;i<BL.length;i++){if(BL[i-1].y-BL[i].y>3*BL[i].h){cut=i;break}}if(cut!=null)C0=C0.filter(i=>i<cut)}/* footer notes far below the last row *//* "MAR 2025" inside the narration column is narration, not a month heading */
-  if(top&&A.length)C0=C0.filter(i=>i>A[0]||(BL[A[0]].y-BL[i].y<=3.5*BL[i].h&&nOnly(BL[i])));/* page without its own header: page heading text is not a narration */
-  PS.push({p:q.p,pg:q.pg,g,BL,BK,A,C0,cells,ct,own:new Map(),mode:""})}
+  const keep=new Set();if(top&&A.length){/* the run of table lines straight above the first date (a transaction continued from the page before): no date, amount or
+     balance on them, nothing crossing a column edge, each line close to the next */for(let j=A[0]-1;j>=0;j--){const l=BL[j];if(BL[j].y-BL[j+1].y>2.2*(l.h||8)||spans(l)||cells(l).some((c,q)=>c.length&&[g.di,g.bi,g.dri,g.cri,g.ai].includes(q)))break;keep.add(j)}}
+  if(top&&A.length)C0=C0.filter(i=>i>A[0]||keep.has(i)||(BL[A[0]].y-BL[i].y<=3.5*BL[i].h&&nOnly(BL[i]))||(BL[i].y-BL[A[0]].y<=1.5*BL[i].h&&cells(BL[i])[g.ni].length>0));/* ...but a line just above the first date with narration text is the first transaction's top line (date printed lower, centred) *//* page without its own header: page heading text is not a narration */
+  PS.push({p:q.p,pg:q.pg,g,BL,BK,A,C0,cells,ct,own:new Map(),mode:"",endT:endAt<body.length?body.slice(endAt,endAt+3).map(l=>ct(l,g.ni)).join("").replace(/\s+/g,""):"",ended:endAt<body.length||(PS.length>0&&PS[PS.length-1].ended&&!A.length)})}/* the table ended on this page (or before, with no new rows since) */
  /* ---- pass 2: which lines belong to which transaction.
    a) Every page is cut into groups of lines that can only belong to the transactions inside them: the boxes between ruled lines (or shaded
       rows), else rows set apart by extra space, else the whole page. b) Boxes holding one transaction show how the text sits around the date
@@ -2311,6 +2391,7 @@ async function gridRows(doc){window._gd=[];
       out the lines of boxes that hold two or more transactions and of pages with no boxes. ---- */
  const ev={top:0,bottom:0,both:0},seeA=(u,d)=>{if(!u&&d)ev.top++;else if(u&&!d)ev.bottom++;else if(u&&d)ev.both++};
  for(const P of PS){const{BL,BK,A,C0}=P;P.grp=[];
+  if(!A.length&&PS[PS.indexOf(P)-1]&&PS[PS.indexOf(P)-1].ended)continue;/* the table already ended: nothing here continues a transaction */
   if(!A.length){/* no new transaction on this page: its top lines continue the last row of the page before */
    const run=[];for(const i of C0){const l=BL[i],g=P.g;if(!P.cells(l)[g.ni].length||P.cells(l).some((c,j)=>c.length&&[g.di,g.bi,g.dri,g.cri,g.ai].includes(j)))break;if(run.length?BL[run[run.length-1]].y-l.y>2*l.h:i>2)break;run.push(i)}
    if(run.length)P.grp.push({ks:[-1],ls:run});continue}
@@ -2318,16 +2399,18 @@ async function gridRows(doc){window._gd=[];
   if(R&&R.length>=2){const band=y=>{let up=null,dn=null;for(const r of R){if(r>y+.4)up=r;else if(r<y-.4){dn=r;break}}return up==null||dn==null?null:up+"|"+dn},BA=new Map();
    A.forEach((i,k)=>{const b=band(BL[i].y);if(b!=null)(BA.get(b)||BA.set(b,[]).get(b)).push(k)});
    if([...BA.values()].filter(v=>v.length==1).length>=A.length*.8){P.mode="rules";const LB2=new Map();C0.forEach(i=>{const b=band(BL[i].y);(LB2.get(b)||LB2.set(b,[]).get(b)).push(i)});
-    for(const[b,ls]of LB2){const ks=b==null?null:BA.get(b);if(ks)P.grp.push({ks,ls});else if(b!=null&&BL[ls[0]].y>BL[A[0]].y)P.grp.push({ks:[-1],ls});else P.grp.push({ks:null,ls})}
-    for(const[b,ks]of BA)if(ks.length==1){const ls=LB2.get(b)||[],a=A[ks[0]];seeA(ls.filter(i=>i<a).length,ls.filter(i=>i>a).length)}}}
+    for(const[b,ls]of LB2){const ks=b==null?null:BA.get(b);if(ks)P.grp.push({ks,ls});else if(b!=null&&BL[ls[0]].y>BL[A[0]].y)P.grp.push({ks:[-1],ls});
+     else if(b==null){/* above the page's first drawn line, before its first date: the transaction continued from the page before */const up=ls.filter(i=>BL[i].y>BL[A[0]].y),dn=ls.filter(i=>BL[i].y<=BL[A[0]].y);if(up.length)P.grp.push({ks:[-1],ls:up});if(dn.length)P.grp.push({ks:null,ls:dn})}
+     else P.grp.push({ks:null,ls})}
+    for(const[b,ks]of BA)if(ks.length==1){const ls=LB2.get(b)||[],a=A[ks[0]];seeA(ls.filter(i=>i<a&&BL[i].y-BL[a].y>(BL[a].h||8)*.5).length,ls.filter(i=>i>a&&BL[a].y-BL[i].y>(BL[a].h||8)*.5).length)}}}
   if(!P.mode&&C0.length){const ys=BL.map((l,i)=>({i,y:l.y})).filter(o=>BK[o.i]!="open"&&BK[o.i]!="sum"),gp=[];for(let k=1;k<ys.length;k++)gp.push(ys[k-1].y-ys[k].y);
    const s=[...new Set(gp.map(x=>Math.round(x*4)/4))].sort((a,b)=>a-b);let th=null,jm=0;for(let k=1;k<s.length;k++){const j=s[k]-s[k-1];if(j>jm&&j>=1){jm=j;th=(s[k]+s[k-1])/2}}
    if(th!=null){const seg=[[]];ys.forEach((o,k)=>{if(k&&gp[k-1]>th)seg.push([]);seg[seg.length-1].push(o.i)});const AS=new Set(A),CS=new Set(C0);
     const one=seg.filter(sg=>sg.filter(i=>AS.has(i)).length==1).length,withA=seg.filter(sg=>sg.some(i=>AS.has(i))).length;
     if(one>=seg.length*.95&&withA==A.length){P.mode="spacing";seg.forEach((sg,si)=>{const ks=sg.filter(i=>AS.has(i)).map(i=>A.indexOf(i)),ls=sg.filter(i=>CS.has(i));
-      if(ks.length==1){const a=A[ks[0]];seeA(ls.filter(i=>i<a).length,ls.filter(i=>i>a).length)}if(ls.length)P.grp.push({ks:ks.length?ks:si==0?[-1]:null,ls})})}}}
+      if(ks.length==1){const a=A[ks[0]];seeA(ls.filter(i=>i<a&&BL[i].y-BL[a].y>(BL[a].h||8)*.5).length,ls.filter(i=>i>a&&BL[a].y-BL[i].y>(BL[a].h||8)*.5).length)}if(ls.length)P.grp.push({ks:ks.length?ks:si==0?[-1]:null,ls})})}}}
   if(!P.mode){P.mode="align";if(C0.length)P.grp.push({ks:A.map((_,k)=>k),ls:C0,page:true});seeA(C0.filter(i=>i<A[0]).length,C0.filter(i=>i>A[A.length-1]).length)}}
- const AL=ev.bottom>ev.top&&ev.bottom>=ev.both?"bottom":ev.both>ev.top?"middle":"top",EV=[ev.top,ev.bottom,ev.both].sort((a,b)=>b-a),ALW=EV[1]>=1&&EV[0]<EV[1]*1.5;/* the statement shows two alignments about equally often */
+ const AL=ev.bottom>ev.top&&ev.bottom>=ev.both?"bottom":ev.both>ev.top?"middle":"top",EV=[ev.top,ev.bottom,ev.both].sort((a,b)=>b-a),ALW=EV[1]>=1&&EV[0]<EV[1]*1.5;window._gd.push({ev:{...ev},AL,ALW,modes:PS.map(P=>P.mode)});/* the statement shows two alignments about equally often */
  const mid=(ks,ls,A,BL)=>{const a=ks.map(k=>A[k]),m=new Map(),amb=[],before=ls.filter(i=>i<a[0]);before.forEach(i=>m.set(i,ks[0]));let top=before.length?BL[before[0]].y:BL[a[0]].y,bad=0;
   for(let q=0;q<a.length;q++){const ya=BL[a[q]].y,gl=q+1<a.length?ls.filter(i=>i>a[q]&&i<a[q+1]):ls.filter(i=>i>a[a.length-1]);
    if(q+1==a.length){gl.forEach(i=>m.set(i,ks[q]));continue}
@@ -2342,27 +2425,34 @@ async function gridRows(doc){window._gd=[];
   if(ks.length==1){ls.forEach(i=>own.set(i,ks[0]));continue}
   if(AL=="middle"){const m=mid(ks,ls,A,BL);if(m){m.forEach((v,i)=>own.set(i,v));m.amb.forEach(k=>amb.add(k));continue}
    ls.forEach(i=>{let bk=ks[0],bd=1e9,b2=1e9,k2=null;for(const k of ks){const d=Math.abs(BL[A[k]].y-BL[i].y);if(d<bd){b2=bd;k2=bk;bd=d;bk=k}else if(d<b2){b2=d;k2=k}}own.set(i,bk);if(k2!=null&&b2-bd<BL[i].h*.3){amb.add(bk);amb.add(k2)}});continue}/* not centred after all: nearest date line (halfway between two = unclear) */
-  if(AL=="bottom")ls.forEach(i=>{const k=ks.find(k=>A[k]>i);own.set(i,k!=null?k:ks[ks.length-1])});
-  else ls.forEach(i=>{let k=G0.page?-1:ks[0];for(const q of ks)if(A[q]<i)k=q;own.set(i,k)})}}
- {let seen=false;for(const P of PS){if(!P.A.length)continue;if(!seen){seen=true;continue}const a0=P.A[0],BL=P.BL,ya=BL[a0].y,mine=[...P.own].filter(([i,k])=>k===0).map(([i])=>i),
-   up=mine.filter(i=>i<a0).sort((x,y)=>x-y);if(!up.length)continue;
+  /* a line level with a date line (within half a line: a smaller font or a cell placed a little higher or lower) is on that line, whatever the sort order */
+  const lvl=i=>ks.find(k=>Math.abs(BL[i].y-BL[A[k]].y)<=.5*Math.min(BL[i].h||8,BL[A[k]].h||8));
+  if(AL=="bottom")ls.forEach(i=>{const v=lvl(i);if(v!=null){own.set(i,v);return}const k=ks.find(k=>A[k]>i);own.set(i,k!=null?k:ks[ks.length-1])});
+  else ls.forEach(i=>{const v=lvl(i);if(v!=null){own.set(i,v);return}let k=G0.page?-1:ks[0];for(const q of ks)if(A[q]<i)k=q;own.set(i,k)})}}
+ {let seen=false;for(const P of PS){if(!P.A.length)continue;if(!seen){seen=true;continue}if(P.mode=="rules")continue;/* boxes drawn by the statement already say which lines continue the page before */const a0=P.A[0],BL=P.BL,ya=BL[a0].y,mine=[...P.own].filter(([i,k])=>k===0).map(([i])=>i),
+   up=mine.filter(i=>i<a0&&BL[i].y-ya>(BL[a0].h||8)*.5).sort((x,y)=>x-y);/* level with the date line (printed a little higher) is not above it */if(!up.length)continue;
   if(AL=="top"){up.forEach(i=>P.own.set(i,-1));continue}/* top aligned: nothing of a row sits above its date line */
   if(AL=="middle"){const dn=mine.filter(i=>i>a0),bot=dn.length?Math.min(...dn.map(i=>BL[i].y)):ya,err=q=>Math.abs(((q<up.length?BL[up[q]].y:ya)+bot)/2-ya);let k=0;
    const gp=[];for(let q=1;q<P.C0.length;q++){const d=BL[P.C0[q-1]].y-BL[P.C0[q]].y;if(d>0&&d<3*BL[a0].h)gp.push(d)}gp.sort((x,y)=>x-y);const pitch=gp.length?gp[gp.length>>1]:BL[a0].h*1.2;
    while(k<up.length&&err(k+1)<err(k)-pitch*.375)k++;for(let q=0;q<k;q++)P.own.set(up[q],-1)}}}/* only a whole extra line counts (a one-line narration may sit half a line above its date) *//* centred: lines that would push the block off centre came from the page before */
  /* ---- pass 3: the rows ---- */
  const out=[["Date","Narration","Ref","Debit","Credit","Balance"]],modes={};let prevRow=null,lastDate=null;
- for(const P of PS){const{BL,A,own,g,cells,ct}=P;if(!A.length){own.forEach((k,i)=>{if(k<0&&prevRow)prevRow.ext.push(BL[i])});continue}modes[P.mode]=(modes[P.mode]||0)+1;
+ for(const P of PS){const{BL,A,own,g,cells,ct}=P;
+ if(!A.length&&P.endT&&prevRow){/* the totals row began at the foot of the page before: its first words are the last lines of that page's last row */
+  const L=prevRow.nl,nt=l=>T((l.c||[])[prevRow.ng.ni]||[]).replace(/\s+/g,""),only=l=>(l.c||[]).every((c,j)=>!c.length||j==prevRow.ng.ni);let t="";
+  for(let k=L.length-1;k>=1&&only(L[k]);k--){t=nt(L[k])+t;if(/^(?:transaction|grand|page|sub)?totals?(?:dr|cr|\/|$)/i.test(t+P.endT)){L.splice(k);break}}}
+ if(!A.length){own.forEach((k,i)=>{if(k<0&&prevRow)prevRow.ext.push(BL[i])});continue}modes[P.mode]=(modes[P.mode]||0)+1;
   {const gp=[];for(let q=1;q<BL.length;q++){const d=BL[q-1].y-BL[q].y;if(d>0&&d<3*BL[q].h)gp.push(d)}gp.sort((x,y)=>x-y);P.pitch=gp.length?gp[gp.length>>1]:null}
   const rowsP=A.map((i,k)=>({a:i,ls:[i],k}));
   own.forEach((k,i)=>{if(k>=0)rowsP[k].ls.push(i);else if(prevRow&&!cells(BL[i]).some((c,j)=>c.length&&[g.di,g.bi,g.dri,g.cri,g.ai].includes(j)))prevRow.ext.push(BL[i])});/* no date or amount on it: it finishes the row above */
   for(const r of rowsP){const ls=r.ls.map(i=>BL[i]).sort((a,b)=>b.y-a.y),A0=BL[r.a],col=j=>j<0?"":ls.map(l=>ct(l,j)).filter(Boolean).join(" ");
    let d=pd(ct(A0,g.di))||null;if(!d)d=lastDate;else lastDate=d;if(!d)continue;
-   const row=[d,"",col(g.ri),"","",""];row.y=A0.y;row.p=P.p;row.oc=!!doc.isOcr;row.nl=ls;row.ext=[];row.ng=g;row.yt=ls[0].y+ls[0].h*.85;row.yb=ls[ls.length-1].y-ls[ls.length-1].h*.3;
+   const row=[d,"",col(g.ri),"","",""];row.ot=ls.map(l=>cells(l).filter((c,j)=>j!=g.ni&&c.length).map(T).join(" ")).join(" ");/* the row's other cells: their text is never narration */row.y=A0.y;row.p=P.p;row.oc=!!doc.isOcr;row.nl=ls;row.ext=[];row.ng=g;row.yt=ls[0].y+ls[0].h*.85;row.yb=ls[ls.length-1].y-ls[ls.length-1].h*.3;
    {/* the lines of a transaction must sit around its date line the way the statement aligns every row: a line given to the wrong row breaks that */
     const ys=ls.map(l=>l.y),hi=Math.max(...ys),lo=Math.min(...ys),ya=A0.y,hh=A0.h||8,pt=P.pitch||hh*1.2;let odd=false;
     if(ls.length>1){if(AL=="middle")odd=Math.abs((hi+lo)/2-ya)>pt*.3;else if(AL=="top")odd=hi>ya+hh*.6;else odd=lo<ya-hh*.6}
-    row.odd=odd&&!ALW&&r.k>0&&r.k<A.length-1}/* judged at the end (rows running onto the next page are not); first and last rows of a page are not judged */
+    row.odd=odd&&!ALW&&P.mode!="rules"&&r.k>0&&r.k<A.length-1;
+    if(odd&&!ALW&&P.mode!="rules"&&AL=="middle"&&(r.k==0||r.k==A.length-1)&&PS.length>1)(row.fl=row.fl||[]).push("This transaction is at a page break and its lines do not sit around its date the way the other rows do: part of its narration may be on the other page or on the neighbouring transaction. Compare with the PDF (🔍)")}/* rows cut by the statement's own ruled lines are not judged: the lines decide *//* judged at the end (rows running onto the next page are not); first and last rows of a page are not judged */
    if(P.amb.has(r.k))(row.fl=row.fl||[]).push("The statement does not show clearly which of two neighbouring transactions some wrapped narration lines belong to: compare this narration and the next/previous one with the PDF (🔍)");
    const bal=g.bi>=0?gMny(col(g.bi)):null;if(bal)row[5]=f2(bal.sv);
    let dr=null,cr=null;
@@ -2410,7 +2500,7 @@ async function gridRows(doc){window._gd=[];
   if(/@[a-z0-9.]*$/.test(A)&&/^[a-z0-9]/.test(Bs))return false;/* a handle cut after its @: kiran542@i|bl */
   const x=(sg(A).pop()||""),y=(sg(Bs)[0]||""),near=mr-a.r<fc(b)*1.5+.5;/* the line reaches the column edge (within about one letter) */
   if(near&&/\d$/.test(x)&&/^\d+$/.test(y))return false;/* a number or code cut at the edge: 6427670|97029, 322310XXXXXX836|9 (fields printed line by line stop short of the edge) */
-  if(s.split(" ").pop().length>=28&&!(/^[A-Z]+$/.test(x)&&/^[A-Z]+$/.test(y)&&kw(x)&&kw(y)))return false;/* inside a long reference (but /PRIYA | NAIR are two names) */
+  if(near&&s.split(" ").pop().length>=28&&!(/^[A-Z]+$/.test(x)&&/^[A-Z]+$/.test(y)&&kw(x)&&kw(y)))return false;/* inside a long reference cut at the column edge; a line that stopped short ended at a space *//* inside a long reference (but /PRIYA | NAIR are two names) */
   if(!near)return true;/* the line stopped short of the edge: it ended at a space */
   if(!x||!y)return false;
   if(!HARD)return!(kw(x+y)&&!kw(x));/* a known word split at the edge (MOHAM|MED) joins; otherwise a space as printed */
@@ -2750,7 +2840,7 @@ xb.onclick=()=>{const t=xI;if(!t)return;t.value="";t.dispatchEvent(new Event("in
 <p><b>Can I convert Excel or CSV to Tally XML?</b> Yes. Upload the file, map the columns once, and export.</p>
 <p><b>Is it free? Is my statement uploaded?</b> It is free. Files are read in your browser and nothing is uploaded unless you choose the optional AI help.</p>
 <p><b>Which banks are supported?</b> Statements from SBI, HDFC Bank, ICICI Bank, Federal Bank, South Indian Bank, Central Bank of India, Bank of Baroda, Dhanlaxmi Bank and ESAF Small Finance Bank are read with their own layout rules. Other banks use a general reader. Always verify the result against the original statement.</p>
-</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.78<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
+</div></details><p class="mu dsc"><b>Disclaimer:</b> This tool converts bank statement data automatically, and the output may contain errors or omissions. The author is not responsible for any incorrect data produced or for any loss or consequence arising from its use. It is your responsibility to check every entry (dates, amounts, narrations, ledgers and totals) against the original statement before importing into Tally or finalising your books.</p><p class="mu ft2">Anonymous visit statistics (Google Analytics) are collected. Your statement data is never sent.</p><p class="mu ft2">© 2026 Ajai R Krishnan. All rights reserved.</p><p class="mu ft2">Version <span id="appver"><!--VER-->1.0.79<!--/VER--></span> &middot; Built by Ajai R Krishnan</p><p class="mu ft2">Found an issue or have a suggestion? Connect with me on <a href="https://www.linkedin.com/in/ajai-r-krishnan" target="_blank" rel="noopener">LinkedIn</a> and I will try to include it in the next release.</p></main><script>/* v3: per-step page header + type-chip colours (display only, no app logic) */
 (function(){const H={up:["Upload statement",""],setup:["Settings","Set the bank ledger, column mapping, contra rules and auto-ledger rules."],pv:["Preview","Review every transaction against the statement and set the ledgers."],cs:["Create ledgers","Create any ledgers that do not yet exist in Tally."],xp:["Export","Export the Tally XML and import it in Tally."]};
 const h=document.querySelector("main h1"),sub=h&&h.nextElementSibling;
 const upd=()=>{const b=document.querySelector("#nv button.on[data-n]");if(!b||!h)return;const t=H[b.dataset.n];if(b.dataset.n=="up"&&t){const um=document.documentElement.dataset.um;t[1]=um=="single"?"Select the bank statement. Your saved settings are loaded automatically.":"Select the bank statement, then pick the client profile to load its rules and ledgers."}const sp=sub&&sub.tagName=="P"?sub:null;if(t){h.textContent=t[0];h.style.display="";if(sp){sp.textContent=t[1];sp.style.display=""}}else{h.style.display="none";if(sp)sp.style.display="none"}};
@@ -4707,6 +4797,7 @@ document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#mg
 /* ---------- ASK: question bank ---------- */
 /* [question, keywords, answer, action] — action ids are in GO below */
 const KB=[
+["The Excel file has several sheets: which one is read?","excel xlsx xls workbook sheet sheets tab tabs multiple several wrong sheet choose select pick","The sheet with the transaction table is chosen automatically and named in the message after loading. To use another one, pick it in the <b>Sheet</b> box under that message on the Upload page: the file is read again from that sheet.","up"],
 ["Which statement files can I upload?","file files format formats pdf excel xlsx xls csv txt jpg png photo scan upload supported type","PDF (normal or scanned), Excel (XLSX / XLS), CSV / TXT, and photos (JPG / PNG) of a statement. The original PDF or Excel from net banking gives the best result; scanned or photographed copies are read by OCR, so check them carefully.","up"],
 ["My statement PDF / Excel is password protected","password protected locked lock unlock pdf excel open encrypted","Choose the file as usual: a password box appears on the Upload page. Type the password the bank gave (often customer ID or date of birth) and click Unlock. The password is used only on this computer.","up"],
 ["Can I upload several photos of one statement?","photo photos image images page pages multiple several jpg png camera","Yes. Select all the photos of the same statement together in the file box (Ctrl+click). They are read in file-name order, so name them page1, page2 and so on.","up"],
